@@ -19,6 +19,32 @@ CREATE TABLE IF NOT EXISTS usuarios (
   FOREIGN KEY (rol_id) REFERENCES roles(id)
 );
 
+-- 🔹 PERMISOS
+CREATE TABLE IF NOT EXISTS permisos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- 🔹 RELACIÓN ROL - PERMISOS
+CREATE TABLE IF NOT EXISTS rol_permiso (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  rol_id INT,
+  permiso_id INT,
+  FOREIGN KEY (rol_id) REFERENCES roles(id),
+  FOREIGN KEY (permiso_id) REFERENCES permisos(id)
+);
+
+-- 🔹 HORARIOS
+CREATE TABLE IF NOT EXISTS horarios (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  usuario_id INT,
+  hora_entrada TIME,
+  hora_salida TIME,
+  dia_semana VARCHAR(10) NOT NULL,
+  tolerancia_minutos INT NOT NULL,
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
 -- 🔹 ASISTENCIA
 CREATE TABLE IF NOT EXISTS asistencia (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -27,5 +53,39 @@ CREATE TABLE IF NOT EXISTS asistencia (
   hora_entrada TIME,
   hora_salida TIME,
   tipo_asistencia VARCHAR(20),
+  ubicacion VARCHAR(100),
+  estado VARCHAR(20),
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
+-- 🔹 SOLICITUDES
+CREATE TABLE IF NOT EXISTS solicitudes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  usuario_id INT,
+  tipo VARCHAR(50) NOT NULL,
+  estado VARCHAR(50),
+  fecha DATE,
+  hora_inicio TIME,
+  hora_fin TIME,
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
+-- 🔹 INCIDENCIAS
+CREATE TABLE IF NOT EXISTS incidencias (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  usuario_id INT,
+  descripcion TEXT,
+  fecha DATE,
+  tipo VARCHAR(50) NOT NULL,
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+);
+
+-- 🔹 NOTIFICACIONES
+CREATE TABLE IF NOT EXISTS notificaciones (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  usuario_id INT,
+  mensaje TEXT,
+  leido BOOLEAN DEFAULT FALSE,
+  fecha DATE,
   FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
