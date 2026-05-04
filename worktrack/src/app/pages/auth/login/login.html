@@ -1,0 +1,78 @@
+<div class="login-container">
+
+  <div class="card">
+
+    <!-- Logo -->
+    <div class="logo-box">
+      <img src="logoWorkTrack.png" class="logo">
+      <h1>Work<span>Track</span></h1>
+      <p class="subtitle">Control de asistencia con QR</p>
+    </div>
+
+    <!-- Título -->
+    <h2>¡Bienvenido!</h2>
+    <p class="desc">Ingresá tus datos para continuar</p>
+
+    <!-- 🎨 Selector visual de rol -->
+    <div class="roles">
+
+      <div 
+        class="role"
+        [class.active]="selectedRole === 'empleado'"
+        (click)="selectRole('empleado')">
+        👤
+        <span>Empleado</span>
+      </div>
+
+      <div 
+        class="role"
+        [class.active]="selectedRole === 'supervisor'"
+        (click)="selectRole('supervisor')">
+        🛡️
+        <span>Supervisor</span>
+      </div>
+
+      <div 
+        class="role"
+        [class.active]="selectedRole === 'admin'"
+        (click)="selectRole('admin')">
+        ⚙️
+        <span>Admin</span>
+      </div>
+
+    </div>
+
+    <!-- 🧾 Formulario -->
+    <form (ngSubmit)="onSubmit()">
+
+      <div class="input-group">
+        <label>Email</label>
+        <input 
+          type="email" 
+          [(ngModel)]="user.email" 
+          name="email" 
+          required>
+      </div>
+
+      <div class="input-group">
+        <label>Contraseña</label>
+        <input 
+          type="password" 
+          [(ngModel)]="user.password" 
+          name="password" 
+          required>
+      </div>
+
+      <button type="submit" class="btn-main">
+        Ingresar
+      </button>
+
+    </form>
+
+    <!-- 📢 Mensajes -->
+    <p class="error" *ngIf="error">{{ error }}</p>
+    <p class="success" *ngIf="message">{{ message }}</p>
+
+  </div>
+
+</div>

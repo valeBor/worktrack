@@ -1,0 +1,124 @@
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #f5f7fa, #e4efe9);
+}
+
+.card {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  width: 360px;
+  box-shadow: 0px 10px 30px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+/* Logo */
+.logo-box {
+  margin-bottom: 15px;
+}
+
+.logo {
+  width: 60px;
+}
+
+h1 {
+  margin: 5px 0;
+  font-size: 28px;
+}
+
+h1 span {
+  color: #28a745;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: gray;
+}
+
+/* Textos */
+h2 {
+  margin-top: 10px;
+}
+
+.desc {
+  font-size: 14px;
+  color: gray;
+  margin-bottom: 20px;
+}
+
+/* Roles */
+.roles {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.role {
+  width: 30%;
+  padding: 15px;
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 14px;
+}
+
+.role span {
+  display: block;
+  margin-top: 5px;
+}
+
+/* Activo */
+.role.active {
+  border-color: #28a745;
+  background: #e9f7ef;
+}
+
+/* Hover */
+.role:hover {
+  border-color: #28a745;
+}
+
+/* Inputs */
+.input-group {
+  text-align: left;
+  margin-bottom: 15px;
+}
+
+.input-group label {
+  font-size: 14px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  margin-top: 5px;
+}
+
+/* Botón */
+.btn-main {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: #28a745;
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.btn-main:hover {
+  background: #218838;
+}
+
+/* Error */
+.error {
+  color: red;
+  margin-top: 10px;
+}
