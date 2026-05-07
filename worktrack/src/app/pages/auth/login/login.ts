@@ -15,16 +15,16 @@ import { AuthResponse } from '../../../models/auth-response.model';
 })
 export class Login {
 
-  // 📌 Datos del formulario (lo que se envía)
+  //  Datos del formulario (lo que se envía)
   user = {
     email: '',
     password: ''
   };
 
-  // 🎨 SOLO UI (no se envía al backend)
+  //  SOLO UI (no se envía al backend)
   selectedRole: string | null = null;
 
-  // 📢 Mensajes
+  //  Mensajes
   error: string = '';
   message: string = '';
 
@@ -33,12 +33,12 @@ export class Login {
     private router: Router
   ) {}
 
-  // 👉 Selección visual del rol
+  //  Selección visual del rol
   selectRole(role: string) {
     this.selectedRole = role;
   }
 
-  // 👉 Enviar login
+  // Enviar login
   onSubmit() {
 
     this.error = '';
