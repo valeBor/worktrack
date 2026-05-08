@@ -1,93 +1,102 @@
-WorkTrack: Sistema de Gestión Laboral y Control de Asistencia mediante QR
-1. Descripción del Proyecto
-WorkTrack es una plataforma web integral diseñada para la optimización del registro de jornada laboral. El sistema emplea tecnología de códigos QR para digitalizar el control de asistencia, garantizando la trazabilidad de la información y minimizando errores operativos en la administración de personal.
+# WorkTrack
+Sistema de Gestión Laboral y Control de Asistencia mediante QR
 
-La solución está orientada a organizaciones que requieren centralizar la gestión de recursos humanos a través de una estructura de permisos jerárquica, permitiendo una supervisión eficiente del presentismo en tiempo real.
+---
 
-2. Objetivos
-2.1 Objetivo General
-Diseñar e implementar un sistema distribuido para la gestión de asistencia laboral basado en tecnología de identificación QR y arquitectura cliente-servidor.
+## 📖 Descripción del Proyecto
 
-2.2 Objetivos Específicos
-Desarrollar un módulo de autenticación robusto con control de acceso basado en roles (RBAC).
+WorkTrack es una plataforma web integral diseñada para optimizar el registro de jornada laboral mediante tecnología QR.
 
-Implementar el registro digital de ingresos y egresos de personal.
+El sistema permite centralizar la gestión de asistencia, supervisar presentismo en tiempo real y administrar usuarios mediante roles jerárquicos.
 
-Diseñar un esquema de persistencia de datos bajo el modelo relacional para asegurar la integridad de la información.
+---
 
-Proveer una interfaz administrativa para la gestión de usuarios, horarios y permisos.
+## 🎯 Objetivos
 
-3. Arquitectura del Sistema
-El proyecto se fundamenta en una arquitectura de tres capas:
+### Objetivo General
 
-Capa de Presentación (Frontend): Desarrollada en Angular, encargada de la interfaz de usuario y la lógica de navegación.
+Diseñar e implementar un sistema distribuido para la gestión de asistencia laboral basado en tecnología QR y arquitectura cliente-servidor.
 
-Capa de Aplicación (Backend): API REST construida en Node.js mediante el framework Express, gestionando la lógica de negocio y seguridad.
+### Objetivos Específicos
 
-Capa de Persistencia (Base de Datos): Implementada en MySQL para la gestión de datos relacionales.
+- Implementar autenticación segura mediante RBAC.
+- Registrar ingresos y egresos digitales.
+- Garantizar integridad de datos mediante modelo relacional.
+- Administrar usuarios, horarios y permisos.
 
-Flujo de Datos: Frontend (HTTP/JSON) <-> Backend (ORM/SQL) <-> Base de Datos.
+---
 
-4. Tecnologías y Herramientas
-Framework Frontend: Angular
+## 🏗 Arquitectura del Sistema
 
-Entorno de Ejecución Backend: Node.js
+### Frontend
+- Angular
 
-Framework de Servidor: Express
+### Backend
+- Node.js
+- Express
+- API REST
 
-Motor de Base de Datos: MySQL
+### Base de Datos
+- MySQL
 
-Herramienta de Administración de Datos: DBeaver
+### Flujo de Datos
 
-Control de Versiones: Git / GitHub
+Frontend ↔ Backend ↔ Base de Datos
 
-5. Diseño de la Base de Datos
-El sistema se basa en un modelo entidad-relación que garantiza la integridad referencial. Las entidades principales incluyen:
+---
 
-Usuarios: Almacena credenciales (encriptadas) e información de perfil.
+## 🚀 Tecnologías Utilizadas
 
-Roles: Define los niveles de acceso (Administrador, RRHH, Supervisor, Empleado).
+| Tecnología | Uso |
+|------------|-----|
+| Angular | Frontend |
+| Node.js | Backend |
+| Express | API REST |
+| MySQL | Persistencia |
+| DBeaver | Administración DB |
+| Git/GitHub | Control de versiones |
 
-Asistencia: Registra marcas temporales vinculadas a los usuarios.
+---
 
-6. Procedimiento de Instalación y Despliegue
-6.1 Configuración del Backend
-Acceder al directorio del servidor: cd backend
+## ⚙ Instalación
 
-Instalar dependencias: npm install
+### Backend
 
-Ejecutar script de inicialización de la base de datos: npm run init-db
+```bash
+cd backend
+npm install
+npm run init-db
+node server.js
+```
 
-Iniciar servidor de desarrollo: node server.js
+### Frontend
 
-6.2 Configuración del Frontend
-Acceder al directorio de la aplicación: cd worktrack
+```bash
+cd worktrack
+npm install
+ng serve
+```
 
-Instalar dependencias: npm install
+---
 
-Iniciar entorno local: ng serve
+## 🔐 Credenciales de Prueba
 
-7. Credenciales de Acceso (Entorno de Pruebas)
-Para validar las funcionalidades de administración, se ha habilitado la siguiente cuenta de prueba:
-
+```txt
 Usuario: admin@test.com
-
 Clave: 123456
+```
 
-8. Funcionalidades Implementadas y Cronograma
-Fase Actual: Autenticación de usuarios, gestión de sesiones mediante tokens y control de rutas por rol.
+---
 
-Próximas Implementaciones: * Módulo de generación y lectura de códigos QR.
+## 👥 Autores
 
-Sistema de validación por geolocalización.
+- Borgatti Valeria
+- Dias Paredes Maria
+- Insaurralde Yeila
+- Zubiri Brisa
 
-Generación de reportes estadísticos y exportación de datos.
+---
 
-9. Autores
-Nombre y Apellido: Borgatti Valeria
-Nombre y Apellido: Dias Paredes Maria
-Nombre y Apellido: Insaurralde Yeila
-Nombre y Apellido: Zubiri Brisa
+## 🎓 Contexto Institucional
 
-10. Contexto Institucional
-Este proyecto se desarrolla en el marco de las Prácticas Profesionalizantes III, bajo la supervisión del Prof. Sergio Benitez. El trabajo integra conceptos avanzados de ingeniería de software, seguridad informática y administración de sistemas de bases de datos.
+Proyecto desarrollado en el marco de Prácticas Profesionalizantes III bajo la supervisión del Prof. Sergio Benitez.
