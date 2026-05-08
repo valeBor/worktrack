@@ -45,7 +45,7 @@ Frontend ↔ Backend ↔ Base de Datos
 
 ---
 
-## 🚀 Tecnologías Utilizadas
+##  Tecnologías Utilizadas
 
 | Tecnología | Uso |
 |------------|-----|
