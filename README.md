@@ -3,7 +3,7 @@ Sistema de Gestión Laboral y Control de Asistencia mediante QR
 
 ---
 
-## 📖 Descripción del Proyecto
+## Descripción del Proyecto
 
 WorkTrack es una plataforma web integral diseñada para optimizar el registro de jornada laboral mediante tecnología QR.
 
@@ -11,7 +11,7 @@ El sistema permite centralizar la gestión de asistencia, supervisar presentismo
 
 ---
 
-## 🎯 Objetivos
+##  Objetivos
 
 ### Objetivo General
 
@@ -26,7 +26,7 @@ Diseñar e implementar un sistema distribuido para la gestión de asistencia lab
 
 ---
 
-## 🏗 Arquitectura del Sistema
+## Arquitectura del Sistema
 
 ### Frontend
 - Angular
@@ -58,7 +58,7 @@ Frontend ↔ Backend ↔ Base de Datos
 
 ---
 
-## ⚙ Instalación
+##  Instalación
 
 ### Backend
 
@@ -79,7 +79,7 @@ ng serve
 
 ---
 
-## 🔐 Credenciales de Prueba
+##  Credenciales de Prueba
 
 ```txt
 Usuario: admin@test.com
@@ -88,7 +88,7 @@ Clave: 123456
 
 ---
 
-## 👥 Autores
+##  Autores
 
 - Borgatti Valeria
 - Dias Paredes Maria
@@ -97,6 +97,6 @@ Clave: 123456
 
 ---
 
-## 🎓 Contexto Institucional
+##  Contexto Institucional
 
 Proyecto desarrollado en el marco de Prácticas Profesionalizantes III bajo la supervisión del Prof. Sergio Benitez.
