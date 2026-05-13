@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
-// 🔐 LOGIN
+//  LOGIN
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
 
