@@ -3,32 +3,7 @@
 <div class="dashboard-container">
 
   <!-- HEADER -->
-  <header class="topbar">
-
-    <div class="logo-section">
-      <div class="logo-circle">
-        WT
-      </div>
-
-      <div>
-        <h1>WorkTrack</h1>
-        <p>sábado, 9 de mayo de 2026</p>
-      </div>
-    </div>
-
-    <div class="topbar-right">
-
-      <div class="role-badge">
-        Administrador
-      </div>
-
-      <button class="logout-btn">
-        Salir
-      </button>
-
-    </div>
-
-  </header>
+   <app-header></app-header>
 
   <!-- CONTENIDO -->
   <main class="dashboard-content">
@@ -70,7 +45,7 @@
     </section>
 
     <!-- PANEL ADMIN -->
-    <section class="admin-panel">
+    <section class="admin-panel" (click)="irAEmployees()">
 
       <div>
         <h2>Panel de Administración</h2>

@@ -1,0 +1,46 @@
+<!-- HEADER -->
+<header class="topbar">
+
+    <div class="logo-section">
+        <div class="logo-circle">
+            <img src="logoWorkTrack.png" alt="60" class="logo">
+        </div>
+
+        <div>
+            <h1>WorkTrack</h1>
+            <p>{{fecha}}</p>
+        </div>
+    </div>
+
+    <div class="topbar-right">
+
+        <div class="role-badge">
+            <div class="role-badge">
+
+                @if (role === 'admin') {
+                <span>Administrador</span>
+                }
+
+                @else if (role === 'rrhh') {
+                <span>Recursos Humanos</span>
+                }
+
+                @else if (role === 'supervisor') {
+                <span>Supervisor</span>
+                }
+
+                @else {
+                <span>Empleado</span>
+                }
+
+            </div>
+
+        </div>
+
+        <button class="logout-btn">
+            Salir
+        </button>
+
+    </div>
+
+</header>

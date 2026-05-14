@@ -1,1 +1,99 @@
-<p>employee-list works!</p>
+<!-- employee-list.html -->
+
+<app-header></app-header>
+
+<div class="employee-page">
+
+  <!-- HEADER -->
+  <div class="page-header">
+
+    <div>
+      <h1>Lista de Empleados</h1>
+      <p>
+        Gestión completa de empleados del sistema
+      </p>
+    </div>
+
+    <button
+      class="add-btn"
+      (click)="goToAddEmployee()"
+    >
+      + Agregar Empleado
+    </button>
+
+  </div>
+
+  <!-- BUSCADOR -->
+  <div class="search-box">
+
+    <input
+      type="text"
+      placeholder="Buscar empleado..."
+      [(ngModel)]="searchText"
+    >
+
+  </div>
+
+  <!-- LISTA -->
+  <div class="employee-grid">
+
+    @for(employee of filteredEmployees(); track employee.id){
+
+      <div class="employee-card">
+
+        <!-- AVATAR -->
+        <div class="avatar">
+          {{ employee.nombre.charAt(0) }}
+          {{ employee.apellido.charAt(0) }}
+        </div>
+
+        <!-- INFO -->
+        <div class="employee-info">
+
+          <h2>
+            {{ employee.nombre }}
+            {{ employee.apellido }}
+          </h2>
+
+          <p>{{ employee.email }}</p>
+
+          <span class="role">
+            {{ employee.role }}
+          </span>
+
+        </div>
+
+        <!-- ESTADO -->
+        <div
+          class="status"
+          [class.active]="employee.estado"
+        >
+          {{ employee.estado ? 'Activo' : 'Inactivo' }}
+        </div>
+
+        <!-- ACCIONES -->
+        <div class="actions">
+
+          <button
+            class="edit-btn"
+            (click)="editEmployee(employee.id)"
+          >
+            Editar
+          </button>
+
+          <button
+            class="delete-btn"
+            (click)="deleteEmployee(employee.id)"
+          >
+            Eliminar
+          </button>
+
+        </div>
+
+      </div>
+
+    }
+
+  </div>
+
+</div>

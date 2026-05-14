@@ -1,0 +1,75 @@
+/* HEADER */
+
+.topbar {
+  background: linear-gradient(90deg, #050816, #0b1025);
+  color: white;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 20px 40px;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo-circle {
+  width: 55px;
+  height: 55px;
+
+  border-radius: 16px;
+
+  background: linear-gradient(135deg, #8b5cf6, #9333ea);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: bold;
+}
+
+.logo-section h1 {
+  font-size: 32px;
+}
+
+.logo-section p {
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+
+.logo {
+  width: 60px;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.role-badge {
+  background: #9333ea;
+  padding: 10px 18px;
+  border-radius: 30px;
+  font-size: 14px;
+}
+
+.logout-btn {
+  background: transparent;
+  border: 1px solid #cbd5e1;
+  color: white;
+
+  padding: 10px 18px;
+  border-radius: 10px;
+
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background-color: rgba(255,255,255,0.1);
+}

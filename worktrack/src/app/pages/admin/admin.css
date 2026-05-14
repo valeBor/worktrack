@@ -15,7 +15,7 @@ body {
   min-height: 100vh;
 }
 
-/* HEADER */
+/* HEADER 
 
 .topbar {
   background: linear-gradient(90deg, #050816, #0b1025);
@@ -84,7 +84,7 @@ body {
 
 .logout-btn:hover {
   background-color: rgba(255,255,255,0.1);
-}
+}*/
 
 /* CONTENIDO */
 

@@ -1,0 +1,250 @@
+/* employee-list.css */
+
+.employee-page {
+
+  width: 90%;
+  margin: 40px auto;
+
+}
+
+/* HEADER */
+
+.page-header {
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 30px;
+
+}
+
+.page-header h1 {
+
+  font-size: 36px;
+  color: #111827;
+
+}
+
+.page-header p {
+
+  margin-top: 8px;
+  color: #6b7280;
+
+}
+
+/* BOTÓN */
+
+.add-btn {
+
+  background: linear-gradient(135deg, #9333ea, #7e22ce);
+
+  color: white;
+
+  border: none;
+
+  padding: 14px 22px;
+
+  border-radius: 14px;
+
+  cursor: pointer;
+
+  font-size: 15px;
+  font-weight: bold;
+
+  transition: 0.3s;
+
+}
+
+.add-btn:hover {
+
+  transform: translateY(-2px);
+
+}
+
+/* SEARCH */
+
+.search-box {
+
+  margin-bottom: 30px;
+
+}
+
+.search-box input {
+
+  width: 100%;
+
+  padding: 16px;
+
+  border-radius: 14px;
+  border: 1px solid #d1d5db;
+
+  font-size: 15px;
+
+}
+
+/* GRID */
+
+.employee-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(320px, 1fr));
+
+  gap: 24px;
+
+}
+
+/* CARD */
+
+.employee-card {
+
+  background-color: white;
+
+  border-radius: 24px;
+
+  padding: 24px;
+
+  box-shadow: 0 5px 18px rgba(0,0,0,0.08);
+
+  transition: 0.3s;
+
+}
+
+.employee-card:hover {
+
+  transform: translateY(-3px);
+
+}
+
+/* AVATAR */
+
+.avatar {
+
+  width: 70px;
+  height: 70px;
+
+  border-radius: 18px;
+
+  background: linear-gradient(135deg, #14b8a6, #22c55e);
+
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 24px;
+  font-weight: bold;
+
+  margin-bottom: 20px;
+
+}
+
+/* INFO */
+
+.employee-info h2 {
+
+  margin-bottom: 8px;
+
+  color: #111827;
+
+}
+
+.employee-info p {
+
+  color: #6b7280;
+
+  margin-bottom: 12px;
+
+}
+
+.role {
+
+  background-color: #ede9fe;
+
+  color: #7e22ce;
+
+  padding: 8px 14px;
+
+  border-radius: 20px;
+
+  font-size: 13px;
+  font-weight: bold;
+
+}
+
+/* STATUS */
+
+.status {
+
+  margin-top: 20px;
+
+  width: fit-content;
+
+  padding: 8px 14px;
+
+  border-radius: 20px;
+
+  background-color: #fee2e2;
+
+  color: #dc2626;
+
+  font-size: 13px;
+  font-weight: bold;
+
+}
+
+.status.active {
+
+  background-color: #dcfce7;
+
+  color: #16a34a;
+
+}
+
+/* ACCIONES */
+
+.actions {
+
+  display: flex;
+
+  gap: 12px;
+
+  margin-top: 24px;
+
+}
+
+.edit-btn,
+.delete-btn {
+
+  flex: 1;
+
+  border: none;
+
+  padding: 12px;
+
+  border-radius: 12px;
+
+  cursor: pointer;
+
+  font-weight: bold;
+
+}
+
+.edit-btn {
+
+  background-color: #e0e7ff;
+
+  color: #4338ca;
+
+}
+
+.delete-btn {
+
+  background-color: #fee2e2;
+
+  color: #dc2626;
+
+}

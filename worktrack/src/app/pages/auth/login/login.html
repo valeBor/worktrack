@@ -4,74 +4,182 @@
 
     <!-- Logo -->
     <div class="logo-box">
+
       <img src="logoWorkTrack.png" class="logo">
-      <h1>Work<span>Track</span></h1>
-      <p class="subtitle">Control de asistencia con QR</p>
+
+      <h1>
+        Work<span>Track</span>
+      </h1>
+
+      <p class="subtitle">
+        Control de asistencia con QR
+      </p>
+
     </div>
 
     <!-- Título -->
     <h2>¡Bienvenido!</h2>
-    <p class="desc">Ingresá tus datos para continuar</p>
 
-    <!-- 🎨 Selector visual de rol -->
+    <p class="desc">
+      Ingresá tus datos para continuar
+    </p>
+
+    <!-- Selector visual -->
     <div class="roles">
 
-      <div 
+      <div
         class="role"
         [class.active]="selectedRole === 'empleado'"
         (click)="selectRole('empleado')">
+
         👤
+
         <span>Empleado</span>
+
       </div>
 
-      <div 
+      <div
         class="role"
         [class.active]="selectedRole === 'supervisor'"
         (click)="selectRole('supervisor')">
+
         🛡️
+
         <span>Supervisor</span>
+
       </div>
 
-      <div 
+      <div
         class="role"
         [class.active]="selectedRole === 'admin'"
         (click)="selectRole('admin')">
+
         ⚙️
+
         <span>Admin</span>
+
       </div>
 
     </div>
 
-    <!-- 🧾 Formulario -->
-    <form (ngSubmit)="onSubmit()">
+    <!-- FORMULARIO -->
+    <form
+      [formGroup]="loginForm"
+      (ngSubmit)="onSubmit()"
+    >
 
+      <!-- EMAIL -->
       <div class="input-group">
+
         <label>Email</label>
-        <input 
-          type="email" 
-          [(ngModel)]="user.email" 
-          name="email" 
-          required>
+
+        <input
+          type="email"
+          placeholder="Ingresar email"
+          formControlName="email"
+        >
+
+        @if(
+          loginForm.get('email')?.touched &&
+          loginForm.get('email')?.invalid
+        ){
+
+          <div class="validation">
+
+            @if(loginForm.get('email')?.errors?.['required']){
+              <small>
+                El email es obligatorio
+              </small>
+            }
+
+            @if(loginForm.get('email')?.errors?.['email']){
+              <small>
+                Formato de email inválido
+              </small>
+            }
+
+            @if(loginForm.get('email')?.errors?.['pattern']){
+              <small>
+                Email inválido
+              </small>
+            }
+
+          </div>
+
+        }
+
       </div>
 
+      <!-- PASSWORD -->
       <div class="input-group">
+
         <label>Contraseña</label>
-        <input 
-          type="password" 
-          [(ngModel)]="user.password" 
-          name="password" 
-          required>
+
+        <input
+          type="password"
+          placeholder="Ingresar contraseña"
+          formControlName="password"
+        >
+
+        @if(
+          loginForm.get('password')?.touched &&
+          loginForm.get('password')?.invalid
+        ){
+
+          <div class="validation">
+
+            @if(loginForm.get('password')?.errors?.['required']){
+              <small>
+                La contraseña es obligatoria
+              </small>
+            }
+
+            @if(loginForm.get('password')?.errors?.['minlength']){
+              <small>
+                Mínimo 6 caracteres
+              </small>
+            }
+
+            @if(loginForm.get('password')?.errors?.['maxlength']){
+              <small>
+                Máximo 20 caracteres
+              </small>
+            }
+
+          </div>
+
+        }
+
       </div>
 
-      <button type="submit" class="btn-main">
+      <!-- BOTÓN -->
+      <button
+        type="submit"
+        class="btn-main"
+        [disabled]="loginForm.invalid"
+      >
         Ingresar
       </button>
 
     </form>
 
-    <!-- 📢 Mensajes -->
-    <p class="error" *ngIf="error">{{ error }}</p>
-    <p class="success" *ngIf="message">{{ message }}</p>
+    <!-- MENSAJES -->
+
+    @if(error){
+
+      <p class="error">
+        {{ error }}
+      </p>
+
+    }
+
+    @if(message){
+
+      <p class="success">
+        {{ message }}
+      </p>
+
+    }
 
   </div>
 
