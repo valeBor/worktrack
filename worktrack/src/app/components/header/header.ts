@@ -1,32 +1,43 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import {Component, Inject, OnInit, PLATFORM_ID} from '@angular/core';
+import { CommonModule, isPlatformBrowser} from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { threadId } from 'worker_threads';
 
 @Component({
   selector: 'app-header',
+  standalone: true,
   imports: [FormsModule, CommonModule],
   templateUrl: './header.html',
   styleUrl: './header.css',
 })
-export class Header {
+export class Header implements OnInit {
 
-role="";
-fecha="";
+  role = '';
+  fecha = '';
 
-ngOnInit(){
-    
-    this.role= localStorage.getItem('role') || '';
-    this.fecha= new Date().toLocaleDateString(); 
+  constructor(
+    @Inject(PLATFORM_ID)
+    private platformId: Object
+  ) {}
 
+  ngOnInit(): void {
 
-}
+    // ✔ Verifica que esté ejecutando en navegador
+    if (isPlatformBrowser(this.platformId)) {
 
-logout(){
-  localStorage.clear();
-}
+      this.role =
+        localStorage.getItem('role') || '';
 
+    }
 
+    this.fecha =
+      new Date().toLocaleDateString();
 
+  }
+
+  logout(): void {
+
+    localStorage.clear();
+
+  }
 
 }

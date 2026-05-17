@@ -16,7 +16,7 @@
 
     <button
       class="add-btn"
-      (click)="goToAddEmployee()"
+      (click)="showFormAgregar()"
     >
       + Agregar Empleado
     </button>
@@ -76,14 +76,14 @@
 
           <button
             class="edit-btn"
-            (click)="editEmployee(employee.id)"
+            (click)="editEmployee(employee)"
           >
             Editar
           </button>
 
           <button
             class="delete-btn"
-            (click)="deleteEmployee(employee.id)"
+            (click)="deleteEmployee(employee)"
           >
             Eliminar
           </button>

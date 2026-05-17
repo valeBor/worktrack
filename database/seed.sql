@@ -9,4 +9,4 @@ INSERT IGNORE INTO roles (id, nombre) VALUES
 
 -- ADMIN
 INSERT IGNORE INTO usuarios (nombre, apellido, email, password, estado, rol_id)
-VALUES ('Admin', 'Principal', 'admin@test.com', '123456', 1, 1);
+VALUES ('Admin', 'Principal', 'admin@test.com', '$2b$10$sdOcuE54S8GBoD61B0yH8ekfRRnSz9oFSiZpJ9ty30KR41/v3RCkW', 1, 1);
