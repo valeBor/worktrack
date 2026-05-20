@@ -8,17 +8,14 @@
   <div class="page-header">
 
     <div>
-      <h1>Lista de Empleados</h1>
-      <p>
-        Gestión completa de empleados del sistema
-      </p>
+      <button class="add-btn" (click)="viewListemployee()">Lista de Empleados
+
+      </button>
+
     </div>
 
-    <button
-      class="add-btn"
-      (click)="showFormAgregar()"
-    >
-      + Agregar Empleado
+    <button class="add-btn" (click)="showFormAgregar()">
+      + Alta Empleado
     </button>
 
   </div>
@@ -26,18 +23,17 @@
   <!-- BUSCADOR -->
   <div class="search-box">
 
-    <input
-      type="text"
-      placeholder="Buscar empleado..."
-      [(ngModel)]="searchText"
-    >
+    <input type="text" placeholder="Buscar empleado..." [(ngModel)]="searchText">
 
   </div>
 
   <!-- LISTA -->
-  <div class="employee-grid">
 
-    @for(employee of filteredEmployees(); track employee.id){
+  <div *ngIf="viewListEmp">
+
+    <div class="employee-grid">
+
+      @for(employee of filteredEmployees(); track $index){
 
       <div class="employee-card">
 
@@ -64,27 +60,18 @@
         </div>
 
         <!-- ESTADO -->
-        <div
-          class="status"
-          [class.active]="employee.estado"
-        >
+        <div class="status" [class.active]="employee.estado">
           {{ employee.estado ? 'Activo' : 'Inactivo' }}
         </div>
 
         <!-- ACCIONES -->
         <div class="actions">
 
-          <button
-            class="edit-btn"
-            (click)="editEmployee(employee)"
-          >
+          <button class="edit-btn" (click)="editEmployee(employee)">
             Editar
           </button>
 
-          <button
-            class="delete-btn"
-            (click)="deleteEmployee(employee)"
-          >
+          <button class="delete-btn" (click)="deleteEmployee(employee)">
             Eliminar
           </button>
 
@@ -92,8 +79,170 @@
 
       </div>
 
-    }
+      }
+
+    </div>
+  </div>
+
+</div>
+<div *ngIf="showFormAdd">
+
+  <div class="form-container">
+
+    <div class="form-card">
+
+      <div class="form-header">
+
+        <h2>
+          Alta de Nuevo Empleado
+        </h2>
+
+        <p>
+          Complete los datos del empleado
+        </p>
+
+      </div>
+
+      <form>
+
+        <div class="form-grid">
+
+          <!-- Nombre -->
+          <div class="input-group">
+
+            <label>Nombre</label>
+
+            <input type="text" [(ngModel)]="employeeNew.nombre" name="nombre" placeholder="Juan">
+
+          </div>
+
+          <!-- Apellido -->
+          <div class="input-group">
+
+            <label>Apellido</label>
+
+            <input type="text" [(ngModel)]="employeeNew.apellido" name="apellido" placeholder="Pérez">
+
+          </div>
+
+          <!-- Email -->
+          <div class="input-group">
+
+            <label>Email</label>
+
+            <input type="email" [(ngModel)]="employeeNew.email" name="email" placeholder="empleado@empresa.com">
+
+          </div>
+
+          <!-- Password -->
+          <div class="input-group">
+
+            <label>Contraseña</label>
+
+            <input type="password" [(ngModel)]="employeeNew.password" name="password" placeholder="********">
+
+          </div>
+
+        </div>
+
+        <!-- Roles -->
+        <div class="roles-container">
+
+          <label class="role-label">
+            Rol
+          </label>
+
+          <div class="roles-grid">
+
+            <div class="role-card" [class.active]="employeeNew.role === 'empleado'"
+              (click)="employeeNew.role = 'empleado'">
+
+              <h3>Empleado</h3>
+
+              <p>
+                Acceso básico
+              </p>
+
+            </div>
+
+            <div class="role-card" [class.active]="employeeNew.role === 'supervisor'"
+              (click)="employeeNew.role = 'supervisor'">
+
+              <h3>Supervisor</h3>
+
+              <p>
+                Gestión de equipos
+              </p>
+
+            </div>
+
+            <div class="role-card" [class.active]="employeeNew.role === 'rrhh'" (click)="employeeNew.role = 'rrhh'">
+
+              <h3>RRHH</h3>
+
+              <p>
+                Recursos humanos
+              </p>
+
+            </div>
+
+            <div class="role-card" [class.active]="employeeNew.role === 'admin'" (click)="employeeNew.role = 'admin'">
+
+              <h3>Administrador</h3>
+
+              <p>
+                Control total
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Estado -->
+        <div class="checkbox-container">
+
+          <input type="checkbox" [(ngModel)]="employeeNew.estado" name="estado">
+
+          <span>
+            Empleado activo
+          </span>
+
+        </div>
+
+        <!-- Botones -->
+        <div class="buttons-container">
+
+          <button type="button" class="btn-cancel" (click)="cancelFormAdd()">
+
+            Cancelar
+
+          </button>
+
+          <button type="button" class="btn-save" (click)="addEmployeeInthis()">
+
+            Crear Empleado
+
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
 
   </div>
+
+</div>
+
+<div *ngIf="showComponentchild">
+
+
+<app-employee-list-child
+  [employeeToEdit]="employeeUPdate"
+  (employeeEdit)="editEmployeeTochild($event)"
+  (closeEmployeeListChild)="closeComponentchild()">
+</app-employee-list-child>
 
 </div>

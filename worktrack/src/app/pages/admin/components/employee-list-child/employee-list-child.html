@@ -1,0 +1,193 @@
+<!-- employee-list-child.html -->
+
+<div class="edit-container">
+
+  <div class="edit-card">
+
+    <!-- HEADER -->
+    <div class="edit-header">
+
+      <h2>
+        Editar Empleado
+      </h2>
+
+      <p>
+        Modifique los datos del empleado
+      </p>
+
+    </div>
+
+    <form>
+
+      <!-- GRID -->
+      <div class="edit-grid">
+
+        <!-- Nombre -->
+        <div class="input-group">
+
+          <label>Nombre</label>
+
+          <input
+            type="text"
+            [(ngModel)]="employeeToEdit.nombre"
+            name="nombre"
+            placeholder="Juan"
+          >
+
+        </div>
+
+        <!-- Apellido -->
+        <div class="input-group">
+
+          <label>Apellido</label>
+
+          <input
+            type="text"
+            [(ngModel)]="employeeToEdit.apellido"
+            name="apellido"
+            placeholder="Pérez"
+          >
+
+        </div>
+
+        <!-- Email -->
+        <div class="input-group">
+
+          <label>Email</label>
+
+          <input
+            type="email"
+            [(ngModel)]="employeeToEdit.email"
+            name="email"
+            placeholder="empleado@empresa.com"
+          >
+
+        </div>
+
+        <!-- Password -->
+        <div class="input-group">
+
+          <label>Contraseña</label>
+
+          <input
+            type="password"
+            [(ngModel)]="employeeToEdit.password"
+            name="password"
+            placeholder="********"
+          >
+
+        </div>
+
+      </div>
+
+      <!-- ROLES -->
+      <div class="roles-section">
+
+        <label class="role-title">
+          Rol del empleado
+        </label>
+
+        <div class="roles-grid">
+
+          <div
+            class="role-card"
+            [class.active]="employeeToEdit.role === 'empleado'"
+            (click)="employeeToEdit.role = 'empleado'"
+          >
+
+            <h3>Empleado</h3>
+
+            <p>
+              Acceso básico
+            </p>
+
+          </div>
+
+          <div
+            class="role-card"
+            [class.active]="employeeToEdit.role === 'supervisor'"
+            (click)="employeeToEdit.role = 'supervisor'"
+          >
+
+            <h3>Supervisor</h3>
+
+            <p>
+              Gestión de equipos
+            </p>
+
+          </div>
+
+          <div
+            class="role-card"
+            [class.active]="employeeToEdit.role === 'rrhh'"
+            (click)="employeeToEdit.role = 'rrhh'"
+          >
+
+            <h3>RRHH</h3>
+
+            <p>
+              Recursos humanos
+            </p>
+
+          </div>
+
+          <div
+            class="role-card"
+            [class.active]="employeeToEdit.role === 'admin'"
+            (click)="employeeToEdit.role = 'admin'"
+          >
+
+            <h3>Administrador</h3>
+
+            <p>
+              Control total
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ESTADO -->
+      <div class="checkbox-container">
+
+        <input
+          type="checkbox"
+          [(ngModel)]="employeeToEdit.estado"
+          name="estado"
+        >
+
+        <span>
+          Empleado activo
+        </span>
+
+      </div>
+
+      <!-- BOTONES -->
+      <div class="buttons-container">
+
+        <button
+          type="button"
+          class="btn-save"
+          (click)="editEmployee(employeeToEdit)"
+        >
+          Guardar cambios
+        </button>
+
+        <button
+          type="button"
+          class="btn-cancel"
+          (click)="cerrar()"
+        >
+          Cerrar
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+

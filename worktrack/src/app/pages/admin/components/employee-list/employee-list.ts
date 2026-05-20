@@ -1,65 +1,90 @@
-import { Component } from '@angular/core';
-import { CommonModule, NgPlural } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Header } from '../../../../components/header/header';
-import { User, Role } from '../../../../models/user.models';
-
-
+import { User } from '../../../../models/user.models';
+import { EmployeeListChild } from '../employee-list-child/employee-list-child';
+import { UserService } from '../../../../services/user-service';
 
 @Component({
   selector: 'app-employee-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, Header],
+  imports: [CommonModule, FormsModule,Header, EmployeeListChild],
   templateUrl: './employee-list.html',
   styleUrl: './employee-list.css'
 })
-export class EmployeeList {
+export class EmployeeList implements OnInit {
 
   showFormAdd: boolean = false;
   showComponentchild: boolean = false;
+  viewListEmp: boolean = true;
   searchText = '';
-  /**todo del mismo tipo...lista, empleados, nuevo empleado */
-  employees: User[] = [
+  employees: User[] = [];
 
-    {
+  /**alta de usuario */
+  employeeNew: User = {
 
-      nombre: 'Juan',
-      apellido: 'Pérez',
-      email: 'juan@empresa.com',
-      role: 'admin',
-      estado: true
+    nombre: "",
+    apellido: "",
+    email: "",
+    password: "",
+    estado: false,
+    role: null,
 
-    },
+  };
 
-    {
+  /**empleado usuario a modificar */
+  employeeUPdate: User = {
 
-      nombre: 'Laura',
-      apellido: 'Gómez',
-      email: 'laura@empresa.com',
-      role: 'supervisor',
-      estado: true
+    nombre: "",
+    apellido: "",
+    email: "",
+    password: "",
+    estado: false,
+    role: null,
 
-    },
+  };
 
-    {
 
-      nombre: 'Carlos',
-      apellido: 'Ruiz',
-      email: 'carlos@empresa.com',
-      role: 'empleado',
-      estado: false
+  constructor(
+    /**injectar servicios, dependencias */
+    private router: Router,
+    private userService: UserService
 
-    }
+  ) { }
 
-  ];
 
-  showFormAgregar(): void {
-    this.showFormAdd = true;
+  ngOnInit(): void {
+
+    /**ejecuta logica al inicializar*/
+    this.getUsers();
 
   }
 
-  constructor(private router: Router) { }
+
+  getUsers(): void {
+
+    this.userService.getUsers().subscribe({
+
+      next: (data) => {
+
+        this.employees = data;
+
+        console.log(data);
+
+      },
+
+      error: (err) => {
+
+        console.error(err);
+
+      }
+
+    });
+
+  }
+
 
   filteredEmployees() {
 
@@ -74,38 +99,31 @@ export class EmployeeList {
   }
 
 
-  employeeNew: User = {
+  showFormAgregar(): void {
 
-    nombre: "",
-    apellido: "",
-    email: "",
-    password: "",
-    estado: false,
-    role: null,
-  }
-
-
-  employeeUPdate: User = {
-
-    nombre: "",
-    apellido: "",
-    email: "",
-    password: "",
-    estado: false,
-    role: null,
+    this.showFormAdd = true;
+    this.viewListEmp = false;
 
   }
 
-  /**agregar empleado */
+
+  viewListemployee(): void {
+
+    this.viewListEmp = true;
+    this.showFormAdd = false;
+
+  }
+
+
   addEmployeeInthis() {
 
     this.employees.push(this.employeeNew);
 
   }
 
-  /**cancela el formulario agregar, limpia el forms y
- *  mostrarformularioagregar en false */
+
   cancelFormAdd(): void {
+
     this.employeeNew = {
 
       nombre: "",
@@ -116,49 +134,70 @@ export class EmployeeList {
       role: null,
 
     };
+
     this.showFormAdd = false;
+    this.viewListEmp = true;
 
   }
 
 
   editEmployee(employeeToEdit: User): void {
-    this.showComponentchild = true,
-      this.employeeUPdate = {
-        nombre: employeeToEdit.nombre,
-        apellido: employeeToEdit.apellido,
-        email: employeeToEdit.email,
-        password: employeeToEdit.password,
-        estado: employeeToEdit.estado,
-        role: employeeToEdit.role,
 
-      };
+    this.showComponentchild = true;
+    this.viewListEmp = false;
+    this.employeeUPdate = {
+
+      nombre: employeeToEdit.nombre,
+      apellido: employeeToEdit.apellido,
+      email: employeeToEdit.email,
+      password: employeeToEdit.password,
+      estado: employeeToEdit.estado,
+      role: employeeToEdit.role,
+
+    };
+
   }
-
 
 
   editEmployeeTochild(employee: User) {
 
-    const index = this.employees.findIndex((oneEmployee) => oneEmployee.email === employee.email);
+    const index = this.employees.findIndex(
+
+      (oneEmployee) => oneEmployee.email === employee.email
+
+    );
+
     if (index !== -1) {
+
       this.employees[index] = employee;
+
     }
 
   }
 
-  closeComponentchild(){
-       this.showComponentchild=false;
+
+  closeComponentchild() {
+
+    this.showComponentchild = false;
+    this.viewListEmp = true;
 
   }
+
 
   deleteEmployee(employeeToDelete: User) {
 
-    const index = this.employees.findIndex((oneEmployee) => oneEmployee.email === employeeToDelete.email);
+    const index = this.employees.findIndex(
+
+      (oneEmployee) => oneEmployee.email === employeeToDelete.email
+
+    );
+
     if (index !== -1) {
-      this.employees.splice(index, 1)
+
+      this.employees.splice(index, 1);
+
     }
+
   }
 
-
 }
-
-

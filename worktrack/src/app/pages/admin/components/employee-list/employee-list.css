@@ -248,3 +248,237 @@
   color: #dc2626;
 
 }
+
+
+/*Diseño formulario agregar empleado*/
+
+.form-container{
+
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+
+}
+
+.form-card{
+
+    width: 100%;
+    max-width: 1100px;
+
+    background: white;
+
+    border-radius: 24px;
+
+    padding: 40px;
+
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+
+}
+
+.form-header{
+
+    margin-bottom: 30px;
+
+}
+
+.form-header h2{
+
+    font-size: 30px;
+    color: #222;
+    margin-bottom: 10px;
+
+}
+
+.form-header p{
+
+    color: #777;
+
+}
+
+.form-grid{
+
+    display: grid;
+
+    grid-template-columns: repeat(2,1fr);
+
+    gap: 25px;
+
+}
+
+.input-group{
+
+    display: flex;
+    flex-direction: column;
+
+}
+
+.input-group label{
+
+    margin-bottom: 10px;
+
+    font-weight: 600;
+
+    color: #444;
+
+}
+
+.input-group input{
+
+    padding: 15px;
+
+    border-radius: 14px;
+
+    border: 1px solid #ddd;
+
+    font-size: 16px;
+
+    outline: none;
+
+    transition: 0.3s;
+
+}
+
+.input-group input:focus{
+
+    border-color: #7b2ff7;
+
+}
+
+.roles-container{
+
+    margin-top: 40px;
+
+}
+
+.role-label{
+
+    display: block;
+
+    margin-bottom: 20px;
+
+    font-weight: 600;
+
+}
+
+.roles-grid{
+
+    display: grid;
+
+    grid-template-columns: repeat(4,1fr);
+
+    gap: 20px;
+
+}
+
+.role-card{
+
+    border: 2px solid #e5e5e5;
+
+    border-radius: 18px;
+
+    padding: 25px;
+
+    cursor: pointer;
+
+    transition: 0.3s;
+
+    text-align: center;
+
+}
+
+.role-card:hover{
+
+    border-color: #7b2ff7;
+
+    transform: translateY(-3px);
+
+}
+
+.role-card.active{
+
+    background: linear-gradient(
+        135deg,
+        #7b2ff7,
+        #9f44ff
+    );
+
+    color: white;
+
+    border-color: transparent;
+
+}
+
+.role-card h3{
+
+    margin-bottom: 10px;
+
+}
+
+.checkbox-container{
+
+    margin-top: 35px;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+}
+
+.buttons-container{
+
+    margin-top: 40px;
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 20px;
+
+}
+
+.btn-cancel{
+
+    padding: 14px 30px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    background: #ececec;
+
+    cursor: pointer;
+
+    font-size: 16px;
+
+}
+
+.btn-save{
+
+    padding: 14px 30px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    background: linear-gradient(
+        135deg,
+        #20c997,
+        #28a745
+    );
+
+    color: white;
+
+    cursor: pointer;
+
+    font-size: 16px;
+
+    font-weight: 600;
+
+}
+
+.btn-save:hover{
+
+    opacity: 0.9;
+
+}
