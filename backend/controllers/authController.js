@@ -3,9 +3,22 @@ const bcrypt = require('bcrypt');
 const authService = require('../services/authService');
 const jwt = require('jsonwebtoken');
 
+async function verificarTurnstile(token) {
+  const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      secret: '0x4AAAAAADT44yX-FxmBYCAvZjzap1xFZxM',
+      response: token
+    })
+  });
+  const data = await response.json();
+  return data.success;
+}
+
 exports.login = async (req, res) => {
 
-  const { email, password } = req.body;
+  const { email, password, turnstileToken} = req.body;
 
   const query = `
     SELECT u.*, r.nombre AS role

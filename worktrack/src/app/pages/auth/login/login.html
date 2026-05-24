@@ -151,12 +151,22 @@
         }
 
       </div>
+@if(isBrowser){
+  <div class="turnstile-wrapper">
+    <div
+      class="cf-turnstile"
+      [attr.data-sitekey]="siteKey"
+      data-callback="onTurnstileSuccess"
+      data-theme="light">
+    </div>
+  </div>
+}
 
       <!-- BOTÓN -->
       <button
         type="submit"
         class="btn-main"
-        [disabled]="loginForm.invalid"
+        [disabled]="loginForm.invalid || !turnstileToken "
       >
         Ingresar
       </button>

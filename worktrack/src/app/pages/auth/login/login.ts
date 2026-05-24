@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
 import {FormBuilder, FormGroup, Validators,ReactiveFormsModule} from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { Component, Inject, PLATFORM_ID, AfterViewInit } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { AuthResponse } from '../../../models/auth-response.model';
@@ -12,10 +12,15 @@ import { AuthResponse } from '../../../models/auth-response.model';
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
-export class Login {
+export class Login implements AfterViewInit{
 
   error = '';
   message = '';
+
+  siteKey = '0x4AAAAAADT44xp-EgoQPGPE'; // clave de turntile
+  turnstileToken: string | null = null;
+
+   isBrowser = false;
 
   selectedRole: string | null = null;
 
@@ -24,9 +29,10 @@ export class Login {
   constructor(
     private fb: FormBuilder,
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object 
   ) {
-
+    this.isBrowser = isPlatformBrowser(this.platformId);
     this.loginForm = this.fb.group({
 
       email: [
@@ -47,11 +53,30 @@ export class Login {
         ]
       ]
 
-    });
+ });
+
+   
+
+    if (this.isBrowser) {
+      (window as any)['onTurnstileSuccess'] = (token: string) => {
+        this.turnstileToken = token;
+  };
+}
+    // CAMBIO 2 cloudflare
 
   }
 
-  selectRole(role: string) {
+ ngAfterViewInit() {
+    if (this.isBrowser) {
+      const script = document.createElement('script');
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+  }
+
+    selectRole(role: string) {
     this.selectedRole = role;
   }
 
@@ -60,12 +85,20 @@ export class Login {
     this.error = '';
     this.message = '';
 
+     if (!this.turnstileToken) {
+      this.error = 'Por favor completá la verificación'; //verificacion cloudflare
+      return;
+    }
+
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
     }
-
-    this.auth.login(this.loginForm.value).subscribe({
+    this.auth.login({
+      ...this.loginForm.value,
+      turnstileToken: this.turnstileToken // cambio 4 cloudflare
+})
+    .subscribe({
 
       next: (res: AuthResponse) => {
 
