@@ -1,3 +1,5 @@
+/*archivo como index.js...usamos common js 
+no module por eso usamos require, si usamos modele usariamos import y exports*/
 const express = require('express');
 const cors = require('cors');
 

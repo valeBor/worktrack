@@ -1,13 +1,15 @@
 const bcrypt = require('bcrypt');
 
-const userModel = require('../models/userModel');
+const userService = require('../services/userService');
+
+const { validateUser } = require('../utils/validators');
 
 
 
 // GET
 exports.getUsers = (req, res) => {
 
-  userModel.getAllUsers((err, results) => {
+  userService.getUsers((err, results) => {
 
     if (err) {
 
@@ -25,11 +27,20 @@ exports.getUsers = (req, res) => {
 
 
 
-
-// POST
+// CREATE
 exports.createUser = async (req, res) => {
 
   try {
+
+    const error = validateUser(req.body);
+
+    if (error) {
+
+      return res.status(400).json({
+        message: error
+      });
+
+    }
 
     const {
       nombre,
@@ -55,7 +66,7 @@ exports.createUser = async (req, res) => {
     };
 
 
-    userModel.createUser(newUser, (err, result) => {
+    userService.createUser(newUser, (err) => {
 
       if (err) {
 
@@ -83,52 +94,80 @@ exports.createUser = async (req, res) => {
 
 
 
+// UPDATE
+exports.updateUser = async (req, res) => {
 
-// PUT
-exports.updateUser = (req, res) => {
+  try {
 
-  const { id } = req.params;
+    const { id } = req.params;
 
-  userModel.updateUser(id, req.body, (err, result) => {
+    const error = validateUser(req.body);
 
-    if (err) {
+    if (error) {
 
-      return res.status(500).json({
-        message: 'Error al actualizar'
+      return res.status(400).json({
+        message: error
       });
 
     }
 
-    res.json({
-      message: 'Usuario actualizado'
+    userService.updateUser(id, req.body, (err) => {
+
+      if (err) {
+
+        return res.status(500).json({
+          message: 'Error al actualizar'
+        });
+
+      }
+
+      res.json({
+        message: 'Usuario actualizado'
+      });
+
     });
 
-  });
+  } catch (error) {
+
+    res.status(500).json({
+      message: 'Error servidor'
+    });
+
+  }
 
 };
 
 
 
-
 // DELETE
-exports.deleteUser = (req, res) => {
+exports.deleteUser = async (req, res) => {
 
-  const { id } = req.params;
+  try {
 
-  userModel.deleteUser(id, (err, result) => {
+    const { id } = req.params;
 
-    if (err) {
+    userService.deleteUser(id, (err) => {
 
-      return res.status(500).json({
-        message: 'Error al eliminar'
+      if (err) {
+
+        return res.status(500).json({
+          message: 'Error al eliminar'
+        });
+
+      }
+
+      res.json({
+        message: 'Usuario eliminado'
       });
 
-    }
-
-    res.json({
-      message: 'Usuario eliminado'
     });
 
-  });
+  } catch (error) {
+
+    res.status(500).json({
+      message: 'Error servidor'
+    });
+
+  }
 
 };

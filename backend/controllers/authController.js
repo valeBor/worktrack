@@ -1,5 +1,7 @@
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
+const authService = require('../services/authService');
+const jwt = require('jsonwebtoken');
 
 exports.login = async (req, res) => {
 
@@ -43,15 +45,22 @@ exports.login = async (req, res) => {
     if (!validPassword) {
 
       return res.status(401).json({
-        message: 'Contraseña incorrecta'
+        message: 'Credenciales invalidas' /**para no dar informacion exacta si es el password o el mail el incorrecto */
       });
 
     }
 
+    const token = authService.generateToken(user);
+
     res.json({
+
       message: 'Login OK',
-      email: user.email,
-      role: user.role
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role
+      }
     });
 
   });

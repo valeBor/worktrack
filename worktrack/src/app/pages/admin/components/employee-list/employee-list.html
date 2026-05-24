@@ -155,7 +155,7 @@
           <div class="roles-grid">
 
             <div class="role-card" [class.active]="employeeNew.role === 'empleado'"
-              (click)="employeeNew.role = 'empleado'">
+              (click)="employeeNew.role = 'empleado'; employeeNew.rol_id = 3 ">
 
               <h3>Empleado</h3>
 
@@ -166,7 +166,7 @@
             </div>
 
             <div class="role-card" [class.active]="employeeNew.role === 'supervisor'"
-              (click)="employeeNew.role = 'supervisor'">
+              (click)="employeeNew.role = 'supervisor';employeeNew.rol_id = 2 ">
 
               <h3>Supervisor</h3>
 
@@ -176,7 +176,7 @@
 
             </div>
 
-            <div class="role-card" [class.active]="employeeNew.role === 'rrhh'" (click)="employeeNew.role = 'rrhh'">
+            <div class="role-card" [class.active]="employeeNew.role === 'rrhh'" (click)="employeeNew.role = 'rrhh'; employeeNew.rol_id = 4">
 
               <h3>RRHH</h3>
 
@@ -186,7 +186,7 @@
 
             </div>
 
-            <div class="role-card" [class.active]="employeeNew.role === 'admin'" (click)="employeeNew.role = 'admin'">
+            <div class="role-card" [class.active]="employeeNew.role === 'admin'" (click)="employeeNew.role = 'admin'; employeeNew.rol_id = 1 ">
 
               <h3>Administrador</h3>
 
@@ -216,7 +216,7 @@
 
           <button type="button" class="btn-cancel" (click)="cancelFormAdd()">
 
-            Cancelar
+            Cerrar
 
           </button>
 

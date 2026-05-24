@@ -10,7 +10,7 @@ import { UserService } from '../../../../services/user-service';
 @Component({
   selector: 'app-employee-list',
   standalone: true,
-  imports: [CommonModule, FormsModule,Header, EmployeeListChild],
+  imports: [CommonModule, FormsModule, Header, EmployeeListChild],
   templateUrl: './employee-list.html',
   styleUrl: './employee-list.css'
 })
@@ -31,6 +31,7 @@ export class EmployeeList implements OnInit {
     password: "",
     estado: false,
     role: null,
+    rol_id: null
 
   };
 
@@ -43,6 +44,7 @@ export class EmployeeList implements OnInit {
     password: "",
     estado: false,
     role: null,
+    rol_id: null
 
   };
 
@@ -86,6 +88,8 @@ export class EmployeeList implements OnInit {
   }
 
 
+
+
   filteredEmployees() {
 
     return this.employees.filter(employee =>
@@ -115,9 +119,32 @@ export class EmployeeList implements OnInit {
   }
 
 
-  addEmployeeInthis() {
 
-    this.employees.push(this.employeeNew);
+
+
+
+  addEmployeeInthis(): void {
+
+    this.userService.createUser(this.employeeNew)
+      .subscribe({
+
+        next: () => {
+
+          this.getUsers();
+
+          this.cancelFormAdd();
+
+        },
+
+        error: (err) => {
+
+          console.error(err);
+
+        }
+
+      });
+
+
 
   }
 
@@ -147,34 +174,63 @@ export class EmployeeList implements OnInit {
     this.viewListEmp = false;
     this.employeeUPdate = {
 
+      id: employeeToEdit.id,
       nombre: employeeToEdit.nombre,
       apellido: employeeToEdit.apellido,
       email: employeeToEdit.email,
       password: employeeToEdit.password,
       estado: employeeToEdit.estado,
       role: employeeToEdit.role,
-
+      rol_id: employeeToEdit.rol_id
     };
 
   }
 
 
-  editEmployeeTochild(employee: User) {
+ editEmployeeTochild(employee: User): void {
 
-    const index = this.employees.findIndex(
+  if (!employee.id) {
+    console.error('No existe ID');
+    return;
+  }
 
-      (oneEmployee) => oneEmployee.email === employee.email
+  this.userService.updateUser(employee.id, employee).subscribe({
 
-    );
+    next: (updatedUser) => {
 
-    if (index !== -1) {
+      const index = this.employees.findIndex(
 
-      this.employees[index] = employee;
+        (oneEmployee) =>
+          oneEmployee.id === updatedUser.id
+
+      );
+
+      if (index !== -1) {
+
+        this.employees[index] = updatedUser;
+
+      }
+
+      // volver a cargar lista
+      this.getUsers();
+
+      this.showComponentchild = false;
+
+      this.viewListEmp = true;
+
+      console.log('Usuario actualizado');
+
+    },
+
+    error: (err) => {
+
+      console.error(err);
 
     }
 
-  }
+  });
 
+}
 
   closeComponentchild() {
 
@@ -184,19 +240,21 @@ export class EmployeeList implements OnInit {
   }
 
 
-  deleteEmployee(employeeToDelete: User) {
+  deleteEmployee(employeeToDelete: User): void {
 
-    const index = this.employees.findIndex(
+    if (!employeeToDelete.id) return;
 
-      (oneEmployee) => oneEmployee.email === employeeToDelete.email
+    this.userService.deleteUser(
+      employeeToDelete.id
+    ).subscribe({
+      next: () => {
+        this.getUsers();
+      },
+      error: (err) => {
+        console.error(err);
+      }
 
-    );
-
-    if (index !== -1) {
-
-      this.employees.splice(index, 1);
-
-    }
+    });
 
   }
 

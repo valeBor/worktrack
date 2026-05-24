@@ -1,14 +1,7 @@
 import { Component } from '@angular/core';
-import {
-  FormBuilder,
-  FormGroup,
-  Validators,
-  ReactiveFormsModule
-} from '@angular/forms';
-
+import {FormBuilder, FormGroup, Validators,ReactiveFormsModule} from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-
 import { AuthService } from '../../../services/auth.service';
 import { AuthResponse } from '../../../models/auth-response.model';
 
@@ -78,23 +71,25 @@ export class Login {
 
         this.auth.saveUser(res);
 
-        localStorage.setItem('role', res.role);
+        localStorage.setItem('role', res.user.role);
 
         this.message = 'Login correcto';
 
-        if (res.role === 'admin') {
+        if (res.user.role === 'admin') {
           this.router.navigate(['/admin']);
 
-        } else if (res.role === 'rrhh') {
+        } else if (res.user.role === 'rrhh') {
           this.router.navigate(['/rrhh']);
 
-        } else if (res.role === 'supervisor') {
+        } else if (res.user.role === 'supervisor') {
           this.router.navigate(['/scanner']);
 
         } else {
           this.router.navigate(['/home']);
         }
 
+        console.log(res)/**para ver la respuesta en consola */
+  
       },
 
       error: (err) => {

@@ -92,7 +92,7 @@
           <div
             class="role-card"
             [class.active]="employeeToEdit.role === 'empleado'"
-            (click)="employeeToEdit.role = 'empleado'"
+            (click)="employeeToEdit.role = 'empleado'; employeeToEdit.rol_id = 3 "
           >
 
             <h3>Empleado</h3>
@@ -106,7 +106,7 @@
           <div
             class="role-card"
             [class.active]="employeeToEdit.role === 'supervisor'"
-            (click)="employeeToEdit.role = 'supervisor'"
+            (click)="employeeToEdit.role = 'supervisor'; employeeToEdit.rol_id = 2 "
           >
 
             <h3>Supervisor</h3>
@@ -120,7 +120,7 @@
           <div
             class="role-card"
             [class.active]="employeeToEdit.role === 'rrhh'"
-            (click)="employeeToEdit.role = 'rrhh'"
+            (click)="employeeToEdit.role = 'rrhh'; employeeToEdit.rol_id = 4 "
           >
 
             <h3>RRHH</h3>
@@ -134,7 +134,7 @@
           <div
             class="role-card"
             [class.active]="employeeToEdit.role === 'admin'"
-            (click)="employeeToEdit.role = 'admin'"
+            (click)="employeeToEdit.role = 'admin'; employeeToEdit.rol_id = 1 "
           >
 
             <h3>Administrador</h3>

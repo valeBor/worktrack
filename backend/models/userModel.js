@@ -12,6 +12,7 @@ exports.getAllUsers = (callback) => {
       u.apellido,
       u.email,
       u.estado,
+      u.rol_id,
       r.nombre AS role
     
     FROM usuarios u

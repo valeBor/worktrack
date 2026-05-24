@@ -8,4 +8,5 @@ export interface User {
     password?: string;
     estado: boolean;
     role?: Role | null;
+    rol_id?: number | null;
 }

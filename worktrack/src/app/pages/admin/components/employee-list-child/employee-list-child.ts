@@ -23,13 +23,14 @@ export class EmployeeListChild {
   editEmployee(employeeTomodified: User) {
     /**crea otro objeto lo modifica */
     let employeeModified: User = {
-
+      id: employeeTomodified.id,
       nombre: employeeTomodified.nombre,
       apellido: employeeTomodified.apellido,      
       email: employeeTomodified.email,
       password: employeeTomodified.password,
       estado: employeeTomodified.estado,
       role: employeeTomodified.role,
+      rol_id:employeeTomodified.rol_id
 
     };
     this.employeeEdit.emit(employeeModified);
@@ -41,12 +42,5 @@ export class EmployeeListChild {
     this.closeEmployeeListChild.emit();
 
   }
-
-
-
-
-
-
-
 
 }
