@@ -1,0 +1,18 @@
+.contenedor-qr {
+
+  background: white;
+  padding: 20px;
+
+  border-radius: 16px;
+
+  text-align: center;
+
+}
+
+.imagen-qr {
+
+  width: 250px;
+
+  margin-top: 20px;
+
+}
