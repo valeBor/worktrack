@@ -15,13 +15,11 @@ router.get("/generar", async (req, res) => {
       fecha: new Date()
     });
 
-    const qr = await QRCode.toDataURL(datosQR);
+    const qrBuffer = await QRCode.toBuffer(datosQR);
 
-    res.json({
-      ok: true,
-      qr: qr,
-      token: token
-    });
+    res.setHeader("Content-Type", "image/png");
+
+    res.send(qrBuffer);
 
   } catch (error) {
 
