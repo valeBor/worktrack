@@ -1,11 +1,7 @@
 const express = require('express');
-
 const router = express.Router();
-
 const userController = require('../controllers/userController');
-
 const { verifyToken } = require('../middlewares/authMiddleware');
-
 const { verifyRole } = require('../middlewares/roleMiddleware');
 
 
@@ -17,8 +13,6 @@ router.get(
   userController.getUsers
 );
 
-
-
 // POST
 router.post(
   '/',
@@ -26,8 +20,6 @@ router.post(
   verifyRole('admin'),
   userController.createUser
 );
-
-
 
 // PUT
 router.put(
@@ -37,8 +29,6 @@ router.put(
   userController.updateUser
 );
 
-
-
 // DELETE
 router.delete(
   '/:id',
@@ -46,7 +36,6 @@ router.delete(
   verifyRole('admin'),
   userController.deleteUser
 );
-
 
 
 module.exports = router;

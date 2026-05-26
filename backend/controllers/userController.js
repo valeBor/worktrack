@@ -1,7 +1,5 @@
 const bcrypt = require('bcrypt');
-
 const userService = require('../services/userService');
-
 const { validateUser } = require('../utils/validators');
 
 
