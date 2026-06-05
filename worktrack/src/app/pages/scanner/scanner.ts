@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 
 @Component({
   selector: 'app-scanner',
@@ -6,5 +6,6 @@ import { Component } from '@angular/core';
   imports: [],
   templateUrl: './scanner.html',
   styleUrl: './scanner.css',
+  encapsulation: ViewEncapsulation.None,
 })
 export class Scanner {}
