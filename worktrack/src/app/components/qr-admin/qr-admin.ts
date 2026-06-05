@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 
 @Component({
   selector: 'app-qr-admin',
@@ -9,9 +9,41 @@ import { Component } from '@angular/core';
   styleUrl: './qr-admin.css',
 })
 
-export class QrAdmin {
+export class QrAdmin implements OnInit, OnDestroy {
 
-  qrImage: string =
-    'http://localhost:3000/qr/generar';
+  qrImage!: string;
+
+  private intervalo?: ReturnType<typeof setInterval>;
+
+  ngOnInit(): void {
+
+    this.actualizarQR();
+
+    this.intervalo = setInterval(() => {
+
+      this.actualizarQR();
+
+    }, 10000); // cada 10 segundos
+
+  
+
+  }
+
+  actualizarQR(): void {
+
+    this.qrImage =
+       `http://localhost:3000/qr/generar?t=${Date.now()}`;
+
+         console.log("Qr actualizado", this.qrImage);
+
+  }
+
+  ngOnDestroy(): void {
+
+    if (this.intervalo){
+    clearInterval(this.intervalo);
+    }
+
+  }
 
 }
