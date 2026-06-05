@@ -2,12 +2,12 @@
 no module por eso usamos require, si usamos modele usariamos import y exports*/
 const express = require('express');
 const cors = require('cors');
-const qrRoutes = require("./routes/qr");
+const qrRoutes = require("./routes/qr.router");
 
 require('./config/db');
 
-const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/users');
+const authRoutes = require('./routes/auth.router');
+const userRoutes = require('./routes/users.router');
 
 const app = express();
 
