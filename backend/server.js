@@ -2,6 +2,7 @@
 no module por eso usamos require, si usamos modele usariamos import y exports*/
 const express = require('express');
 const cors = require('cors');
+const qrRoutes = require("./routes/qr");
 
 require('./config/db');
 
@@ -12,6 +13,10 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/qr", qrRoutes);
+app.get("/prueba", (req, res) => {
+  res.send("PRUEBA OK");
+});
 
 
 app.use('/api/auth', authRoutes);
