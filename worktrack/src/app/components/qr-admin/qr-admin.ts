@@ -12,7 +12,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 export class QrAdmin implements OnInit, OnDestroy {
 
   qrImage!: string;
-
+  //devuelve un identificador de temporizador, el tipo de dato que devuelve la función
   private intervalo?: ReturnType<typeof setInterval>;
 
   ngOnInit(): void {
