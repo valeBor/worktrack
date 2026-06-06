@@ -1,0 +1,142 @@
+.qr-page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f0f4f8;
+  font-family: 'Segoe UI', sans-serif;
+  display: block;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  background-color: #1a2236;
+  padding: 16px 20px;
+  color: white;
+  width: 100%;
+}
+
+.header-icon { font-size: 28px; }
+
+.header-info h1 { margin: 0; font-size: 18px; }
+
+.header-info span {
+  font-size: 13px;
+  color: #a0aec0;
+  display: block;
+}
+
+.body-content {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 0 32px 0;
+  display: block;
+}
+
+.section { padding: 20px 16px 8px; }
+
+.section-label {
+  font-size: 14px;
+  color: #4a5568;
+  margin: 0 0 10px 0;
+  display: block;
+}
+
+.toggle-container {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+}
+
+.toggle-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 2px solid #e2e8f0;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+  color: #718096;
+}
+
+.toggle-btn.active {
+  border-color: #27ae60;
+  color: #27ae60;
+  background: #f0faf4;
+}
+
+.scanner-card {
+  margin: 16px;
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.camera-icon-wrapper { font-size: 40px; margin-bottom: 8px; }
+
+.scanner-card h2 { margin: 0 0 4px 0; font-size: 16px; }
+
+.scanner-card > p { margin: 0; font-size: 13px; color: #718096; }
+
+.preview-area {
+  background: #f7fafc;
+  border: 2px dashed #cbd5e0;
+  border-radius: 14px;
+  height: 200px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #a0aec0;
+  margin: 16px 0;
+  font-size: 40px;
+}
+
+.preview-area p { font-size: 13px; margin: 8px 0 0 0; }
+
+.btn-activar {
+  width: 100%;
+  padding: 14px;
+  background: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.instructions-card {
+  margin: 0 16px 16px;
+  background: #1e3a5f;
+  border-radius: 20px;
+  padding: 20px 24px;
+  color: white;
+}
+
+.instructions-card h3 { margin: 0 0 12px 0; font-size: 15px; }
+
+.instructions-card ol { padding-left: 20px; margin: 0; }
+
+.instructions-card li {
+  font-size: 13px;
+  color: #e2e8f0;
+  margin-bottom: 8px;
+}
+.body-content {
+  display: block !important;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 0 32px 0;
+}
