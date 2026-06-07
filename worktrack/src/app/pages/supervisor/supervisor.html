@@ -1,0 +1,120 @@
+
+<div class="page-wrapper">
+
+  <!-- NAVBAR -->
+  <app-header></app-header>
+    <div class="brand">
+      <div class="brand-icon">WT</div>
+      <div class="brand-text">
+        <span class="brand-name">Work<strong>Track</strong></span>
+        <span class="brand-date">{{ hoy | date:'EEEE, d \'de\' MMMM \'de\' yyyy' : '' : 'es' }}</span>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <span class="badge-rol">Supervisor</span>
+      <button class="icon-btn notif-btn">
+        🔔
+        <span class="notif-badge">4</span>
+      </button>
+      <button class="icon-btn logout-btn" (click)="cerrarSesion()">⎋ Salir</button>
+    </div>
+  </header>
+
+  <main class="content">
+
+    <!-- ALERTA -->
+    <div class="alert-card">
+      <div class="alert-header">
+        <span class="alert-icon">⚠</span>
+        <span class="alert-title">Alertas del equipo</span>
+        <span class="alert-count">{{ alertas.length }} nuevas</span>
+      </div>
+      <ul class="alert-list">
+        <li *ngFor="let alerta of alertas">• {{ alerta }}</li>
+      </ul>
+      <button class="btn-alertas" (click)="verAlertas()">Ver todas las alertas</button>
+    </div>
+
+    <!-- PERFIL -->
+    <div class="card perfil-card">
+      <div class="avatar">{{ supervisor.iniciales }}</div>
+      <div class="perfil-info">
+        <h2>{{ supervisor.nombre }}</h2>
+        <p>✉ {{ supervisor.email }}</p>
+        <p>🏢 {{ supervisor.empresa }}</p>
+        <p>👤 {{ supervisor.rol }}</p>
+      </div>
+    </div>
+
+    <!-- ESTADO HOY -->
+    <div class="card estado-card">
+      <h3>📅 Estado de hoy</h3>
+      <div class="estado-grid">
+        <div class="estado-item">
+          <span class="estado-label">⊗ Entrada</span>
+          <span class="estado-valor">{{ estadoHoy.entrada }}</span>
+        </div>
+        <div class="estado-item">
+          <span class="estado-label">⊗ Salida</span>
+          <span class="estado-valor">{{ estadoHoy.salida }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACCIONES -->
+    <div class="acciones-grid">
+      <button class="accion-btn green" (click)="escanearQR()">
+        <div class="accion-content">
+          <span class="accion-icon"><i class="bi bi-qr-code"></i></span>
+          <div>
+            <div class="accion-title">Escanear QR</div>
+            <div class="accion-sub">Marcar entrada</div>
+          </div>
+        </div>
+        <span class="accion-arrow">›</span>
+      </button>
+
+      <button class="accion-btn blue" (click)="verHistorial()">
+        <div class="accion-content">
+          <span class="accion-icon"><i class="bi bi-clock-history"></i></span>
+          <div>
+            <div class="accion-title">Historial</div>
+            <div class="accion-sub">Ver asistencias</div>
+          </div>
+        </div>
+        <span class="accion-arrow">›</span>
+      </button>
+    </div>
+
+    <button class="accion-btn purple full-width" (click)="gestionCronogramas()">
+      <div class="accion-content">
+        <span class="accion-icon"><i class="bi bi-people"></i></span>
+        <div>
+          <div class="accion-title">Gestión de Cronogramas</div>
+          <div class="accion-sub">Administrar horarios y solicitudes</div>
+        </div>
+      </div>
+      <span class="accion-arrow">›</span>
+    </button>
+
+    <!-- ESTADÍSTICAS -->
+    <div class="card stats-card">
+      <h3>Este mes</h3>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-valor green-text">{{ estadisticas.diasTrabajados }}</span>
+          <span class="stat-label">Días trabajados</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-valor green-text">{{ estadisticas.horasTotales }}h</span>
+          <span class="stat-label">Horas totales</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-valor green-text">{{ estadisticas.ausencias }}</span>
+          <span class="stat-label">Ausencias</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
