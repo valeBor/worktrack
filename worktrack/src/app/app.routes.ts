@@ -5,6 +5,7 @@ import { Rrhh } from './pages/rrhh/rrhh';
 import { Scanner } from './pages/scanner/scanner';
 import { Home } from './pages/home/home';
 import { EmployeeList } from './pages/admin/components/employee-list/employee-list';
+import { SupervisorComponent } from './pages/supervisor/supervisor';
 
 export const routes: Routes = [
   {
@@ -28,7 +29,10 @@ export const routes: Routes = [
 
   { path: 'home', component: Home },
 
-  {path: 'employee-list', component: EmployeeList}
+  {path: 'employee-list', component: EmployeeList},
+  
+  { path: 'supervisor', component: SupervisorComponent },
+
 
 
 ];
