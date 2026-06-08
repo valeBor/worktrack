@@ -1,37 +1,17 @@
 const userModel = require('../models/userModel');
 
-
-
-// GET
-exports.getUsers = (callback) => {
-
-  userModel.getAllUsers(callback);
-
+exports.getUsers = async () => {
+  return await userModel.getAllUsers();
 };
 
-
-
-// CREATE
-exports.createUser = (userData, callback) => {
-
-  userModel.createUser(userData, callback);
-
+exports.createUser = async (userData) => {
+  return await userModel.createUser(userData);
 };
 
-
-
-// UPDATE
-exports.updateUser = (id, userData, callback) => {
-
-  userModel.updateUser(id, userData, callback);
-
+exports.updateUser = async (id, userData) => {
+  return await userModel.updateUser(id, userData);
 };
 
-
-
-// DELETE
-exports.deleteUser = (id, callback) => {
-
-  userModel.deleteUser(id, callback);
-
+exports.deleteUser = async (id) => {
+  return await userModel.deleteUser(id);
 };

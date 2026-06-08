@@ -1,11 +1,8 @@
 const db = require('../config/db');
 
-
 // OBTENER TODOS
-exports.getAllUsers = (callback) => {
-
+exports.getAllUsers = async () => {
   const query = `
-  
     SELECT 
       u.id,
       u.nombre,
@@ -14,25 +11,18 @@ exports.getAllUsers = (callback) => {
       u.estado,
       u.rol_id,
       r.nombre AS role
-    
     FROM usuarios u
-
     JOIN roles r
       ON u.rol_id = r.id
-  
   `;
 
-  db.query(query, callback);
-
+  const [rows] = await db.query(query);
+  return rows;
 };
 
-
-
 // CREAR
-exports.createUser = (userData, callback) => {
-
+exports.createUser = async (userData) => {
   const query = `
-  
     INSERT INTO usuarios
     (
       nombre,
@@ -42,71 +32,53 @@ exports.createUser = (userData, callback) => {
       estado,
       rol_id
     )
-    
     VALUES (?, ?, ?, ?, ?, ?)
-  
   `;
 
-  db.query(query, [
-
+  const [result] = await db.query(query, [
     userData.nombre,
     userData.apellido,
     userData.email,
     userData.password,
     userData.estado,
     userData.rol_id
+  ]);
 
-  ], callback);
-
+  return result;
 };
 
-
-
 // EDITAR
-exports.updateUser = (id, userData, callback) => {
-
+exports.updateUser = async (id, userData) => {
   const query = `
-  
     UPDATE usuarios
-    
     SET
       nombre = ?,
       apellido = ?,
       email = ?,
       estado = ?,
       rol_id = ?
-    
     WHERE id = ?
-  
   `;
 
-  db.query(query, [
-
+  const [result] = await db.query(query, [
     userData.nombre,
     userData.apellido,
     userData.email,
     userData.estado,
     userData.rol_id,
     id
+  ]);
 
-  ], callback);
-
+  return result;
 };
 
-
-
-
 // ELIMINAR
-exports.deleteUser = (id, callback) => {
-
+exports.deleteUser = async (id) => {
   const query = `
-  
     DELETE FROM usuarios
-    
     WHERE id = ?
-  
   `;
 
-  db.query(query, [id], callback);
-
+  const [result] = await db.query(query, [id]);
+  return result;
 };

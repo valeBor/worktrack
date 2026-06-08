@@ -2,42 +2,31 @@ const bcrypt = require('bcrypt');
 const userService = require('../services/userService');
 const { validateUser } = require('../utils/validators');
 
-
-
 // GET
-exports.getUsers = (req, res) => {
+exports.getUsers = async (req, res) => {
+  try {
+    const users = await userService.getUsers();
 
-  userService.getUsers((err, results) => {
+    res.json(users);
 
-    if (err) {
+  } catch (error) {
+    console.error('Error al obtener usuarios:', error);
 
-      return res.status(500).json({
-        message: 'Error al obtener usuarios'
-      });
-
-    }
-
-    res.json(results);
-
-  });
-
+    res.status(500).json({
+      message: 'Error al obtener usuarios'
+    });
+  }
 };
-
-
 
 // CREATE
 exports.createUser = async (req, res) => {
-
   try {
-
     const error = validateUser(req.body);
 
     if (error) {
-
       return res.status(400).json({
         message: error
       });
-
     }
 
     const {
@@ -49,123 +38,76 @@ exports.createUser = async (req, res) => {
       rol_id
     } = req.body;
 
-
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = {
-
       nombre,
       apellido,
       email,
       password: hashedPassword,
       estado,
       rol_id
-
     };
 
+    await userService.createUser(newUser);
 
-    userService.createUser(newUser, (err) => {
-
-      if (err) {
-
-        return res.status(500).json({
-          message: 'Error al crear usuario'
-        });
-
-      }
-
-      res.status(201).json({
-        message: 'Usuario creado'
-      });
-
+    res.status(201).json({
+      message: 'Usuario creado'
     });
 
   } catch (error) {
+    console.error('Error al crear usuario:', error);
 
     res.status(500).json({
       message: 'Error servidor'
     });
-
   }
-
 };
-
-
 
 // UPDATE
 exports.updateUser = async (req, res) => {
-
   try {
-
     const { id } = req.params;
 
     const error = validateUser(req.body);
 
     if (error) {
-
       return res.status(400).json({
         message: error
       });
-
     }
 
-    userService.updateUser(id, req.body, (err) => {
+    await userService.updateUser(id, req.body);
 
-      if (err) {
-
-        return res.status(500).json({
-          message: 'Error al actualizar'
-        });
-
-      }
-
-      res.json({
-        message: 'Usuario actualizado'
-      });
-
+    res.json({
+      message: 'Usuario actualizado'
     });
 
   } catch (error) {
+    console.error('Error al actualizar usuario:', error);
 
     res.status(500).json({
       message: 'Error servidor'
     });
-
   }
-
 };
-
-
 
 // DELETE
 exports.deleteUser = async (req, res) => {
-
   try {
-
     const { id } = req.params;
 
-    userService.deleteUser(id, (err) => {
+    await userService.deleteUser(id);
 
-      if (err) {
-
-        return res.status(500).json({
-          message: 'Error al eliminar'
-        });
-
-      }
-
-      res.json({
-        message: 'Usuario eliminado'
-      });
-
+    res.json({
+      message: 'Usuario eliminado'
     });
 
   } catch (error) {
+    console.error('Error al eliminar usuario:', error);
 
     res.status(500).json({
       message: 'Error servidor'
     });
-
   }
-
 };

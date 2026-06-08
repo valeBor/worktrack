@@ -1,10 +1,33 @@
+<!--
+  Elemento de video donde se visualiza la cámara del dispositivo.
+
+  #video:
+  Referencia local de Angular que permite acceder al elemento
+  desde TypeScript mediante @ViewChild('video').
+
+  [hidden]="!scannerActivo":
+  Oculta el video cuando la cámara está desactivada y lo muestra
+  cuando scannerActivo es true.
+
+  autoplay:
+  Reproduce automáticamente el flujo de video recibido desde la cámara.
+
+  muted:
+  Silencia el audio del video. Aunque la cámara no usa audio en este caso,
+  algunos navegadores requieren muted para reproducir automáticamente.
+
+  playsinline:
+  Evita que en dispositivos móviles el video se abra en pantalla completa,
+  manteniéndolo dentro del componente.
+-->
+
 <div class="qr-page">
 
-  <div class="header">
+  <div class="header-scanner">
     <div class="header-icon">🔲</div>
     <div class="header-info">
       <h1>Lector de QR</h1>
-      <span>jueves, 4 de junio</span>
+    
     </div>
   </div>
 
@@ -12,27 +35,69 @@
 
     <div class="section">
       <p class="section-label">Tipo de registro</p>
+
       <div class="toggle-container">
-        <button class="toggle-btn active">
+
+        <button
+          class="toggle-btn"
+          [class.active]="tipoRegistro === 'entrada'"
+          (click)="seleccionarTipo('entrada')">
           <span class="toggle-icon">→</span>
           <span>Entrada</span>
         </button>
-        <button class="toggle-btn">
+
+        <button
+          class="toggle-btn"
+          [class.active]="tipoRegistro === 'salida'"
+          (click)="seleccionarTipo('salida')">
           <span class="toggle-icon">←</span>
           <span>Salida</span>
         </button>
+
       </div>
     </div>
 
     <div class="scanner-card">
+
       <div class="camera-icon-wrapper">📷</div>
+
       <h2>Escanear código QR</h2>
       <p>Activa la cámara para escanear</p>
+
       <div class="preview-area">
-        <span>📷</span>
-        <p>Presiona el botón para activar la cámara</p>
+
+        <video
+          #video
+          [hidden]="!scannerActivo"
+          autoplay
+          muted
+          playsinline>
+        </video>
+
+        <div class="preview-placeholder" *ngIf="!scannerActivo">
+          <span>📷</span>
+          <p>Presiona el botón para activar la cámara</p>
+        </div>
+
       </div>
-      <button class="btn-activar">📷 Activar cámara</button>
+
+      <button
+        class="btn-activar"
+        *ngIf="!scannerActivo"
+        (click)="activarCamara()">
+        📷 Activar cámara
+      </button>
+
+      <button
+        class="btn-activar"
+        *ngIf="scannerActivo"
+        (click)="detenerCamara()">
+        Detener cámara
+      </button>
+
+      <p class="success" *ngIf="mensaje">{{ mensaje }}</p>
+      <p class="error" *ngIf="error">{{ error }}</p>
+
     </div>
 
     <div class="instructions-card">

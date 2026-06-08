@@ -6,7 +6,7 @@
   display: block;
 }
 
-.header {
+.header-scanner {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -139,4 +139,40 @@
   max-width: 480px;
   margin: 0 auto;
   padding: 0 0 32px 0;
+}
+
+.preview-area video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.preview-area {
+  position: relative;
+  overflow: hidden;
+}
+
+.preview-area video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
+}
+
+.preview-placeholder {
+  text-align: center;
+}
+
+.success {
+  margin-top: 12px;
+  color: green;
+  font-weight: 600;
+}
+
+.error {
+  margin-top: 12px;
+  color: red;
+  font-weight: 600;
 }

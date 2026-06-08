@@ -30,18 +30,13 @@ export class AuthService {
 
   // GUARDAR SESION
   //no guarda toda la respuesta solo lo necesario
-
   saveUser(res: AuthResponse) {
 
   localStorage.setItem('token', res.token);
-
   localStorage.setItem('user', JSON.stringify(res.user));
-
   localStorage.setItem('role', res.user.role);
 
 }
-
-
 
   // OBTENER USUARIO
   getUser(): AuthResponse | null {
@@ -52,8 +47,6 @@ export class AuthService {
 
   }
 
-
-
   // OBTENER TOKEN
   getToken(): string | null {
 
@@ -61,18 +54,14 @@ export class AuthService {
 
   }
 
-
-
   // LOGOUT
   logout() {
 
     localStorage.removeItem('user');
-
     localStorage.removeItem('token');
+    localStorage.removeItem('role');
 
   }
-
-
 
   // ESTA LOGUEADO
   isLoggedIn(): boolean {

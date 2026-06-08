@@ -1,3 +1,4 @@
+//validacion para efectuar el registro de usuarios
 exports.validateUser = (user) => {
 
   if (!user.nombre) {

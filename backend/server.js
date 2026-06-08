@@ -3,6 +3,7 @@ no module por eso usamos require, si usamos modele usariamos import y exports*/
 const express = require('express');
 const cors = require('cors');
 const qrRoutes = require("./routes/qr.router");
+const asistenciaRoutes = require("./routes/asistencia.router");
 
 require('./config/db');
 
@@ -14,6 +15,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use("/qr", qrRoutes);
+
 app.get("/prueba", (req, res) => {
   res.send("PRUEBA OK");
 });
@@ -21,6 +23,13 @@ app.get("/prueba", (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+
+
+
+
+app.use("/api/asistencias", asistenciaRoutes);
+
+
 
 app.get('/', (req, res) => {
   res.send('API WORKTRACK FUNCIONANDO');

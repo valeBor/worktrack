@@ -1,18 +1,17 @@
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise');
 
-const connection = mysql.createConnection({
+// Pool crea un conjunto de conexiones reutilizables.
+// Es mejor que createConnection para una API porque puede atender varias consultas.
+const pool = mysql.createPool({
   host: '127.0.0.1',
   user: 'root',
   password: '',
-  database: 'worktrack'
+  database: 'worktrack',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-connection.connect((err) => {
-  if (err) {
-    console.error('Error conexión MySQL:', err);
-  } else {
-    console.log('MySQL conectado');
-  }
-});
+console.log('Pool MySQL configurado');
 
-module.exports = connection;
+module.exports = pool;
