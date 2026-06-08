@@ -8,7 +8,7 @@
 
 /* CONTENT */
 .content {
-  max-width: 800px;
+  max-width: 600px;
   margin: 0 auto;
   padding: 16px;
   display: flex;
@@ -113,8 +113,9 @@
 .accion-btn:hover { transform: translateY(-2px); }
 
 .accion-btn.green  { background: #22c55e; }
-.accion-btn.blue   { background: #2295ce; }
-.accion-btn.purple { background: #a855f7; }
+.accion-btn.blue   { 
+  background:linear-gradient(135deg, #295be6, #1e40af); }
+.accion-btn.purple { background: #7c24ce; }
 .accion-btn.full-width { width: 100%; }
 
 .accion-content { display: flex; align-items: center; gap: 12px; }
