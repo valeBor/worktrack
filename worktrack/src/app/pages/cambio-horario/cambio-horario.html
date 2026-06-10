@@ -1,0 +1,67 @@
+<div class="page-container">
+
+  <app-header
+    titulo="Cambio de Horario"
+    subtitulo="Solicita modificaciones a tu cronograma">
+  </app-header>
+
+  <main class="content">
+
+    <button class="btn-new" (click)="nuevaSolicitud()">
+      <i class="bi bi-calendar-plus"></i>
+      Nueva solicitud de cambio
+    </button>
+
+    <section class="section-title">
+      <i class="bi bi-clock"></i>
+      <h3>Solicitudes pendientes ({{ solicitudes.length }})</h3>
+    </section>
+
+    <section class="request-card" *ngFor="let solicitud of solicitudes">
+
+      <div class="card-header">
+
+        <div class="status-icon">
+          <i class="bi bi-clock"></i>
+        </div>
+
+        <div>
+          <h2>{{ solicitud.estado }}</h2>
+          <p>Enviada el {{ solicitud.fechaEnvio }}</p>
+        </div>
+
+        <span class="badge">
+          {{ solicitud.etiqueta }}
+        </span>
+
+      </div>
+
+      <div class="date-row">
+        <i class="bi bi-calendar"></i>
+        <span>Fecha: {{ solicitud.fechaCambio }}</span>
+      </div>
+
+      <div class="schedule-grid">
+
+        <div class="schedule-box">
+          <span>Horario actual</span>
+          <strong>{{ solicitud.horarioActual }}</strong>
+        </div>
+
+        <div class="schedule-box requested">
+          <span>Horario solicitado</span>
+          <strong>{{ solicitud.horarioSolicitado }}</strong>
+        </div>
+
+      </div>
+
+      <div class="reason">
+        <span>Motivo</span>
+        <p>{{ solicitud.motivo }}</p>
+      </div>
+
+    </section>
+
+  </main>
+
+</div>

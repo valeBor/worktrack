@@ -27,10 +27,7 @@
     <!-- Selector visual -->
     <div class="roles">
 
-      <div
-        class="role"
-        [class.active]="selectedRole === 'empleado'"
-        (click)="selectRole('empleado')">
+      <div class="role" [class.active]="selectedRole === 'empleado'" (click)="selectRole('empleado')">
 
         👤
 
@@ -38,10 +35,7 @@
 
       </div>
 
-      <div
-        class="role"
-        [class.active]="selectedRole === 'supervisor'"
-        (click)="selectRole('supervisor')">
+      <div class="role" [class.active]="selectedRole === 'supervisor'" (click)="selectRole('supervisor')">
 
         🛡️
 
@@ -49,62 +43,52 @@
 
       </div>
 
-      <div
-        class="role"
-        [class.active]="selectedRole === 'admin'"
-        (click)="selectRole('admin')">
+      <div class="role" [class.active]="selectedRole === 'admin'" (click)="selectRole('admin')">
 
         ⚙️
 
-        <span>Admin</span>
+        <span>RRHH</span>
 
       </div>
 
     </div>
 
     <!-- FORMULARIO -->
-    <form
-      [formGroup]="loginForm"
-      (ngSubmit)="onSubmit()"
-    >
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
 
       <!-- EMAIL -->
       <div class="input-group">
 
         <label>Email</label>
 
-        <input
-          type="email"
-          placeholder="Ingresar email"
-          formControlName="email"
-        >
+        <input type="email" placeholder="Ingresar email" formControlName="email">
 
         @if(
-          loginForm.get('email')?.touched &&
-          loginForm.get('email')?.invalid
+        loginForm.get('email')?.touched &&
+        loginForm.get('email')?.invalid
         ){
 
-          <div class="validation">
+        <div class="validation">
 
-            @if(loginForm.get('email')?.errors?.['required']){
-              <small>
-                El email es obligatorio
-              </small>
-            }
+          @if(loginForm.get('email')?.errors?.['required']){
+          <small>
+            El email es obligatorio
+          </small>
+          }
 
-            @if(loginForm.get('email')?.errors?.['email']){
-              <small>
-                Formato de email inválido
-              </small>
-            }
+          @if(loginForm.get('email')?.errors?.['email']){
+          <small>
+            Formato de email inválido
+          </small>
+          }
 
-            @if(loginForm.get('email')?.errors?.['pattern']){
-              <small>
-                Email inválido
-              </small>
-            }
+          @if(loginForm.get('email')?.errors?.['pattern']){
+          <small>
+            Email inválido
+          </small>
+          }
 
-          </div>
+        </div>
 
         }
 
@@ -115,59 +99,48 @@
 
         <label>Contraseña</label>
 
-        <input
-          type="password"
-          placeholder="Ingresar contraseña"
-          formControlName="password"
-        >
+        <input type="password" placeholder="Ingresar contraseña" formControlName="password">
 
         @if(
-          loginForm.get('password')?.touched &&
-          loginForm.get('password')?.invalid
+        loginForm.get('password')?.touched &&
+        loginForm.get('password')?.invalid
         ){
 
-          <div class="validation">
+        <div class="validation">
 
-            @if(loginForm.get('password')?.errors?.['required']){
-              <small>
-                La contraseña es obligatoria
-              </small>
-            }
+          @if(loginForm.get('password')?.errors?.['required']){
+          <small>
+            La contraseña es obligatoria
+          </small>
+          }
 
-            @if(loginForm.get('password')?.errors?.['minlength']){
-              <small>
-                Mínimo 6 caracteres
-              </small>
-            }
+          @if(loginForm.get('password')?.errors?.['minlength']){
+          <small>
+            Mínimo 6 caracteres
+          </small>
+          }
 
-            @if(loginForm.get('password')?.errors?.['maxlength']){
-              <small>
-                Máximo 20 caracteres
-              </small>
-            }
+          @if(loginForm.get('password')?.errors?.['maxlength']){
+          <small>
+            Máximo 20 caracteres
+          </small>
+          }
 
-          </div>
+        </div>
 
         }
 
       </div>
-@if(isBrowser){
-  <div class="turnstile-wrapper">
-    <div
-      class="cf-turnstile"
-      [attr.data-sitekey]="siteKey"
-      data-callback="onTurnstileSuccess"
-      data-theme="light">
-    </div>
-  </div>
-}
+
+      @if(isBrowser){
+      <div class="turnstile-wrapper">
+        <div id="turnstile-container"></div>
+      </div>
+      }
+
 
       <!-- BOTÓN -->
-      <button
-        type="submit"
-        class="btn-main"
-        [disabled]="loginForm.invalid || !turnstileToken "
-      >
+      <button type="submit" class="btn-main" [disabled]="loginForm.invalid || !turnstileToken ">
         Ingresar
       </button>
 
@@ -177,17 +150,17 @@
 
     @if(error){
 
-      <p class="error">
-        {{ error }}
-      </p>
+    <p class="error">
+      {{ error }}
+    </p>
 
     }
 
     @if(message){
 
-      <p class="success">
-        {{ message }}
-      </p>
+    <p class="success">
+      {{ message }}
+    </p>
 
     }
 

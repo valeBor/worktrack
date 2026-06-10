@@ -1,42 +1,52 @@
-import {Component, Inject, OnInit, PLATFORM_ID} from '@angular/core';
-import { CommonModule, isPlatformBrowser} from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Router } from '@angular/router';
+import { Location } from '@angular/common';
+import { isPlatformBrowser } from '@angular/common';
+import { Input } from '@angular/core';
+import { AuthService } from '../../services/auth.service';
+import { Role } from '../../models/user.models';
 
 @Component({
   selector: 'app-header',
-  standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [],
   templateUrl: './header.html',
-  styleUrl: './header.css',
+  styleUrl: './header.css'
 })
 export class Header implements OnInit {
 
-  role = '';
-  fecha = '';
+  fecha: string = '';
+  role: Role | '' = '';
 
   constructor(
-    @Inject(PLATFORM_ID)
-    private platformId: Object
+    private authService: AuthService,
+    private router: Router,
+    private location: Location,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
+  @Input() titulo: string = 'WorkTrack';
+  
   ngOnInit(): void {
 
-    // ✔ Verifica que esté ejecutando en navegador
+    this.fecha = new Date().toLocaleDateString();
+    //verifica estar en el navegador
     if (isPlatformBrowser(this.platformId)) {
-
-      this.role =
-        localStorage.getItem('role') || '';
-
+      this.role = localStorage.getItem('role') as Role || '';
     }
 
-    this.fecha =
-      new Date().toLocaleDateString();
-
+  }
+  //pagina atras---ver de reemplazar por inicio..o dashboard principal
+  volver(): void {
+    this.location.back();
   }
 
+
+  //cierra sesion remueve los datos del navegador, no todos solo los necesarios, vuelve al login
   logout(): void {
 
-    localStorage.clear();
+    this.authService.logout();
+
+    this.router.navigate(['/login']);
 
   }
 

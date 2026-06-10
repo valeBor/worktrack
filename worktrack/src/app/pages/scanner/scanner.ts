@@ -2,14 +2,15 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, ViewChild, ViewEncapsulation} from '@angular/core';
 //libreria que lee, libreria para escanear qr
 import {BrowserQRCodeReader, IScannerControls} from '@zxing/browser';
-
+//import { Router } from '@angular/router';
 import { AsistenciaService } from '../../services/asistecia.service';
 import { TipoRegistro } from '../../models/asistencia.model';
+import { Header } from '../../components/header/header';
 
 @Component({
   selector: 'app-scanner',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, Header],
   templateUrl: './scanner.html',
   styleUrl: './scanner.css',
 

@@ -2,42 +2,45 @@
 <header class="topbar">
 
     <div class="logo-section">
+
         <div class="logo-circle">
-            <img src="logoWorkTrack.png" alt="60" class="logo">
+            <img src="logoWorkTrack.png" alt="WorkTrack" class="logo">
         </div>
 
         <div>
-            <h1>WorkTrack</h1>
-            <p>{{fecha}}</p>
+            <h1>{{titulo}}</h1>
+            <p>{{ fecha }}</p><!-- bindeo -->
         </div>
+
     </div>
 
     <div class="topbar-right">
 
         <div class="role-badge">
-            <div class="role-badge">
-
-                @if (role === 'admin') {
+<!-- -->
+            @if (role === 'admin') {
                 <span>Administrador</span>
-                }
+            }
 
-                @else if (role === 'rrhh') {
+            @else if (role === 'rrhh') {
                 <span>Recursos Humanos</span>
-                }
+            }
 
-                @else if (role === 'supervisor') {
+            @else if (role === 'supervisor') {
                 <span>Supervisor</span>
-                }
+            }
 
-                @else {
+            @else {
                 <span>Empleado</span>
-                }
-
-            </div>
+            }
 
         </div>
 
-        <button class="logout-btn">
+        <button class="back-btn" (click)="volver()">
+            ← 
+        </button>
+
+        <button class="logout-btn" (click)="logout()">
             Salir
         </button>
 

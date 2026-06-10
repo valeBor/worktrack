@@ -3,12 +3,12 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Header } from '../../components/header/header';
-import { QrAdmin } from '../../components/qr-admin/qr-admin';
+
 
 @Component({
   selector: 'app-admin',
   standalone:true,
-  imports: [CommonModule, FormsModule, RouterModule, Header,QrAdmin],
+  imports: [CommonModule, FormsModule, RouterModule, Header],
   templateUrl: './admin.html',
   styleUrl: './admin.css',
 })
@@ -18,6 +18,10 @@ constructor(private router: Router){}
 
 irAEmployees(){
   this.router.navigate(['/employee-list']);
+}
+
+irAqrDinamico(){
+  this.router.navigate(['/qr-visor'])
 }
  
 

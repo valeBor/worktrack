@@ -1,22 +1,22 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
-
 import { Header } from '../../components/header/header';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
-  selector: 'app-supervisor',
-  standalone: true,
-  imports: [CommonModule, Header],
-  templateUrl: './supervisor.html',
-  styleUrls: ['./supervisor.css']
+  selector: 'app-employee',
+  standalone:true,  
+  imports: [Header, CommonModule, RouterLink],
+  templateUrl: './employee.html',
+  styleUrl: './employee.css'
 })
-export class SupervisorComponent implements OnInit {
+export class Employee implements OnInit {
 
   hoy = new Date();
 
-  supervisor = {
+  empleado = {
     nombre: '',
     apellido: '',
     email: '',
@@ -60,7 +60,7 @@ export class SupervisorComponent implements OnInit {
 
     }
 
-    this.supervisor = {
+    this.empleado = {
       nombre: user.nombre,
       apellido: user.apellido,
       email: user.email,
@@ -97,9 +97,9 @@ export class SupervisorComponent implements OnInit {
 
 
 
-  gestionCronogramas(): void {
+  gestionCambioDeHorario(): void {
 
-    this.router.navigate(['/cronogramas']);
+    this.router.navigate(['/cambio-horario']);
 
   }
 

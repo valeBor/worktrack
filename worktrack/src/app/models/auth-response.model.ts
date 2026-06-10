@@ -4,6 +4,8 @@ export interface AuthResponse {
   user: {
     id: number;
     email: string;
+    nombre: string;
+    apellido:string;
     role: 'admin' | 'rrhh' | 'supervisor' | 'empleado';
   };
 

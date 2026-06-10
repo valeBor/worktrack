@@ -20,21 +20,21 @@
     <!-- PERFIL -->
     <div class="card perfil-card">
       <div class="avatar">
-        {{ supervisor.iniciales }}
+        {{ empleado.iniciales }}
       </div>
 
       <div class="perfil-info">
 
         <h2>
-          {{ supervisor.nombre }} {{ supervisor.apellido }}
+          {{ empleado.nombre }} {{ empleado.apellido }}
         </h2>
 
         <p>
-          ✉ {{ supervisor.email }}
+          ✉ {{ empleado.email }}
         </p>
 
         <p>
-          👤 {{ supervisor.role }}
+          👤 {{ empleado.role }}
         </p>
 
       </div>
@@ -80,12 +80,12 @@
       </button>
     </div>
 
-    <button class="accion-btn purple full-width" (click)="gestionCronogramas()">
+    <button class="accion-btn purple full-width" (click)="gestionCambioDeHorario()">
       <div class="accion-content">
         <span class="accion-icon"><i class="bi bi-people"></i></span>
         <div>
-          <div class="accion-title">Gestión de Cronogramas</div>
-          <div class="accion-sub">Administrar horarios y solicitudes</div>
+          <div class="accion-title">Cambio de Horario</div>
+          <div class="accion-sub">Solicitar modificación de cronogramas</div>
         </div>
       </div>
       <span class="accion-arrow">›</span>
