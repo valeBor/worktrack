@@ -2,13 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { Header } from '../../components/header/header';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { RouterLink } from '@angular/router';
+
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-employee',
   standalone:true,  
-  imports: [Header, CommonModule, RouterLink],
+  imports: [Header, CommonModule],
   templateUrl: './employee.html',
   styleUrl: './employee.css'
 })

@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { Header } from '../../components/header/header';
 
 @Component({
   selector: 'app-cambio-horario',
   standalone: true,
-  imports: [CommonModule, RouterLink, Header],
+  imports: [CommonModule, Header],
   templateUrl: './cambio-horario.html',
   styleUrl: './cambio-horario.css'
 })

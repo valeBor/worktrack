@@ -3,7 +3,7 @@
 <div class="dashboard-container">
 
   <!-- HEADER -->
-   <app-header></app-header>
+  <app-header></app-header>
 
   <!-- CONTENIDO -->
   <main class="dashboard-content">
@@ -28,35 +28,37 @@
 
     </section>
 
-    <!-- QR 
-
-    <section class="card">
-
-  <app-qr-admin></app-qr-admin>
-
-</section>
--->
-
     <!-- PERFIL -->
     <section class="card profile-card">
 
       <div class="avatar">
-        JP
+        {{ admin.iniciales }}
       </div>
 
       <div class="profile-info">
-        <h3>Juan Pérez</h3>
-        <p>juan.perez@empresa.com</p>
-        <p>Mi Empresa S.A</p>
-        <p>Administrador</p>
+
+        <h2>
+          {{ admin.nombre }} {{ admin.apellido }}
+        </h2>
+
+        <p>
+          ✉ {{ admin.email }}
+        </p>
+
+        <p>
+          👤 {{ admin.role }}
+        </p>
+
       </div>
 
     </section>
+
+    <!-- QR -->
     <section class="admin-panel" (click)="irAqrDinamico()">
 
       <div>
-        <h2>QR </h2>
-        <p></p>
+        <h2>QR</h2>
+        <p>Generar código QR dinámico</p>
       </div>
 
       <span class="arrow">
@@ -64,7 +66,6 @@
       </span>
 
     </section>
-
 
     <!-- PANEL ADMIN -->
     <section class="admin-panel" (click)="irAEmployees()">
@@ -83,19 +84,25 @@
     <!-- RESUMEN -->
     <section class="card summary-card">
 
-      <div class="summary-item">
-        <h3>45</h3>
-        <p>Empleados activos</p>
-      </div>
+      <h3>Resumen general</h3>
 
-      <div class="summary-item">
-        <h3>98%</h3>
-        <p>Asistencia general</p>
-      </div>
+      <div class="summary-grid">
 
-      <div class="summary-item">
-        <h3>3</h3>
-        <p>Solicitudes pendientes</p>
+        <div class="summary-item">
+          <span class="summary-number purple-text">45</span>
+          <span class="summary-label">Empleados activos</span>
+        </div>
+
+        <div class="summary-item">
+          <span class="summary-number purple-text">98%</span>
+          <span class="summary-label">Asistencia general</span>
+        </div>
+
+        <div class="summary-item">
+          <span class="summary-number purple-text">3</span>
+          <span class="summary-label">Solicitudes pendientes</span>
+        </div>
+
       </div>
 
     </section>
