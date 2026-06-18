@@ -8,8 +8,8 @@
         </div>
 
         <div>
-            <h1>{{titulo}}</h1>
-            <p>{{ fecha }}</p><!-- bindeo -->
+            <h1>{{ titulo }}</h1>
+            <p>{{ fecha }}</p>
         </div>
 
     </div>
@@ -17,32 +17,42 @@
     <div class="topbar-right">
 
         <div class="role-badge">
-<!-- -->
             @if (role === 'admin') {
-                <span>Administrador</span>
+            <span>Administrador</span>
             }
-
             @else if (role === 'rrhh') {
-                <span>Recursos Humanos</span>
+            <span>Recursos Humanos</span>
             }
-
             @else if (role === 'supervisor') {
-                <span>Supervisor</span>
+            <span>Supervisor</span>
             }
-
             @else {
-                <span>Empleado</span>
+            <span>Empleado</span>
             }
-
         </div>
 
-        <button class="back-btn" (click)="volver()">
-            ← 
-        </button>
+        <div class="header-actions">
 
-        <button class="logout-btn" (click)="logout()">
-            Salir
-        </button>
+            <button class="icon-btn" type="button">
+                <i class="bi bi-bell"></i>
+
+                @if (cantidadNotificaciones > 0) {
+                <span class="notification-dot"></span>
+                }
+            </button>
+
+            @if (mostrarVolver) {
+            <button class="back-btn" type="button" (click)="volver()">
+                <i class="bi bi-arrow-left"></i>
+            
+            </button>
+            }
+            <button class="logout-btn" type="button" (click)="logout()">
+                <i class="bi bi-box-arrow-right"></i>
+                Salir
+            </button>
+
+        </div>
 
     </div>
 

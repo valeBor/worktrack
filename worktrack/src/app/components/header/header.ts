@@ -1,8 +1,6 @@
-import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, Inject, OnInit, PLATFORM_ID, Input } from '@angular/core';
 import { Router } from '@angular/router';
-import { Location } from '@angular/common';
-import { isPlatformBrowser } from '@angular/common';
-import { Input } from '@angular/core';
+import { Location, isPlatformBrowser } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { Role } from '../../models/user.models';
 
@@ -14,6 +12,10 @@ import { Role } from '../../models/user.models';
 })
 export class Header implements OnInit {
 
+  @Input() titulo: string = 'WorkTrack';
+  @Input() cantidadNotificaciones: number = 0;
+  @Input() mostrarVolver: boolean = false;
+
   fecha: string = '';
   role: Role | '' = '';
 
@@ -24,30 +26,28 @@ export class Header implements OnInit {
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
-  @Input() titulo: string = 'WorkTrack';
-  
   ngOnInit(): void {
 
-    this.fecha = new Date().toLocaleDateString();
-    //verifica estar en el navegador
+    this.fecha = new Date().toLocaleDateString('es-AR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+
     if (isPlatformBrowser(this.platformId)) {
       this.role = localStorage.getItem('role') as Role || '';
     }
 
   }
-  //pagina atras---ver de reemplazar por inicio..o dashboard principal
+
   volver(): void {
     this.location.back();
   }
 
-
-  //cierra sesion remueve los datos del navegador, no todos solo los necesarios, vuelve al login
   logout(): void {
-
     this.authService.logout();
-
     this.router.navigate(['/login']);
-
   }
 
 }

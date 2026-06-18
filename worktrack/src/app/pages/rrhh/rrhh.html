@@ -1,1 +1,157 @@
-<p>rrhh works!</p>
+<div class="rrhh-page">
+
+  <!-- HEADER -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">
+        <i class="bi bi-qr-code"></i>
+      </div>
+
+      <div>
+        <h1>WorkTrack</h1>
+        <p>jueves, {{ fechaActual }}</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <span class="role-badge">RRHH</span>
+
+      <button class="icon-btn">
+        <i class="bi bi-bell"></i>
+        <span class="notification-dot"></span>
+      </button>
+
+      <button class="logout-btn">
+        <i class="bi bi-box-arrow-right"></i>
+        Salir
+      </button>
+    </div>
+  </header>
+
+  <main class="content">
+
+    <!-- ALERTAS -->
+    <section class="alert-card">
+      <div class="alert-icon">
+        <i class="bi bi-exclamation-triangle"></i>
+      </div>
+
+      <div>
+        <div class="alert-title">
+          <h2>Alertas de RRHH</h2>
+          <span>4 nuevas</span>
+        </div>
+
+        <ul>
+          <li>3 empleados con llegadas tarde</li>
+          <li>2 solicitudes de cambio de horario pendientes</li>
+          <li>1 ausencia sin justificar</li>
+        </ul>
+
+        <button>Ver todas las alertas</button>
+      </div>
+    </section>
+
+    <!-- PERFIL -->
+    <section class="profile-card">
+      <div class="avatar">RH</div>
+
+      <div>
+        <h3>{{ rrhh.nombre }}</h3>
+        <p><i class="bi bi-envelope"></i> {{ rrhh.email }}</p>
+        <p><i class="bi bi-building"></i> {{ rrhh.empresa }}</p>
+        <p><i class="bi bi-person-badge"></i> Área RRHH</p>
+      </div>
+    </section>
+
+    <!-- ESTADO GENERAL -->
+    <section class="today-card">
+      <h3>
+        <i class="bi bi-calendar-check"></i>
+        Estado general de hoy
+      </h3>
+
+      <div class="today-grid">
+        <div class="today-box">
+          <span>Presentes</span>
+          <strong>{{ resumenMes.presentes }}</strong>
+        </div>
+
+        <div class="today-box">
+          <span>Ausencias</span>
+          <strong>{{ resumenMes.ausencias }}</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACCIONES RRHH -->
+    <section class="actions-grid">
+
+      <a routerLink="/asistencias" class="action-card green">
+        <div>
+          <i class="bi bi-clipboard-check"></i>
+          <h3>Asistencia</h3>
+          <p>Ver asistencia de empleados</p>
+        </div>
+        <i class="bi bi-chevron-right"></i>
+      </a>
+
+      <a routerLink="/cambios-horario" class="action-card blue">
+        <div>
+          <i class="bi bi-clock-history"></i>
+          <h3>Cambios de horario</h3>
+          <p>Vista de solicitudes y cambios</p>
+        </div>
+        <i class="bi bi-chevron-right"></i>
+      </a>
+
+      <a routerLink="/historial-horarios" class="action-card violet">
+        <div>
+          <i class="bi bi-journal-text"></i>
+          <h3>Historial de horarios</h3>
+          <p>Ver cambios realizados</p>
+        </div>
+        <i class="bi bi-chevron-right"></i>
+      </a>
+
+      <a routerLink="/informes" class="action-card orange">
+        <div>
+          <i class="bi bi-file-earmark-bar-graph"></i>
+          <h3>Informes</h3>
+          <p>Reportes, alertas y modificaciones</p>
+        </div>
+        <i class="bi bi-chevron-right"></i>
+      </a>
+
+    </section>
+
+    <!-- RESUMEN MES -->
+    <section class="month-card">
+      <h3>Este mes</h3>
+
+      <div class="month-grid">
+        <div>
+          <strong>{{ resumenMes.empleados }}</strong>
+          <span>Empleados</span>
+        </div>
+
+        <div>
+          <strong>{{ resumenMes.presentes }}</strong>
+          <span>Presentes hoy</span>
+        </div>
+
+        <div>
+          <strong>{{ resumenMes.ausencias }}</strong>
+          <span>Ausencias</span>
+        </div>
+
+        <div>
+          <strong>{{ resumenMes.modificaciones }}</strong>
+          <span>Modificaciones</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+</div>
