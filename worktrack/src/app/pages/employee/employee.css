@@ -62,7 +62,12 @@
 }
 
 /* PERFIL */
-.perfil-card { display: flex; align-items: center; gap: 22px; }
+.perfil-card { 
+  display: flex; 
+  flex-direction: row;
+  align-items: center; 
+  gap: 100px;/*distancia entre los elementos dentro de la tarjeta (card)*/ 
+}
 
 .avatar {
   background: linear-gradient(135deg, #14b8a6, #22c55e);

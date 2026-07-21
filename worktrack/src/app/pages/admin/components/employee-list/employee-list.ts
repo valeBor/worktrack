@@ -88,35 +88,69 @@ export class EmployeeList implements OnInit {
   }
 
 
+private filterEmployeesByStatus(status: boolean): User[] {
+
+  const search = this.searchText
+    .trim()
+    .toLowerCase();
+
+  return this.employees.filter((employee) => {
+
+    const fullName = `
+      ${employee.nombre ?? ''}
+      ${employee.apellido ?? ''}
+    `.toLowerCase();
+
+    const email = (employee.email ?? '').toLowerCase();
+    const role = (employee.role ?? '').toLowerCase();
+
+    const matchesSearch =
+      fullName.includes(search) ||
+      email.includes(search) ||
+      role.includes(search);
+
+    const matchesStatus =
+      Boolean(employee.estado) === status;
+
+    return matchesSearch && matchesStatus;
+
+  });
+
+}
 
 
-  filteredEmployees() {
+get activeEmployees(): User[] {
 
-    return this.employees.filter(employee =>
+  return this.filterEmployeesByStatus(true);
 
-      employee.nombre
-        .toLowerCase()
-        .includes(this.searchText.toLowerCase())
+}
 
-    );
 
-  }
+get inactiveEmployees(): User[] {
+
+  return this.filterEmployeesByStatus(false);
+
+}
+
+  
 
 
   showFormAgregar(): void {
 
-    this.showFormAdd = true;
-    this.viewListEmp = false;
+  this.showFormAdd = true;
+  this.viewListEmp = false;
+  this.showComponentchild = false;
 
-  }
+}
 
 
-  viewListemployee(): void {
+viewListemployee(): void {
 
-    this.viewListEmp = true;
-    this.showFormAdd = false;
+  this.viewListEmp = true;
+  this.showFormAdd = false;
+  this.showComponentchild = false;
 
-  }
+}
 
 
 
@@ -149,23 +183,26 @@ export class EmployeeList implements OnInit {
   }
 
 
+ 
+
   cancelFormAdd(): void {
 
-    this.employeeNew = {
+  this.employeeNew = {
 
-      nombre: "",
-      apellido: "",
-      email: "",
-      password: "",
-      estado: false,
-      role: null,
+    nombre: '',
+    apellido: '',
+    email: '',
+    password: '',
+    estado: false,
+    role: null,
+    rol_id: null
 
-    };
+  };
 
-    this.showFormAdd = false;
-    this.viewListEmp = true;
+  this.showFormAdd = false;
+  this.viewListEmp = true;
 
-  }
+}
 
 
   editEmployee(employeeToEdit: User): void {
