@@ -62,7 +62,10 @@
 }
 
 /* PERFIL */
-.perfil-card { display: flex; align-items: center; gap: 22px; }
+.perfil-card { display: flex; 
+  flex-direction: row;
+  align-items: center; 
+  gap: 100px; }
 
 .avatar {
   background: linear-gradient(135deg, #14b8a6, #22c55e);

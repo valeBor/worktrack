@@ -94,8 +94,9 @@
 
 .perfil-card {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 22px;
+  gap: 100px;
 }
 
 .avatar {

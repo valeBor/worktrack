@@ -6,6 +6,44 @@
 
   <main class="content">
 
+    <!-- ACCIONES -->
+    <div class="acciones-grid">
+      <button class="accion-btn green" (click)="escanearQR()">
+        <div class="accion-content">
+          <span class="accion-icon"><i class="bi bi-qr-code"></i></span>
+          <div>
+            <div class="accion-title">Escanear QR</div>
+            <div class="accion-sub">Marcar entrada</div>
+          </div>
+        </div>
+        <span class="accion-arrow">›</span>
+      </button>
+
+      <button class="accion-btn blue" (click)="verHistorial()">
+        <div class="accion-content">
+          <span class="accion-icon"><i class="bi bi-clock-history"></i></span>
+          <div>
+            <div class="accion-title">Historial</div>
+            <div class="accion-sub">Ver asistencias</div>
+          </div>
+        </div>
+        <span class="accion-arrow">›</span>
+      </button>
+    </div>
+
+    <button class="accion-btn purple full-width" (click)="gestionCronogramas()">
+      <div class="accion-content">
+        <span class="accion-icon"><i class="bi bi-people"></i></span>
+        <div>
+          <div class="accion-title">Gestión de Cronogramas</div>
+          <div class="accion-sub">Administrar horarios y solicitudes</div>
+        </div>
+      </div>
+      <span class="accion-arrow">›</span>
+    </button>
+
+
+
     <!-- ALERTA -->
     <div class="alert-card">
       <div class="alert-header">
@@ -57,42 +95,7 @@
       </div>
     </div>
 
-    <!-- ACCIONES -->
-    <div class="acciones-grid">
-      <button class="accion-btn green" (click)="escanearQR()">
-        <div class="accion-content">
-          <span class="accion-icon"><i class="bi bi-qr-code"></i></span>
-          <div>
-            <div class="accion-title">Escanear QR</div>
-            <div class="accion-sub">Marcar entrada</div>
-          </div>
-        </div>
-        <span class="accion-arrow">›</span>
-      </button>
-
-      <button class="accion-btn blue" (click)="verHistorial()">
-        <div class="accion-content">
-          <span class="accion-icon"><i class="bi bi-clock-history"></i></span>
-          <div>
-            <div class="accion-title">Historial</div>
-            <div class="accion-sub">Ver asistencias</div>
-          </div>
-        </div>
-        <span class="accion-arrow">›</span>
-      </button>
-    </div>
-
-    <button class="accion-btn purple full-width" (click)="gestionCronogramas()">
-      <div class="accion-content">
-        <span class="accion-icon"><i class="bi bi-people"></i></span>
-        <div>
-          <div class="accion-title">Gestión de Cronogramas</div>
-          <div class="accion-sub">Administrar horarios y solicitudes</div>
-        </div>
-      </div>
-      <span class="accion-arrow">›</span>
-    </button>
-
+    
     <!-- ESTADÍSTICAS -->
     <div class="card stats-card">
       <h3>Este mes</h3>
