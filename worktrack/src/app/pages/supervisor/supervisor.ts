@@ -99,7 +99,7 @@ export class SupervisorComponent implements OnInit {
 
   gestionCronogramas(): void {
 
-    this.router.navigate(['/cronogramas']);
+    this.router.navigate(['/gestion-cronogramas']);
 
   }
 

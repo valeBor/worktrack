@@ -1,48 +1,156 @@
 const pool = require("../config/db");
 
-// Buscar asistencia del usuario en el día actual
-exports.buscarAsistenciaHoy = async (usuarioId) => {
+
+/**
+ * Busca la asistencia del usuario para una fecha determinada.
+ */
+exports.buscarAsistenciaPorFecha = async (
+  connection,
+  usuarioId,
+  fecha
+) => {
+
+  const db = connection || pool;
+
   const sql = `
-    SELECT *
+    SELECT
+      id,
+      usuario_id,
+      red_id,
+      fecha,
+      hora_entrada,
+      hora_salida,
+      tipo_asistencia,
+      ubicacion,
+      ip_detectada,
+      estado
     FROM asistencia
     WHERE usuario_id = ?
-    AND fecha = CURDATE()
+      AND fecha = ?
     LIMIT 1
   `;
 
-  const [rows] = await pool.query(sql, [usuarioId]);
+  const [rows] = await db.query(sql, [
+    usuarioId,
+    fecha
+  ]);
 
   return rows[0];
 };
 
-// Registrar entrada
-exports.registrarEntrada = async (usuarioId, tipoAsistencia = "presencial", ubicacion = null) => {
+
+/**
+ * Busca el horario asignado al usuario
+ * para un día específico.
+ */
+exports.buscarHorarioHoy = async (
+  connection,
+  usuarioId,
+  diaSemana
+) => {
+
+  const db = connection || pool;
+
   const sql = `
-    INSERT INTO asistencia 
-    (usuario_id, fecha, hora_entrada, tipo_asistencia, ubicacion, estado)
-    VALUES (?, CURDATE(), CURTIME(), ?, ?, ?)
+    SELECT
+      id,
+      usuario_id,
+      dia_semana,
+      hora_entrada,
+      hora_salida,
+      tolerancia_minutos,
+      modalidad
+    FROM horarios
+    WHERE usuario_id = ?
+      AND LOWER(dia_semana) = LOWER(?)
+    LIMIT 1
   `;
 
-  const [result] = await pool.query(sql, [
+  const [rows] = await db.query(sql, [
     usuarioId,
+    diaSemana
+  ]);
+
+  return rows[0];
+};
+
+
+/**
+ * Registra la entrada del empleado.
+ */
+exports.registrarEntrada = async (
+  connection,
+  usuarioId,
+  redId,
+  fecha,
+  horaEntrada,
+  tipoAsistencia,
+  ubicacion,
+  ipDetectada,
+  estado
+) => {
+
+  const db = connection || pool;
+
+  const sql = `
+    INSERT INTO asistencia (
+      usuario_id,
+      red_id,
+      fecha,
+      hora_entrada,
+      hora_salida,
+      tipo_asistencia,
+      ubicacion,
+      ip_detectada,
+      estado
+    )
+    VALUES (?, ?, ?, ?, NULL, ?, ?, ?, ?)
+  `;
+
+  const [result] = await db.query(sql, [
+    usuarioId,
+    redId,
+    fecha,
+    horaEntrada,
     tipoAsistencia,
     ubicacion,
-    "presente"
+    ipDetectada,
+    estado
   ]);
 
   return result;
 };
 
-// Registrar salida
-//modifica el registro de asistencia, sin entrada no puede registrar salida
-exports.registrarSalida = async (asistenciaId) => {
+
+/**
+ * Registra la salida modificando
+ * la asistencia existente.
+ */
+exports.registrarSalida = async (
+  connection,
+  asistenciaId,
+  horaSalida,
+  redId,
+  ipDetectada
+) => {
+
+  const db = connection || pool;
+
   const sql = `
     UPDATE asistencia
-    SET hora_salida = CURTIME()
+    SET
+      hora_salida = ?,
+      red_id = ?,
+      ip_detectada = ?
     WHERE id = ?
   `;
 
-  const [result] = await pool.query(sql, [asistenciaId]);
+  const [result] = await db.query(sql, [
+    horaSalida,
+    redId,
+    ipDetectada,
+    asistenciaId
+  ]);
 
   return result;
 };

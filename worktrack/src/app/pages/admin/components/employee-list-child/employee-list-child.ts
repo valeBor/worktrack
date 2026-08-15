@@ -1,43 +1,64 @@
+import {Component, Input, Output, EventEmitter} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { User } from '../../../../models/user.models';
-import { EventEmitter } from '@angular/core';
+
 
 @Component({
   selector: 'app-employee-list-child',
-  imports: [CommonModule, FormsModule],
+  standalone: true,
+  imports: [CommonModule,FormsModule],
   templateUrl: './employee-list-child.html',
-  styleUrl: './employee-list-child.css',
+  styleUrl: './employee-list-child.css'
 })
+
 export class EmployeeListChild {
+  // Usuario recibido desde employee-list.
 
-/*input...empleado que viene del componente employeeList principal*/ 
-  @Input() employeeToEdit!: User;
-/**output envia a traves de un evento la modificacion del registro al componente principal employeeList */
-  @Output() employeeEdit = new EventEmitter<User>();
+  @Input()
+  employeeToEdit!: User;
 
-  @Output() closeEmployeeListChild = new EventEmitter<void>();
+  // Envía el usuario modificado
+  // al componente padre.
+
+  @Output()
+  employeeEdit =
+    new EventEmitter<User>();
+
+  @Output()
+  closeEmployeeListChild =
+    new EventEmitter<void>();
 
 
-  editEmployee(employeeTomodified: User) {
-    /**crea otro objeto lo modifica */
-    let employeeModified: User = {
-      id: employeeTomodified.id,
-      nombre: employeeTomodified.nombre,
-      apellido: employeeTomodified.apellido,      
-      email: employeeTomodified.email,
-      password: employeeTomodified.password,
-      estado: employeeTomodified.estado,
-      role: employeeTomodified.role,
-      rol_id:employeeTomodified.rol_id
+  // ====================================================
+  // MODIFICAR
+  // ====================================================
 
-    };
-    this.employeeEdit.emit(employeeModified);
+  editEmployee(employeeToModified: User): void {
+
+    const employeeModified: User = {
+      id: employeeToModified.id,
+      nombre: employeeToModified.nombre,
+      apellido: employeeToModified.apellido, 
+      email: employeeToModified.email,
+      password:employeeToModified.password,
+      estado:employeeToModified.estado,
+      role:employeeToModified.role,
+      rol_id: employeeToModified.rol_id
+    }; 
+
+    this.employeeEdit.emit(
+      employeeModified
+    );
 
   }
 
-  cerrar() {
+
+  // ====================================================
+  // CERRAR
+  // ====================================================
+
+  cerrar(): void {
 
     this.closeEmployeeListChild.emit();
 

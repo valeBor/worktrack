@@ -9,6 +9,7 @@ import { SupervisorComponent } from './pages/supervisor/supervisor';
 import { Employee } from './pages/employee/employee';
 import { QrVisor } from './pages/qr-visor/qr-visor';
 import { CambioHorario } from './pages/cambio-horario/cambio-horario';
+import { GestionCronogramas } from './pages/gestion-cronogramas/gestion-cronogramas';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -21,5 +22,6 @@ export const routes: Routes = [
   { path: 'supervisor', component: SupervisorComponent },
   { path: 'employee', component: Employee },
   {path:'qr-visor', component: QrVisor},
-  {path: 'cambio-horario', component: CambioHorario}
+  {path: 'cambio-horario', component: CambioHorario},
+  {path: 'gestion-cronogramas', component: GestionCronogramas}
 ];

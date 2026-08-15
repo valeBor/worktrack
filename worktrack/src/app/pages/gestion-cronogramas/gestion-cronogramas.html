@@ -1,0 +1,566 @@
+<app-header [mostrarVolver]="true">
+</app-header>
+
+<div class="cronograma-page">
+  <!-- ================================================= -->
+  <!-- TÍTULO -->
+  <!-- ================================================= -->
+  <section class="page-title">
+    <div>
+      <h1>Gestión de Cronogramas</h1>
+      <p>Panel de supervisor</p>
+    </div>
+  </section>
+  <!-- ================================================= -->
+  <!-- TABS -->
+  <!-- ================================================= -->
+  <section class="tabs-card">
+
+    <button class="tab-btn" [class.active-blue]="tabActiva === 'cronogramas'" (click)="cambiarTab('cronogramas')">
+
+      <i class="bi bi-calendar3"></i>
+
+      Cronogramas
+
+    </button>
+
+
+    <button class="tab-btn" [class.active-green]="tabActiva === 'solicitudes'" (click)="cambiarTab('solicitudes')">
+
+      <i class="bi bi-clipboard2-check"></i>
+
+      Solicitudes
+
+      <span class="badge">
+        2
+      </span>
+
+    </button>
+
+
+    <button class="tab-btn" [class.active-orange]="tabActiva === 'manual'" (click)="cambiarTab('manual')">
+
+      <i class="bi bi-exclamation-triangle"></i>
+
+      Registro Manual
+
+    </button>
+
+  </section>
+
+
+  <!-- ================================================= -->
+  <!-- CRONOGRAMAS -->
+  <!-- ================================================= -->
+
+  <ng-container *ngIf="tabActiva === 'cronogramas'">
+
+
+    <!-- ================================================= -->
+    <!-- CABECERA DEL MES -->
+    <!-- ================================================= -->
+
+    <section class="month-card">
+
+      <div class="month-navigation">
+
+        <button type="button" class="arrow-btn" (click)="mesAnterior()">
+
+          ←
+
+        </button>
+
+
+        <h2>
+          {{ mesActual }}
+        </h2>
+
+        <button type="button" class="arrow-btn" (click)="mesSiguiente()">
+
+          →
+
+        </button>
+
+      </div>
+
+
+      <button type="button" class="create-btn" (click)="abrirFormulario()">
+
+        + Crear cronograma para empleado
+
+      </button>
+
+    </section>
+
+
+    <!-- ================================================= -->
+    <!-- MENSAJES -->
+    <!-- ================================================= -->
+
+    <div class="mensaje-exito" *ngIf="mensaje">
+
+      {{ mensaje }}
+
+    </div>
+
+
+    <div class="mensaje-error" *ngIf="error">
+
+      {{ error }}
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- FORMULARIO CREAR HORARIO -->
+    <!-- ================================================= -->
+
+    <section class="form-card" *ngIf="mostrarFormulario">
+
+
+      <!-- CABECERA FORMULARIO -->
+
+      <div class="form-header">
+
+        <div>
+
+          <h2>
+            Nuevo cronograma
+          </h2>
+
+          <p>
+            Asignar horario y modalidad al empleado
+          </p>
+
+        </div>
+
+
+        <button type="button" class="close-btn" (click)="cerrarFormulario()">
+
+          ✕
+
+        </button>
+
+      </div>
+
+
+      <!-- ================================================= -->
+      <!-- CAMPOS -->
+      <!-- ================================================= -->
+
+      <div class="form-grid">
+
+
+        <!-- ================================================= -->
+        <!-- EMPLEADO -->
+        <!-- ================================================= -->
+
+        <div class="form-group">
+
+          <label>
+            Empleado *
+          </label>
+
+
+          <select [(ngModel)]="nuevoHorario.usuario_id" name="usuario_id">
+
+            <option [ngValue]="null">
+
+              Seleccionar empleado...
+
+            </option>
+
+
+            <option *ngFor="let empleado of empleados" [ngValue]="empleado.id">
+
+              {{ empleado.nombre }}
+              {{ empleado.apellido }}
+
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- MODALIDAD -->
+        <!-- ================================================= -->
+
+        <div class="form-group">
+
+          <label>
+            Modalidad *
+          </label>
+
+
+          <select [(ngModel)]="nuevoHorario.modalidad" name="modalidad">
+
+            <option value="PRESENCIAL">
+              Presencial
+            </option>
+
+            <option value="HOME">
+              Home
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- DÍAS DE LA SEMANA -->
+        <!-- ================================================= -->
+
+        <div class="form-group dias-group">
+
+          <label>
+            Días de la semana *
+          </label>
+
+
+          <div class="dias-actions">
+
+            <button type="button" class="small-btn" (click)="seleccionarLaborables()">
+
+              Lunes a viernes
+
+            </button>
+
+
+            <button type="button" class="small-btn" (click)="seleccionarTodos()">
+
+              Todos
+
+            </button>
+
+          </div>
+
+
+          <div class="dias-grid">
+
+            <label class="dia-checkbox" *ngFor="let dia of diasDisponibles">
+
+              <input type="checkbox" [checked]="
+                  nuevoHorario.dias_semana.includes(
+                    dia.valor
+                  )
+                " (change)="
+                  toggleDia(
+                    dia.valor,
+                    $any($event.target).checked
+                  )
+                ">
+
+
+              <span>
+                {{ dia.nombre }}
+              </span>
+
+            </label>
+
+          </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- HORA ENTRADA -->
+        <!-- ================================================= -->
+
+        <div class="form-group">
+
+          <label>
+            Hora de entrada *
+          </label>
+
+
+          <input type="time" [(ngModel)]="nuevoHorario.hora_entrada" name="hora_entrada">
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- HORA SALIDA -->
+        <!-- ================================================= -->
+
+        <div class="form-group">
+
+          <label>
+            Hora de salida *
+          </label>
+
+
+          <input type="time" [(ngModel)]="nuevoHorario.hora_salida" name="hora_salida">
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- TOLERANCIA -->
+        <!-- ================================================= -->
+
+        <div class="form-group">
+
+          <label>
+            Tolerancia (minutos)
+          </label>
+
+
+          <input type="number" min="0" [(ngModel)]="nuevoHorario.tolerancia_minutos" name="tolerancia_minutos">
+
+        </div>
+
+      </div>
+
+
+      <!-- ================================================= -->
+      <!-- INFORMACIÓN MODALIDAD -->
+      <!-- ================================================= -->
+
+      <div class="modalidad-info">
+
+
+        <p *ngIf="nuevoHorario.modalidad === 'PRESENCIAL'">
+
+          <strong>
+            Presencial:
+          </strong>
+
+          el empleado deberá registrar asistencia
+          mediante QR y estar conectado a una
+          red local autorizada.
+
+        </p>
+
+
+        <p *ngIf="nuevoHorario.modalidad === 'HOME'">
+
+          <strong>
+            Home:
+          </strong>
+
+          el empleado registrará la asistencia
+          sin QR y deberá estar conectado a una
+          VPN autorizada.
+
+        </p>
+
+      </div>
+
+
+      <!-- ================================================= -->
+      <!-- BOTONES -->
+      <!-- ================================================= -->
+
+      <div class="form-actions">
+
+
+        <button type="button" class="cancel-btn" [disabled]="guardando" (click)="cerrarFormulario()">
+
+          Cancelar
+
+        </button>
+
+
+        <button type="button" class="save-btn" [disabled]="guardando" (click)="guardarCronograma()">
+
+          {{
+          guardando
+          ? 'Guardando...'
+          : 'Guardar cronograma'
+          }}
+
+        </button>
+
+      </div>
+
+    </section>
+
+    <!-- ================================================= -->
+    <!-- LISTADO REAL DE CRONOGRAMAS -->
+    <!-- ================================================= -->
+
+
+    <!-- SIN HORARIOS -->
+
+    <div class="sin-cronogramas" *ngIf="horariosAgrupados.length === 0">
+
+      No hay cronogramas asignados.
+
+    </div>
+
+
+    <!-- EMPLEADOS -->
+
+    <section class="employee-card" *ngFor="
+    let grupo of horariosAgrupados
+  ">
+
+
+      <!-- =============================================== -->
+      <!-- CABECERA EMPLEADO -->
+      <!-- =============================================== -->
+
+      <div class="employee-header">
+
+
+        <!-- INICIALES -->
+
+        <div class="employee-avatar">
+
+          {{
+          obtenerIniciales(
+          grupo.nombre,
+          grupo.apellido
+          )
+          }}
+
+        </div>
+
+
+        <!-- DATOS -->
+
+        <div>
+
+          <h3>
+
+            {{ grupo.nombre }}
+            {{ grupo.apellido }}
+
+          </h3>
+
+
+          <span>
+
+            {{ mesActual }}
+
+          </span>
+
+        </div>
+
+
+        <!-- ACCIONES -->
+
+        <div class="employee-actions">
+
+
+          <button type="button" title="Editar cronograma">
+
+            <i class="bi bi-pencil"></i>
+
+          </button>
+
+
+          <button type="button" title="Eliminar cronograma">
+
+            <i class="bi bi-trash"></i>
+
+          </button>
+
+
+        </div>
+
+      </div>
+
+
+      <!-- =============================================== -->
+      <!-- HORARIOS -->
+      <!-- =============================================== -->
+
+      <div class="schedule-grid">
+
+
+        <div class="schedule-day" *ngFor="
+        let horario of grupo.horarios
+      ">
+
+
+          <!-- DÍA -->
+
+          <span>
+
+            {{
+            mostrarDia(
+            horario.dia_semana
+            )
+            }}
+
+          </span>
+
+
+          <!-- HORARIO -->
+
+          <strong>
+
+            {{
+            horario.hora_entrada
+            | slice:0:5
+            }}
+
+            -
+
+            {{
+            horario.hora_salida
+            | slice:0:5
+            }}
+
+          </strong>
+
+
+          <!-- MODALIDAD -->
+
+          <small>
+
+            {{ horario.modalidad }}
+
+          </small>
+
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+  </ng-container>
+
+
+  <!-- ================================================= -->
+  <!-- SOLICITUDES -->
+  <!-- ================================================= -->
+
+  <section *ngIf="tabActiva === 'solicitudes'">
+
+    <h2>
+      Solicitudes
+    </h2>
+
+    <p>
+      Esta sección la conectaremos
+      en el siguiente paso.
+    </p>
+
+  </section>
+
+
+  <!-- ================================================= -->
+  <!-- REGISTRO MANUAL -->
+  <!-- ================================================= -->
+
+  <section *ngIf="tabActiva === 'manual'">
+
+    <h2>
+      Registro manual
+    </h2>
+
+    <p>
+      Esta sección la conectaremos
+      posteriormente.
+    </p>
+
+  </section>
+
+</div>

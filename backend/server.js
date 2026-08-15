@@ -4,6 +4,8 @@ const express = require('express');
 const cors = require('cors');
 const qrRoutes = require("./routes/qr.router");
 const asistenciaRoutes = require("./routes/asistencia.router");
+const horarioRoutes =
+  require("./routes/horario.router");
 
 require('./config/db');
 
@@ -24,12 +26,9 @@ app.get("/prueba", (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
-
-
-
 app.use("/api/asistencias", asistenciaRoutes);
 
-
+app.use("/api/horarios", horarioRoutes);
 
 app.get('/', (req, res) => {
   res.send('API WORKTRACK FUNCIONANDO');

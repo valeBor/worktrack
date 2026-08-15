@@ -42,20 +42,44 @@ CREATE TABLE IF NOT EXISTS horarios (
   hora_salida TIME,
   dia_semana VARCHAR(10) NOT NULL,
   tolerancia_minutos INT NOT NULL,
+
+  modalidad ENUM('PRESENCIAL', 'HOME') NOT NULL DEFAULT 'PRESENCIAL',
+
   FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
+
+-- 🔹 REDES AUTORIZADAS
+CREATE TABLE IF NOT EXISTS redes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(100) NOT NULL,
+  tipo ENUM('LOCAL', 'VPN') NOT NULL,
+  ip_rango VARCHAR(50) NOT NULL,
+  estado BOOLEAN NOT NULL DEFAULT TRUE,
+
+  UNIQUE KEY uk_red_tipo_rango (tipo, ip_rango)
+);
+
 
 -- 🔹 ASISTENCIA
 CREATE TABLE IF NOT EXISTS asistencia (
   id INT AUTO_INCREMENT PRIMARY KEY,
   usuario_id INT,
+  red_id INT,
+
   fecha DATE,
   hora_entrada TIME,
   hora_salida TIME,
   tipo_asistencia VARCHAR(20),
   ubicacion VARCHAR(100),
+  ip_detectada VARCHAR(45),
   estado VARCHAR(20),
-  FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+
+  FOREIGN KEY (red_id)
+    REFERENCES redes(id)
+    ON UPDATE CASCADE
+    ON DELETE SET NULL
 );
 
 -- 🔹 SOLICITUDES

@@ -49,7 +49,7 @@ h2 {
   margin-bottom: 20px;
 }
 
-/* Roles */
+/* Roles 
 .roles {
   display: flex;
   justify-content: space-between;
@@ -71,16 +71,16 @@ h2 {
   margin-top: 5px;
 }
 
-/* Activo */
+/* Activo 
 .role.active {
   border-color: #28a745;
   background: #e9f7ef;
 }
 
-/* Hover */
+/* Hover 
 .role:hover {
   border-color: #28a745;
-}
+}*/
 
 /* Inputs */
 .input-group {

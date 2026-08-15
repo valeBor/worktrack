@@ -2,46 +2,64 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+
 import { Header } from '../../../../components/header/header';
 import { User } from '../../../../models/user.models';
 import { EmployeeListChild } from '../employee-list-child/employee-list-child';
 import { UserService } from '../../../../services/user-service';
 
+
 @Component({
   selector: 'app-employee-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, Header, EmployeeListChild],
+  imports: [
+    CommonModule,
+    FormsModule,
+    Header,
+    EmployeeListChild
+  ],
   templateUrl: './employee-list.html',
   styleUrl: './employee-list.css'
 })
 export class EmployeeList implements OnInit {
 
+
   showFormAdd: boolean = false;
   showComponentchild: boolean = false;
   viewListEmp: boolean = true;
+
   searchText = '';
+
   employees: User[] = [];
 
-  /**alta de usuario */
+
+  // ====================================================
+  // NUEVO EMPLEADO
+  // ====================================================
+
   employeeNew: User = {
 
-    nombre: "",
-    apellido: "",
-    email: "",
-    password: "",
+    nombre: '',
+    apellido: '',
+    email: '',
+    password: '',
     estado: false,
     role: null,
     rol_id: null
 
   };
 
-  /**empleado usuario a modificar */
+
+  // ====================================================
+  // EMPLEADO A MODIFICAR
+  // ====================================================
+
   employeeUPdate: User = {
 
-    nombre: "",
-    apellido: "",
-    email: "",
-    password: "",
+    nombre: '',
+    apellido: '',
+    email: '',
+    password: '',
     estado: false,
     role: null,
     rol_id: null
@@ -50,116 +68,170 @@ export class EmployeeList implements OnInit {
 
 
   constructor(
-    /**injectar servicios, dependencias */
-    private router: Router,
-    private userService: UserService
 
-  ) { }
+    private router: Router,
+
+    private userService:
+      UserService
+
+  ) {}
 
 
   ngOnInit(): void {
 
-    /**ejecuta logica al inicializar*/
     this.getUsers();
 
   }
 
 
+  // ====================================================
+  // OBTENER USUARIOS
+  // ====================================================
+
   getUsers(): void {
 
-    this.userService.getUsers().subscribe({
+    this.userService
+      .getUsers()
+      .subscribe({
 
-      next: (data) => {
+        next: (data) => {
 
-        this.employees = data;
+          this.employees = data;
 
-        console.log(data);
+          console.log(data);
 
-      },
+        },
 
-      error: (err) => {
+        error: (err) => {
 
-        console.error(err);
+          console.error(err);
 
-      }
+        }
 
-    });
+      });
 
   }
 
 
-private filterEmployeesByStatus(status: boolean): User[] {
+  // ====================================================
+  // FILTRAR EMPLEADOS
+  // ====================================================
 
-  const search = this.searchText
-    .trim()
-    .toLowerCase();
+  private filterEmployeesByStatus(
+    status: boolean
+  ): User[] {
 
-  return this.employees.filter((employee) => {
-
-    const fullName = `
-      ${employee.nombre ?? ''}
-      ${employee.apellido ?? ''}
-    `.toLowerCase();
-
-    const email = (employee.email ?? '').toLowerCase();
-    const role = (employee.role ?? '').toLowerCase();
-
-    const matchesSearch =
-      fullName.includes(search) ||
-      email.includes(search) ||
-      role.includes(search);
-
-    const matchesStatus =
-      Boolean(employee.estado) === status;
-
-    return matchesSearch && matchesStatus;
-
-  });
-
-}
+    const search =
+      this.searchText
+        .trim()
+        .toLowerCase();
 
 
-get activeEmployees(): User[] {
-
-  return this.filterEmployeesByStatus(true);
-
-}
+    return this.employees.filter(
+      (employee) => {
 
 
-get inactiveEmployees(): User[] {
+        const fullName = `
+          ${employee.nombre ?? ''}
+          ${employee.apellido ?? ''}
+        `.toLowerCase();
 
-  return this.filterEmployeesByStatus(false);
 
-}
+        const email =
+          (employee.email ?? '')
+            .toLowerCase();
 
-  
 
+        const role =
+          (employee.role ?? '')
+            .toLowerCase();
+
+
+        const matchesSearch =
+
+          fullName.includes(search) ||
+
+          email.includes(search) ||
+
+          role.includes(search);
+
+
+        const matchesStatus =
+
+          Boolean(employee.estado)
+          ===
+          status;
+
+
+        return (
+          matchesSearch &&
+          matchesStatus
+        );
+
+      }
+    );
+
+  }
+
+
+  get activeEmployees(): User[] {
+
+    return this.filterEmployeesByStatus(
+      true
+    );
+
+  }
+
+
+  get inactiveEmployees(): User[] {
+
+    return this.filterEmployeesByStatus(
+      false
+    );
+
+  }
+
+
+  // ====================================================
+  // MOSTRAR FORMULARIO ALTA
+  // ====================================================
 
   showFormAgregar(): void {
 
-  this.showFormAdd = true;
-  this.viewListEmp = false;
-  this.showComponentchild = false;
+    this.showFormAdd = true;
 
-}
+    this.viewListEmp = false;
 
+    this.showComponentchild = false;
 
-viewListemployee(): void {
-
-  this.viewListEmp = true;
-  this.showFormAdd = false;
-  this.showComponentchild = false;
-
-}
+  }
 
 
+  // ====================================================
+  // VOLVER A LISTADO
+  // ====================================================
+
+  viewListemployee(): void {
+
+    this.viewListEmp = true;
+
+    this.showFormAdd = false;
+
+    this.showComponentchild = false;
+
+  }
 
 
-
+  // ====================================================
+  // CREAR EMPLEADO
+  // ====================================================
 
   addEmployeeInthis(): void {
 
-    this.userService.createUser(this.employeeNew)
+    this.userService
+      .createUser(
+        this.employeeNew
+      )
       .subscribe({
 
         next: () => {
@@ -178,120 +250,201 @@ viewListemployee(): void {
 
       });
 
-
-
   }
 
 
- 
+  // ====================================================
+  // CANCELAR ALTA
+  // ====================================================
 
   cancelFormAdd(): void {
 
-  this.employeeNew = {
+    this.employeeNew = {
 
-    nombre: '',
-    apellido: '',
-    email: '',
-    password: '',
-    estado: false,
-    role: null,
-    rol_id: null
+      nombre: '',
+      apellido: '',
+      email: '',
+      password: '',
+      estado: false,
+      role: null,
+      rol_id: null
 
-  };
-
-  this.showFormAdd = false;
-  this.viewListEmp = true;
-
-}
-
-
-  editEmployee(employeeToEdit: User): void {
-
-    this.showComponentchild = true;
-    this.viewListEmp = false;
-    this.employeeUPdate = {
-
-      id: employeeToEdit.id,
-      nombre: employeeToEdit.nombre,
-      apellido: employeeToEdit.apellido,
-      email: employeeToEdit.email,
-      password: employeeToEdit.password,
-      estado: employeeToEdit.estado,
-      role: employeeToEdit.role,
-      rol_id: employeeToEdit.rol_id
     };
 
-  }
 
+    this.showFormAdd = false;
 
- editEmployeeTochild(employee: User): void {
-
-  if (!employee.id) {
-    console.error('No existe ID');
-    return;
-  }
-
-  this.userService.updateUser(employee.id, employee).subscribe({
-
-    next: (updatedUser) => {
-
-      const index = this.employees.findIndex(
-
-        (oneEmployee) =>
-          oneEmployee.id === updatedUser.id
-
-      );
-
-      if (index !== -1) {
-
-        this.employees[index] = updatedUser;
-
-      }
-
-      // volver a cargar lista
-      this.getUsers();
-
-      this.showComponentchild = false;
-
-      this.viewListEmp = true;
-
-      console.log('Usuario actualizado');
-
-    },
-
-    error: (err) => {
-
-      console.error(err);
-
-    }
-
-  });
-
-}
-
-  closeComponentchild() {
-
-    this.showComponentchild = false;
     this.viewListEmp = true;
 
   }
 
 
-  deleteEmployee(employeeToDelete: User): void {
+  // ====================================================
+  // ABRIR MODIFICACIÓN
+  // ====================================================
 
-    if (!employeeToDelete.id) return;
+  editEmployee(
+    employeeToEdit: User
+  ): void {
 
-    this.userService.deleteUser(
-      employeeToDelete.id
-    ).subscribe({
-      next: () => {
-        this.getUsers();
-      },
-      error: (err) => {
-        console.error(err);
-      }
+    this.showComponentchild = true;
 
-    });
+    this.viewListEmp = false;
+
+
+    this.employeeUPdate = {
+
+      id:
+        employeeToEdit.id,
+
+      nombre:
+        employeeToEdit.nombre,
+
+      apellido:
+        employeeToEdit.apellido,
+
+      email:
+        employeeToEdit.email,
+
+
+      // IMPORTANTE:
+      //
+      // Nunca recuperamos la contraseña
+      // desde el backend.
+      //
+      // Si queda vacío:
+      // conserva la contraseña actual.
+      //
+      // Si Admin escribe algo:
+      // será la nueva contraseña.
+
+      password: '',
+
+
+      estado:
+        employeeToEdit.estado,
+
+      role:
+        employeeToEdit.role,
+
+      rol_id:
+        employeeToEdit.rol_id
+
+    };
+
+  }
+
+
+  // ====================================================
+  // GUARDAR MODIFICACIÓN
+  // ====================================================
+
+  editEmployeeTochild(
+    employee: User
+  ): void {
+
+    if (!employee.id) {
+
+      console.error(
+        'No existe ID'
+      );
+
+      return;
+
+    }
+
+
+    this.userService
+      .updateUser(
+        employee.id,
+        employee
+      )
+      .subscribe({
+
+        next: () => {
+
+          // Recargamos desde backend.
+          //
+          // Esto es mejor que intentar
+          // reemplazar manualmente el usuario
+          // porque nuestro PUT devuelve un mensaje,
+          // no el usuario completo.
+
+          this.getUsers();
+
+
+          this.showComponentchild =
+            false;
+
+          this.viewListEmp =
+            true;
+
+
+          console.log(
+            'Usuario actualizado'
+          );
+
+        },
+
+
+        error: (err) => {
+
+          console.error(err);
+
+        }
+
+      });
+
+  }
+
+
+  // ====================================================
+  // CERRAR MODIFICACIÓN
+  // ====================================================
+
+  closeComponentchild(): void {
+
+    this.showComponentchild =
+      false;
+
+    this.viewListEmp =
+      true;
+
+  }
+
+
+  // ====================================================
+  // ELIMINAR EMPLEADO
+  // ====================================================
+
+  deleteEmployee(
+    employeeToDelete: User
+  ): void {
+
+    if (!employeeToDelete.id) {
+      return;
+    }
+
+
+    this.userService
+      .deleteUser(
+        employeeToDelete.id
+      )
+      .subscribe({
+
+        next: () => {
+
+          this.getUsers();
+
+        },
+
+        error: (err) => {
+
+          console.error(err);
+
+        }
+
+      });
 
   }
 
