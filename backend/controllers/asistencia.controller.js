@@ -2,98 +2,104 @@ const asistenciaService =
   require("../services/asistencia.service");
 
 
-exports.registrar = async (
-  req,
-  res
-) => {
+// ==========================================================
+// REGISTRAR ASISTENCIA
+// ==========================================================
+
+exports.registrar = async (req, res) => {
 
   try {
 
-
-    /*
-     * Datos enviados por Angular.
-     *
-     * tipo:
-     * entrada / salida
-     *
-     * token:
-     * QR escaneado
-     */
     const {
       token,
       tipo
     } = req.body;
 
-
-    /*
-     * El usuario NO viene
-     * desde Angular.
-     *
-     * Lo obtiene nuestro
-     * authMiddleware mediante JWT.
-     */
+    // Usuario obtenido desde JWT.
     const usuarioId =
       req.user?.id;
 
-
-    /*
-     * La IP tampoco viene
-     * desde Angular.
-     *
-     * La detectamos directamente
-     * desde la petición.
-     */
+    // IP obtenida desde la petición.
     const ipDetectada =
-      req.ip
-      ||
+      req.ip ||
       req.socket.remoteAddress;
 
-      console.log("IP detectada:", ipDetectada);
-
+    console.log(
+      "IP detectada:",
+      ipDetectada
+    );
 
     const resultado =
-      await asistenciaService
-        .registrarAsistencia({
-
-          usuarioId,
-
-          tipo,
-
-          token,
-
-          ipDetectada
-
-        });
-
+      await asistenciaService.registrarAsistencia({
+        usuarioId,
+        tipo,
+        token,
+        ipDetectada
+      });
 
     return res
       .status(201)
       .json(resultado);
 
-
   } catch (error) {
-
 
     console.error(
       "Error al registrar asistencia:",
       error
     );
 
-
     return res
       .status(
         error.statusCode || 400
       )
       .json({
-
         mensaje:
-          error.message
-          ||
+          error.message ||
           "Error al registrar asistencia"
-
       });
-
-
   }
-
 };
+
+
+// ==========================================================
+// OBTENER MI ASISTENCIA DE HOY
+// ==========================================================
+
+exports.obtenerMiAsistenciaHoy =
+  async (req, res) => {
+
+    try {
+
+      // No recibimos el usuario desde Angular.
+      // Sale del JWT.
+      const usuarioId =
+        req.user?.id;
+
+      const resultado =
+        await asistenciaService
+          .obtenerMiAsistenciaHoy(
+            usuarioId
+          );
+
+      return res
+        .status(200)
+        .json(resultado);
+
+    } catch (error) {
+
+      console.error(
+        "Error al obtener asistencia de hoy:",
+        error
+      );
+
+      return res
+        .status(
+          error.statusCode || 500
+        )
+        .json({
+          mensaje:
+            error.message ||
+            "Error al obtener asistencia de hoy"
+        });
+    }
+  };

@@ -7,3 +7,4 @@ const {generarQR} = require("../controllers/qrController");
 router.get("/generar", generarQR);
 
 module.exports = router;
+

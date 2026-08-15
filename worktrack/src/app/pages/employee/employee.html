@@ -4,57 +4,188 @@
 
   <main class="content">
 
-        <!-- ACCIONES -->
-    <div class="acciones-grid">
-      <button class="accion-btn green" (click)="escanearQR()">
-        <div class="accion-content">
-          <span class="accion-icon"><i class="bi bi-qr-code"></i></span>
-          <div>
-            <div class="accion-title">Escanear QR</div>
-            <div class="accion-sub">Marcar entrada</div>
-          </div>
-        </div>
-        <span class="accion-arrow">›</span>
-      </button>
-
-      <button class="accion-btn blue" (click)="verHistorial()">
-        <div class="accion-content">
-          <span class="accion-icon"><i class="bi bi-clock-history"></i></span>
-          <div>
-            <div class="accion-title">Historial</div>
-            <div class="accion-sub">Ver asistencias</div>
-          </div>
-        </div>
-        <span class="accion-arrow">›</span>
-      </button>
+    <!-- MENSAJES -->
+    <div
+      class="mensaje-exito"
+      *ngIf="mensaje">
+      {{ mensaje }}
     </div>
 
-    <button class="accion-btn purple full-width" (click)="gestionCambioDeHorario()">
-      <div class="accion-content">
-        <span class="accion-icon"><i class="bi bi-people"></i></span>
-        <div>
-          <div class="accion-title">Cambio de Horario</div>
-          <div class="accion-sub">Solicitar modificación de cronogramas</div>
+    <div
+      class="mensaje-error"
+      *ngIf="error">
+      {{ error }}
+    </div>
+
+
+    <!-- ACCIONES -->
+    <div class="acciones-grid">
+
+      <!-- ASISTENCIA -->
+      <button
+        class="accion-btn green"
+        [disabled]="
+          cargandoHorario ||
+          cargandoAsistencia ||
+          registrando ||
+          !horarioHoy ||
+          asistenciaHoy?.jornadaCompletada
+        "
+        (click)="accionAsistencia()">
+
+        <div class="accion-content">
+
+          <span class="accion-icon">
+
+            <i
+              class="bi bi-clock"
+              *ngIf="cargandoHorario || cargandoAsistencia">
+            </i>
+
+            <i
+              class="bi bi-qr-code"
+              *ngIf="
+                !cargandoHorario &&
+                horarioHoy?.modalidad === 'PRESENCIAL'
+              ">
+            </i>
+
+            <i
+              class="bi bi-house-door"
+              *ngIf="
+                !cargandoHorario &&
+                horarioHoy?.modalidad === 'HOME'
+              ">
+            </i>
+
+          </span>
+
+          <div>
+
+            <div class="accion-title">
+              {{ textoBotonAsistencia }}
+            </div>
+
+            <div class="accion-sub">
+              {{ subtituloBotonAsistencia }}
+            </div>
+
+          </div>
+
         </div>
+
+        <span class="accion-arrow">
+          ›
+        </span>
+
+      </button>
+
+
+      <!-- HISTORIAL -->
+      <button
+        class="accion-btn blue"
+        (click)="verHistorial()">
+
+        <div class="accion-content">
+
+          <span class="accion-icon">
+            <i class="bi bi-clock-history"></i>
+          </span>
+
+          <div>
+
+            <div class="accion-title">
+              Historial
+            </div>
+
+            <div class="accion-sub">
+              Ver asistencias
+            </div>
+
+          </div>
+
+        </div>
+
+        <span class="accion-arrow">
+          ›
+        </span>
+
+      </button>
+
+    </div>
+
+
+    <!-- CAMBIO DE HORARIO -->
+    <button
+      class="accion-btn purple full-width"
+      (click)="gestionCambioDeHorario()">
+
+      <div class="accion-content">
+
+        <span class="accion-icon">
+          <i class="bi bi-people"></i>
+        </span>
+
+        <div>
+
+          <div class="accion-title">
+            Cambio de Horario
+          </div>
+
+          <div class="accion-sub">
+            Solicitar modificación de cronogramas
+          </div>
+
+        </div>
+
       </div>
-      <span class="accion-arrow">›</span>
+
+      <span class="accion-arrow">
+        ›
+      </span>
+
     </button>
 
-    <!-- ALERTA -->
+
+    <!-- ALERTAS -->
     <div class="alert-card">
+
       <div class="alert-header">
-        <span class="alert-icon">⚠</span>
-        <span class="alert-title">Alertas del equipo</span>
-        <span class="alert-count">{{ alertas.length }} nuevas</span>
+
+        <span class="alert-icon">
+          ⚠
+        </span>
+
+        <span class="alert-title">
+          Alertas del equipo
+        </span>
+
+        <span class="alert-count">
+          {{ alertas.length }} nuevas
+        </span>
+
       </div>
+
       <ul class="alert-list">
-        <li *ngFor="let alerta of alertas">• {{ alerta }}</li>
+
+        <li *ngFor="let alerta of alertas">
+          • {{ alerta }}
+        </li>
+
       </ul>
-      <button class="btn-alertas" (click)="verAlertas()">Ver todas las alertas</button>
+
+      <button
+        class="btn-alertas"
+        (click)="verAlertas()">
+        Ver todas las alertas
+      </button>
+
     </div>
+
 
     <!-- PERFIL -->
     <div class="card perfil-card">
+
       <div class="avatar">
         {{ empleado.iniciales }}
       </div>
@@ -62,7 +193,8 @@
       <div class="perfil-info">
 
         <h2>
-          {{ empleado.nombre }} {{ empleado.apellido }}
+          {{ empleado.nombre }}
+          {{ empleado.apellido }}
         </h2>
 
         <p>
@@ -74,43 +206,146 @@
         </p>
 
       </div>
+
     </div>
 
-    <!-- ESTADO HOY -->
-    <div class="card estado-card">
-      <h3>📅 Estado de hoy</h3>
+
+    <!-- ESTADO DE HOY -->
+    <div
+      class="card estado-card"
+      *ngIf="horarioHoy">
+
+      <h3>
+        📅 Estado de hoy
+      </h3>
+
       <div class="estado-grid">
-        <div class="estado-item">
-          <span class="estado-label">⊗ Entrada</span>
-          <span class="estado-valor">{{ estadoHoy.entrada }}</span>
-        </div>
-        <div class="estado-item">
-          <span class="estado-label">⊗ Salida</span>
-          <span class="estado-valor">{{ estadoHoy.salida }}</span>
-        </div>
-      </div>
-    </div>
 
+        <div class="estado-item">
+          <span class="estado-label">
+            Horario entrada
+          </span>
+
+          <span class="estado-valor">
+            {{ horarioEntrada }}
+          </span>
+        </div>
+
+
+        <div class="estado-item">
+          <span class="estado-label">
+            Horario salida
+          </span>
+
+          <span class="estado-valor">
+            {{ horarioSalida }}
+          </span>
+        </div>
+
+
+        <div class="estado-item">
+          <span class="estado-label">
+            Entrada registrada
+          </span>
+
+          <span class="estado-valor">
+            {{ entradaRegistrada }}
+          </span>
+        </div>
+
+
+        <div class="estado-item">
+          <span class="estado-label">
+            Salida registrada
+          </span>
+
+          <span class="estado-valor">
+            {{ salidaRegistrada }}
+          </span>
+        </div>
+
+
+        <div class="estado-item">
+          <span class="estado-label">
+            Modalidad
+          </span>
+
+          <span class="estado-valor">
+            {{ horarioHoy.modalidad }}
+          </span>
+        </div>
+
+
+        <div
+          class="estado-item"
+          *ngIf="asistenciaHoy?.asistencia">
+
+          <span class="estado-label">
+            Estado
+          </span>
+
+          <span class="estado-valor">
+            {{ asistenciaHoy?.asistencia?.estado }}
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
 
 
     <!-- ESTADÍSTICAS -->
     <div class="card stats-card">
-      <h3>Este mes</h3>
+
+      <h3>
+        Este mes
+      </h3>
+
       <div class="stats-grid">
+
         <div class="stat-item">
-          <span class="stat-valor green-text">{{ estadisticas.diasTrabajados }}</span>
-          <span class="stat-label">Días trabajados</span>
+
+          <span class="stat-valor green-text">
+            {{ estadisticas.diasTrabajados }}
+          </span>
+
+          <span class="stat-label">
+            Días trabajados
+          </span>
+
         </div>
+
+
         <div class="stat-item">
-          <span class="stat-valor green-text">{{ estadisticas.horasTotales }}h</span>
-          <span class="stat-label">Horas totales</span>
+
+          <span class="stat-valor green-text">
+            {{ estadisticas.horasTotales }}h
+          </span>
+
+          <span class="stat-label">
+            Horas totales
+          </span>
+
         </div>
+
+
         <div class="stat-item">
-          <span class="stat-valor green-text">{{ estadisticas.ausencias }}</span>
-          <span class="stat-label">Ausencias</span>
+
+          <span class="stat-valor green-text">
+            {{ estadisticas.ausencias }}
+          </span>
+
+          <span class="stat-label">
+            Ausencias
+          </span>
+
         </div>
+
       </div>
+
     </div>
 
   </main>
+
 </div>
