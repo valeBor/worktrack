@@ -19,6 +19,7 @@
     "ipaddr.js": "^2.5.0",
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.22.3",
+    "nodemailer": "^9.0.5",
     "qrcode": "^1.5.4",
     "uuid": "^14.0.0"
   },

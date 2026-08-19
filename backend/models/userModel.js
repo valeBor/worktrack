@@ -186,3 +186,121 @@ exports.deleteUser = async (id) => {
 
   return result;
 };
+
+// ======================================================
+// BUSCAR USUARIO POR EMAIL
+// ======================================================
+//
+// Esta función se utiliza cuando el usuario solicita
+// recuperar su contraseña.
+//
+// Incluimos password porque el backend necesita su hash
+// para firmar el token de recuperación.
+//
+// El hash nunca será enviado al frontend.
+// ======================================================
+
+exports.getByEmail = async (email) => {
+
+  const query = `
+    SELECT
+      id,
+      nombre,
+      apellido,
+      email,
+      password,
+      estado,
+      rol_id
+    FROM usuarios
+    WHERE email = ?
+    LIMIT 1
+  `;
+
+
+  const [rows] = await db.query(
+    query,
+    [email]
+  );
+
+
+  // Si existe, devuelve el primer usuario.
+  //
+  // Si no existe, devuelve undefined.
+  return rows[0];
+
+};
+
+
+// ======================================================
+// BUSCAR USUARIO POR ID
+// ======================================================
+//
+// El ID se obtiene inicialmente del token.
+//
+// Después de encontrar al usuario,
+// authService verificará criptográficamente
+// que el token sea realmente válido.
+// ======================================================
+
+exports.getById = async (id) => {
+
+  const query = `
+    SELECT
+      id,
+      nombre,
+      apellido,
+      email,
+      password,
+      estado,
+      rol_id
+    FROM usuarios
+    WHERE id = ?
+    LIMIT 1
+  `;
+
+
+  const [rows] = await db.query(
+    query,
+    [id]
+  );
+
+
+  return rows[0];
+
+};
+
+
+// ======================================================
+// ACTUALIZAR SOLAMENTE LA CONTRASEÑA
+// ======================================================
+//
+// hashedPassword ya llega procesada con bcrypt.
+//
+// Nunca recibimos ni guardamos directamente
+// la contraseña escrita por el usuario.
+// ======================================================
+
+exports.updatePassword = async (
+  id,
+  hashedPassword
+) => {
+
+  const query = `
+    UPDATE usuarios
+    SET password = ?
+    WHERE id = ?
+  `;
+
+
+  const [result] = await db.query(
+    query,
+    [
+      hashedPassword,
+      id
+    ]
+  );
+
+
+  return result;
+
+};

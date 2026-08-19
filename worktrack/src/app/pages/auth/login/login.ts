@@ -25,7 +25,8 @@ export class Login implements AfterViewInit, OnDestroy {
   error = '';
   message = '';
 
-  siteKey = '0x4AAAAAADT44xp-EgoQPGPE';
+  siteKey = '1x00000000000000000000AA';
+
   turnstileToken: string | null = null;
   widgetId: string | null = null;
 
@@ -142,47 +143,47 @@ export class Login implements AfterViewInit, OnDestroy {
       ...this.loginForm.value,
       turnstileToken: this.turnstileToken
     })
-    .subscribe({
-      next: (res: AuthResponse) => {
+      .subscribe({
+        next: (res: AuthResponse) => {
 
-        this.auth.saveUser(res);
-        localStorage.setItem('role', res.user.role);
+          this.auth.saveUser(res);
+          localStorage.setItem('role', res.user.role);
 
-        this.message = 'Login correcto';
+          this.message = 'Login correcto';
 
-        if (res.user.role === 'admin') {
-          this.router.navigate(['/admin']);
+          if (res.user.role === 'admin') {
+            this.router.navigate(['/admin']);
 
-        } else if (res.user.role === 'rrhh') {
-          this.router.navigate(['/rrhh']);
+          } else if (res.user.role === 'rrhh') {
+            this.router.navigate(['/rrhh']);
 
-        } else if (res.user.role === 'empleado') {
-          this.router.navigate(['/employee']);
+          } else if (res.user.role === 'empleado') {
+            this.router.navigate(['/employee']);
 
-        } else if (res.user.role === 'supervisor') {
-          this.router.navigate(['/supervisor']);
+          } else if (res.user.role === 'supervisor') {
+            this.router.navigate(['/supervisor']);
 
-        } else {
-          this.router.navigate(['/home']);
+          } else {
+            this.router.navigate(['/home']);
+          }
+
+          console.log(res);
+        },
+
+        error: (err) => {
+          this.resetTurnstile();
+
+          if (err.status === 404) {
+            this.error = 'Usuario no existe';
+
+          } else if (err.status === 401) {
+            this.error = 'Contraseña incorrecta';
+
+          } else {
+            this.error = 'Error en el servidor';
+          }
         }
-
-        console.log(res);
-      },
-
-      error: (err) => {
-        this.resetTurnstile();
-
-        if (err.status === 404) {
-          this.error = 'Usuario no existe';
-
-        } else if (err.status === 401) {
-          this.error = 'Contraseña incorrecta';
-
-        } else {
-          this.error = 'Error en el servidor';
-        }
-      }
-    });
+      });
   }
 
   resetTurnstile(): void {
