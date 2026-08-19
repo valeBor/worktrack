@@ -1,40 +1,67 @@
 const express = require('express');
+
 const router = express.Router();
 
+
 const authController =
+
   require('../controllers/authController');
 
 
-// ======================================================
-// RUTAS DE AUTENTICACIÓN
-// ======================================================
+const {
+
+  loginRateLimit,
+
+  forgotPasswordRateLimit,
+
+  resetPasswordRateLimit
+
+} = require(
+
+  '../middlewares/authRateLimit.middleware'
+
+);
 
 
-// Iniciar sesión.
+// ======================================================
+// INICIAR SESIÓN
+// ======================================================
+
 router.post(
 
   '/login',
+
+  loginRateLimit,
 
   authController.login
 
 );
 
 
-// Solicitar enlace para recuperar contraseña.
+// ======================================================
+// SOLICITAR RECUPERACIÓN
+// ======================================================
+
 router.post(
 
   '/forgot-password',
+
+  forgotPasswordRateLimit,
 
   authController.forgotPassword
 
 );
 
 
-// Guardar una contraseña nueva utilizando
-// el token recibido por correo.
+// ======================================================
+// RESTABLECER CONTRASEÑA
+// ======================================================
+
 router.post(
 
   '/reset-password',
+
+  resetPasswordRateLimit,
 
   authController.resetPassword
 

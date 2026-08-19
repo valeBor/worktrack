@@ -1,7 +1,9 @@
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Component, Inject, PLATFORM_ID, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+
+import { environment } from '../../../../environments/environment';
 
 import { AuthService } from '../../../services/auth.service';
 import { AuthResponse } from '../../../models/auth-response.model';
@@ -16,7 +18,7 @@ declare global {
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, RouterLink],
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
@@ -25,13 +27,14 @@ export class Login implements AfterViewInit, OnDestroy {
   error = '';
   message = '';
 
-  siteKey = '1x00000000000000000000AA';
+  siteKey = environment.turnstileSiteKey;
 
   turnstileToken: string | null = null;
   widgetId: string | null = null;
 
   isBrowser = false;
   selectedRole: string | null = null;
+  showPassword = false;
 
   loginForm: FormGroup;
 
@@ -57,7 +60,7 @@ export class Login implements AfterViewInit, OnDestroy {
         [
           Validators.required,
           Validators.minLength(6),
-          Validators.maxLength(20)
+          Validators.maxLength(64)
         ]
       ]
     });
@@ -107,6 +110,7 @@ export class Login implements AfterViewInit, OnDestroy {
 
       this.widgetId = window.turnstile.render('#turnstile-container', {
         sitekey: this.siteKey,
+        size: 'flexible',
         callback: (token: string) => {
           this.turnstileToken = token;
         },
@@ -123,6 +127,17 @@ export class Login implements AfterViewInit, OnDestroy {
 
   selectRole(role: string): void {
     this.selectedRole = role;
+  }
+
+  // ======================================================
+  // MOSTRAR U OCULTAR CONTRASEÑA
+  // ======================================================
+
+  togglePassword(): void {
+
+    this.showPassword =
+      !this.showPassword;
+
   }
 
   onSubmit(): void {
@@ -171,17 +186,38 @@ export class Login implements AfterViewInit, OnDestroy {
         },
 
         error: (err) => {
+
           this.resetTurnstile();
 
-          if (err.status === 404) {
-            this.error = 'Usuario no existe';
+
+          if (err.status === 400) {
+
+            this.error =
+
+              err.error?.message ||
+
+              'La solicitud no es válida';
+
 
           } else if (err.status === 401) {
-            this.error = 'Contraseña incorrecta';
+
+            this.error =
+              'Email o contraseña incorrectos';
+
+
+          } else if (err.status === 403) {
+
+            this.error =
+              'El usuario se encuentra inactivo';
+
 
           } else {
-            this.error = 'Error en el servidor';
+
+            this.error =
+              'Error en el servidor';
+
           }
+
         }
       });
   }

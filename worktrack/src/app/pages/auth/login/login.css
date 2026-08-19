@@ -1,124 +1,624 @@
-.login-container {
+/* =====================================================
+   PÁGINA
+   ===================================================== */
+
+.login-page {
   min-height: 100vh;
+  min-height: 100dvh;
+
   display: flex;
-  justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #f5f7fa, #e4efe9);
+  justify-content: center;
+
+  padding: 16px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f5f7fa 0%,
+      #e4efe9 100%
+    );
+
+  box-sizing: border-box;
+
+  overflow-y: auto;
 }
 
-.card {
-  background: white;
-  padding: 30px;
-  border-radius: 20px;
-  width: 360px;
-  box-shadow: 0px 10px 30px rgba(0,0,0,0.1);
+
+/* =====================================================
+   TARJETA
+   ===================================================== */
+
+.login-card {
+  width: 100%;
+  max-width: 410px;
+
+  padding: 24px 30px;
+
+  border: 1px solid
+    rgba(15, 23, 42, 0.06);
+
+  border-radius: 22px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 14px 40px
+    rgba(15, 23, 42, 0.11);
+
   text-align: center;
+
+  box-sizing: border-box;
 }
 
-/* Logo */
-.logo-box {
-  margin-bottom: 15px;
+
+/* =====================================================
+   ENCABEZADO
+   ===================================================== */
+
+.login-header {
+  margin-bottom: 13px;
 }
 
-.logo {
-  width: 60px;
+
+.login-logo {
+  display: block;
+
+  width: 50px;
+  height: auto;
+
+  margin: 0 auto 4px;
 }
 
-h1 {
-  margin: 5px 0;
+
+.brand-title {
+  margin: 0;
+
+  color: #172033;
+
   font-size: 28px;
+  line-height: 1.15;
 }
 
-h1 span {
+
+.brand-title span {
   color: #28a745;
 }
 
-.subtitle {
+
+.brand-subtitle {
+  margin: 4px 0 0;
+
+  color: #64748b;
+
   font-size: 13px;
-  color: gray;
 }
 
-/* Textos */
-h2 {
-  margin-top: 10px;
+
+/* =====================================================
+   BIENVENIDA
+   ===================================================== */
+
+.login-welcome {
+  margin-bottom: 20px;
 }
 
-.desc {
+
+.login-welcome h2 {
+  margin: 0 0 5px;
+
+  color: #172033;
+
+  font-size: 22px;
+}
+
+
+.login-welcome p {
+  margin: 0;
+
+  color: #64748b;
+
   font-size: 14px;
-  color: gray;
-  margin-bottom: 20px;
 }
 
-/* Roles 
-.roles {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
+
+/* =====================================================
+   FORMULARIO
+   ===================================================== */
+
+.login-form {
+  width: 100%;
 }
 
-.role {
-  width: 30%;
-  padding: 15px;
-  border: 2px solid #ddd;
+
+.form-control-box {
+  width: 100%;
+
+  margin-bottom: 17px;
+
+  text-align: left;
+}
+
+
+/* =====================================================
+   CAMPO CON ETIQUETA FLOTANTE
+   ===================================================== */
+
+.floating-field {
+  position: relative;
+
+  width: 100%;
+}
+
+
+.floating-field input {
+  display: block;
+
+  width: 100%;
+  height: 54px;
+
+  padding: 18px 48px 8px 14px;
+
+  border: 1px solid #b8c7dc;
+
   border-radius: 12px;
+
+  outline: none;
+
+  background: #edf4ff;
+
+  color: #172033;
+
+  font-family: inherit;
+  font-size: 15px;
+
+  box-sizing: border-box;
+
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.floating-field label {
+  position: absolute;
+
+  top: 50%;
+  left: 14px;
+
+  max-width: calc(100% - 65px);
+
+  padding: 0 4px;
+
+  background: transparent;
+
+  color: #64748b;
+
+  pointer-events: none;
+
+  transform: translateY(-50%);
+
+  transform-origin: left center;
+
+  font-size: 15px;
+
+  transition:
+    top 0.18s ease,
+    color 0.18s ease,
+    font-size 0.18s ease,
+    background-color 0.18s ease;
+}
+
+
+.floating-field label span {
+  color: #dc3545;
+}
+
+
+/* La etiqueta sube cuando el campo tiene foco
+   o cuando ya contiene un valor. */
+
+.floating-field input:focus + label,
+.floating-field input:not(:placeholder-shown) + label {
+  top: 0;
+
+  padding: 0 6px;
+
+  background: #ffffff;
+
+  color: #208bff;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+.floating-field input:focus {
+  border-color: #208bff;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(32, 139, 255, 0.13);
+}
+
+
+/* Campo inválido después de tocarlo */
+
+.floating-field input.ng-touched.ng-invalid {
+  border-color: #dc3545;
+}
+
+
+.floating-field
+input.ng-touched.ng-invalid + label {
+  color: #dc3545;
+}
+
+
+/* =====================================================
+   BOTÓN VER/OCULTAR
+   ===================================================== */
+
+.visibility-button {
+  position: absolute;
+
+  top: 50%;
+  right: 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 34px;
+  height: 34px;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 50%;
+
+  background: transparent;
+
+  color: #64748b;
+
   cursor: pointer;
-  transition: 0.3s;
+
+  transform: translateY(-50%);
+
+  font-size: 19px;
+
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+
+.visibility-button:hover {
+  background:
+    rgba(32, 139, 255, 0.09);
+
+  color: #208bff;
+}
+
+
+.visibility-button:focus-visible {
+  outline: 2px solid #208bff;
+
+  outline-offset: 2px;
+}
+
+
+/* =====================================================
+   ERRORES
+   ===================================================== */
+
+.field-error {
+  margin-top: 5px;
+  padding-left: 4px;
+
+  color: #dc3545;
+
   font-size: 12px;
 }
 
-.role span {
+
+.field-error small {
   display: block;
-  margin-top: 5px;
+
+  line-height: 1.35;
 }
 
-/* Activo 
-.role.active {
-  border-color: #28a745;
-  background: #e9f7ef;
+
+/* =====================================================
+   RECUPERAR CONTRASEÑA
+   ===================================================== */
+
+.forgot-password-row {
+  margin-top: -5px;
+  margin-bottom: 13px;
+
+  text-align: right;
 }
 
-/* Hover 
-.role:hover {
-  border-color: #28a745;
-}*/
 
-/* Inputs */
-.input-group {
-  text-align: left;
-  margin-bottom: 15px;
+.forgot-password-row a {
+  color: #198754;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  text-decoration: none;
 }
 
-.input-group label {
-  font-size: 14px;
+
+.forgot-password-row a:hover {
+  text-decoration: underline;
 }
 
-.input-group input {
+
+/* =====================================================
+   TURNSTILE
+   ===================================================== */
+
+.login-turnstile {
+  display: flex;
+  justify-content: center;
+
   width: 100%;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  margin-top: 5px;
+
+  margin: 6px 0 10px;
+
+  overflow: hidden;
 }
 
-/* Botón */
-.btn-main {
+
+#turnstile-container {
   width: 100%;
-  padding: 12px;
+}
+
+
+/* =====================================================
+   BOTÓN INGRESAR
+   ===================================================== */
+
+.login-submit {
+  width: 100%;
+  min-height: 46px;
+
+  padding: 11px 16px;
+
   border: none;
+  border-radius: 11px;
+
   background: #28a745;
-  color: white;
-  border-radius: 10px;
+
+  color: #ffffff;
+
   cursor: pointer;
-  font-weight: bold;
-  margin-top: 10px;
+
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+
+  box-shadow:
+    0 5px 12px
+    rgba(40, 167, 69, 0.18);
+
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.1s ease,
+    opacity 0.2s ease;
 }
 
-.btn-main:hover {
+
+.login-submit:hover:not(:disabled) {
   background: #218838;
+
+  box-shadow:
+    0 7px 16px
+    rgba(40, 167, 69, 0.24);
 }
 
-/* Error */
-.error {
-  color: red;
-  margin-top: 10px;
+
+.login-submit:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+
+.login-submit:disabled {
+  cursor: not-allowed;
+
+  box-shadow: none;
+
+  opacity: 0.58;
+}
+
+
+/* =====================================================
+   MENSAJES
+   ===================================================== */
+
+.login-message {
+  margin: 12px 0 0;
+
+  padding: 10px 12px;
+
+  border-radius: 9px;
+
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+
+.login-error {
+  border: 1px solid #f5c2c7;
+
+  background: #f8d7da;
+
+  color: #842029;
+}
+
+
+.login-success {
+  border: 1px solid #badbcc;
+
+  background: #d1e7dd;
+
+  color: #0f5132;
+}
+
+
+/* =====================================================
+   CELULARES
+   ===================================================== */
+
+@media (max-width: 480px) {
+
+  .login-page {
+    align-items: flex-start;
+
+    padding: 10px;
+  }
+
+
+  .login-card {
+    max-width: 100%;
+
+    margin: auto 0;
+
+    padding: 22px 18px;
+
+    border-radius: 17px;
+  }
+
+
+  .login-logo {
+    width: 46px;
+  }
+
+
+  .brand-title {
+    font-size: 25px;
+  }
+
+
+  .login-welcome h2 {
+    font-size: 20px;
+  }
+
+
+  .floating-field input {
+    height: 52px;
+
+    font-size: 16px;
+  }
+
+}
+
+
+/* =====================================================
+   PANTALLAS CON POCA ALTURA
+   ===================================================== */
+
+@media (max-height: 720px) {
+
+  .login-page {
+    align-items: flex-start;
+
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+
+  .login-card {
+    margin: auto 0;
+
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+
+
+  .login-header {
+    margin-bottom: 8px;
+  }
+
+
+  .login-logo {
+    width: 41px;
+  }
+
+
+  .brand-title {
+    font-size: 24px;
+  }
+
+
+  .login-welcome {
+    margin-bottom: 14px;
+  }
+
+
+  .login-welcome h2 {
+    font-size: 19px;
+  }
+
+
+  .form-control-box {
+    margin-bottom: 13px;
+  }
+
+
+  .floating-field input {
+    height: 48px;
+  }
+
+
+  .forgot-password-row {
+    margin-bottom: 8px;
+  }
+
+
+  .login-turnstile {
+    margin-top: 4px;
+    margin-bottom: 7px;
+  }
+
+
+  .login-submit {
+    min-height: 42px;
+  }
+
+}
+
+
+/* =====================================================
+   CELULARES MUY ANGOSTOS
+   ===================================================== */
+
+@media (max-width: 350px) {
+
+  .login-page {
+    padding: 7px;
+  }
+
+
+  .login-card {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+
+  .floating-field input {
+    padding-left: 11px;
+  }
+
+
+  .floating-field label {
+    left: 11px;
+  }
+
 }

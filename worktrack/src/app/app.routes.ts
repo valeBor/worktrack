@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { Login } from './pages/auth/login/login';
 import { Admin } from './pages/admin/admin';
 import { Rrhh } from './pages/rrhh/rrhh';
 import { Scanner } from './pages/scanner/scanner';
@@ -16,6 +15,25 @@ import { authGuard } from './guards/auth.guard';
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', loadComponent: () => import('./pages/auth/login/login').then(m => m.Login) },
+
+  {
+    path: 'forgot-password',
+    loadComponent: () =>
+      import(
+        './pages/auth/forgot-password/forgot-password'
+      )
+        .then(m => m.ForgotPassword)
+  },
+
+  {
+    path: 'reset-password/:token',
+    loadComponent: () =>
+      import(
+        './pages/auth/reset-password/reset-password'
+      )
+        .then(m => m.ResetPassword)
+  },
+
 
   { path: 'home', component: Home, canActivate: [authGuard] },
 
