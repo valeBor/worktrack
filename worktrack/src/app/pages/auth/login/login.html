@@ -1,169 +1,284 @@
-<div class="login-container">
+<div class="login-page">
 
-  <div class="card">
+  <main class="login-card">
 
-    <!-- Logo -->
-    <div class="logo-box">
+    <!-- LOGO -->
 
-      <img src="logoWorkTrack.png" class="logo">
+    <header class="login-header">
 
-      <h1>
+      <img
+        src="logoWorkTrack.png"
+        class="login-logo"
+        alt="Logo de WorkTrack"
+      >
+
+      <h1 class="brand-title">
         Work<span>Track</span>
       </h1>
 
-      <p class="subtitle">
+      <p class="brand-subtitle">
         Control de asistencia con QR
       </p>
 
-    </div>
+    </header>
 
-    <!-- Título -->
-    <h2>¡Bienvenido!</h2>
 
-    <p class="desc">
-      Ingresá tus datos para continuar
-    </p>
+    <!-- BIENVENIDA -->
 
-    <!-- Selector visual 
-    <div class="roles">
+    <section class="login-welcome">
 
-      <div class="role" [class.active]="selectedRole === 'empleado'" (click)="selectRole('empleado')">
+      <h2>
+        ¡Bienvenido!
+      </h2>
 
-        👤
+      <p>
+        Ingresá tus datos para continuar
+      </p>
 
-        <span>Empleado</span>
+    </section>
 
-      </div>
 
-      <div class="role" [class.active]="selectedRole === 'supervisor'" (click)="selectRole('supervisor')">
-
-        🛡️
-
-        <span>Supervisor</span>
-
-      </div>
-
-      <div class="role" [class.active]="selectedRole === 'admin'" (click)="selectRole('admin')">
-
-        ⚙️
-
-        <span>RRHH</span>
-
-      </div>
-
-    </div> Adaptamos la vista del login, se redirige por rol no es necesario visualmente.
-    -->
     <!-- FORMULARIO -->
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+    <form
+      class="login-form"
+      [formGroup]="loginForm"
+      (ngSubmit)="onSubmit()"
+    >
 
       <!-- EMAIL -->
-      <div class="input-group">
 
-        <label>Email</label>
+      <div class="form-control-box">
 
-        <input type="email" placeholder="Ingresar email" formControlName="email">
+        <div class="floating-field">
 
-        @if(
-        loginForm.get('email')?.touched &&
-        loginForm.get('email')?.invalid
-        ){
+          <input
+            id="login-email"
+            type="email"
+            placeholder=" "
+            formControlName="email"
+            autocomplete="email"
+          >
 
-        <div class="validation">
-
-          @if(loginForm.get('email')?.errors?.['required']){
-          <small>
-            El email es obligatorio
-          </small>
-          }
-
-          @if(loginForm.get('email')?.errors?.['email']){
-          <small>
-            Formato de email inválido
-          </small>
-          }
-
-          @if(loginForm.get('email')?.errors?.['pattern']){
-          <small>
-            Email inválido
-          </small>
-          }
+          <label for="login-email">
+            Correo electrónico
+            <span aria-hidden="true">*</span>
+          </label>
 
         </div>
+
+
+        @if (
+          loginForm.get('email')?.touched &&
+          loginForm.get('email')?.invalid
+        ) {
+
+          <div class="field-error">
+
+            @if (
+              loginForm
+                .get('email')
+                ?.errors?.['required']
+            ) {
+
+              <small>
+                El email es obligatorio
+              </small>
+
+            }
+
+
+            @if (
+              loginForm
+                .get('email')
+                ?.errors?.['email'] ||
+              loginForm
+                .get('email')
+                ?.errors?.['pattern']
+            ) {
+
+              <small>
+                El formato del email no es válido
+              </small>
+
+            }
+
+          </div>
 
         }
 
       </div>
 
-      <!-- PASSWORD -->
-      <div class="input-group">
 
-        <label>Contraseña</label>
+      <!-- CONTRASEÑA -->
 
-        <input type="password" placeholder="Ingresar contraseña" formControlName="password">
+      <div class="form-control-box">
 
-        @if(
-        loginForm.get('password')?.touched &&
-        loginForm.get('password')?.invalid
-        ){
+        <div class="floating-field">
 
-        <div class="validation">
+          <input
+            id="login-password"
+            [type]="
+              showPassword
+                ? 'text'
+                : 'password'
+            "
+            placeholder=" "
+            formControlName="password"
+            autocomplete="current-password"
+          >
 
-          @if(loginForm.get('password')?.errors?.['required']){
-          <small>
-            La contraseña es obligatoria
-          </small>
-          }
+          <label for="login-password">
+            Contraseña
+            <span aria-hidden="true">*</span>
+          </label>
 
-          @if(loginForm.get('password')?.errors?.['minlength']){
-          <small>
-            Mínimo 6 caracteres
-          </small>
-          }
 
-          @if(loginForm.get('password')?.errors?.['maxlength']){
-          <small>
-            Máximo 20 caracteres
-          </small>
-          }
+          <button
+            type="button"
+            class="visibility-button"
+            (click)="togglePassword()"
+            [attr.aria-label]="
+              showPassword
+                ? 'Ocultar contraseña'
+                : 'Mostrar contraseña'
+            "
+            [attr.title]="
+              showPassword
+                ? 'Ocultar contraseña'
+                : 'Mostrar contraseña'
+            "
+          >
+
+            <i
+              class="bi"
+              [class.bi-eye]="!showPassword"
+              [class.bi-eye-slash]="showPassword"
+              aria-hidden="true"
+            ></i>
+
+          </button>
 
         </div>
+
+
+        @if (
+          loginForm.get('password')?.touched &&
+          loginForm.get('password')?.invalid
+        ) {
+
+          <div class="field-error">
+
+            @if (
+              loginForm
+                .get('password')
+                ?.errors?.['required']
+            ) {
+
+              <small>
+                La contraseña es obligatoria
+              </small>
+
+            }
+
+
+            @if (
+              loginForm
+                .get('password')
+                ?.errors?.['minlength']
+            ) {
+
+              <small>
+                Mínimo 6 caracteres
+              </small>
+
+            }
+
+
+            @if (
+              loginForm
+                .get('password')
+                ?.errors?.['maxlength']
+            ) {
+
+              <small>
+                Máximo 64 caracteres
+              </small>
+
+            }
+
+          </div>
 
         }
 
       </div>
 
-      @if(isBrowser){
-      <div class="turnstile-wrapper">
-        <div id="turnstile-container"></div>
+
+      <!-- RECUPERAR CONTRASEÑA -->
+
+      <div class="forgot-password-row">
+
+        <a routerLink="/forgot-password">
+          ¿Olvidaste tu contraseña?
+        </a>
+
       </div>
+
+
+      <!-- TURNSTILE -->
+
+      @if (isBrowser) {
+
+        <div class="login-turnstile">
+
+          <div id="turnstile-container"></div>
+
+        </div>
+
       }
 
 
       <!-- BOTÓN -->
-      <button type="submit" class="btn-main" [disabled]="loginForm.invalid || !turnstileToken ">
+
+      <button
+        type="submit"
+        class="login-submit"
+        [disabled]="
+          loginForm.invalid ||
+          !turnstileToken
+        "
+      >
         Ingresar
       </button>
 
     </form>
 
+
     <!-- MENSAJES -->
 
-    @if(error){
+    @if (error) {
 
-    <p class="error">
-      {{ error }}
-    </p>
-
-    }
-
-    @if(message){
-
-    <p class="success">
-      {{ message }}
-    </p>
+      <p
+        class="login-message login-error"
+        role="alert"
+      >
+        {{ error }}
+      </p>
 
     }
 
-  </div>
+
+    @if (message) {
+
+      <p
+        class="login-message login-success"
+        role="status"
+      >
+        {{ message }}
+      </p>
+
+    }
+
+  </main>
 
 </div>
