@@ -1,28 +1,10 @@
-import {
-  Component,
-  OnInit,
-  Inject,
-  PLATFORM_ID,
-  ChangeDetectorRef
-} from '@angular/core';
-
-import {
-  CommonModule,
-  isPlatformBrowser
-} from '@angular/common';
-
+import {Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef} from '@angular/core';
+import {CommonModule,isPlatformBrowser} from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
-
 import { Header } from '../../components/header/header';
-
 import { User } from '../../models/user.models';
-
-import {
-  Horario,
-  HorarioNuevo
-} from '../../models/horario.model';
-
+import {Horario,HorarioNuevo} from '../../models/horario.model';
 import { UserService } from '../../services/user-service';
 import { HorarioService } from '../../services/horario.service';
 
@@ -30,13 +12,7 @@ import { HorarioService } from '../../services/horario.service';
 @Component({
   selector: 'app-gestion-cronogramas',
   standalone: true,
-
-  imports: [
-    CommonModule,
-    FormsModule,
-    Header
-  ],
-
+  imports: [CommonModule,FormsModule,Header],
   templateUrl: './gestion-cronogramas.html',
   styleUrl: './gestion-cronogramas.css'
 })
@@ -48,8 +24,6 @@ export class GestionCronogramas implements OnInit {
   // =====================================================
 
   isBrowser = false;
-
-
   // =====================================================
   // PESTAÑAS
   // =====================================================
@@ -61,74 +35,45 @@ export class GestionCronogramas implements OnInit {
     = 'cronogramas';
 
 
-  // =====================================================
-  // EMPLEADOS
-  // =====================================================
 
-  empleados: User[] = [];
-
-
-  // =====================================================
-  // HORARIOS
-  // =====================================================
-
+  empleados: User[] = [];  
   horarios: Horario[] = [];
-
-
-  // =====================================================
-  // ESTADO DEL FORMULARIO
-  // =====================================================
+ 
 
   mostrarFormulario = false;
-
   guardando = false;
-
   mensaje = '';
-
   error = '';
 
-
-  // =====================================================
-  // DÍAS DISPONIBLES
-  // =====================================================
-
   diasDisponibles = [
-
     {
       valor: 'lunes',
       nombre: 'Lunes'
     },
-
     {
       valor: 'martes',
       nombre: 'Martes'
     },
-
     {
       valor: 'miercoles',
       nombre: 'Miércoles'
     },
-
     {
       valor: 'jueves',
       nombre: 'Jueves'
     },
-
     {
       valor: 'viernes',
       nombre: 'Viernes'
     },
-
     {
       valor: 'sabado',
       nombre: 'Sábado'
     },
-
     {
       valor: 'domingo',
       nombre: 'Domingo'
     }
-
   ];
 
 
@@ -137,31 +82,20 @@ export class GestionCronogramas implements OnInit {
   // =====================================================
 
   nuevoHorario: HorarioNuevo = {
-
     usuario_id: null,
-
     dias_semana: [],
-
     hora_entrada: '',
-
     hora_salida: '',
-
     tolerancia_minutos: 10,
-
     modalidad: 'PRESENCIAL'
-
   };
-
 
   // =====================================================
   // CONTROL DEL MES MOSTRADO
   // =====================================================
 
   fechaMesActual = new Date(2026, 7, 1);
-
-
   get mesActual(): string {
-
     return new Intl.DateTimeFormat(
       'es-AR',
       {
@@ -171,8 +105,6 @@ export class GestionCronogramas implements OnInit {
     ).format(this.fechaMesActual);
 
   }
-
-
   // =====================================================
   // MES ANTERIOR
   // =====================================================
@@ -180,18 +112,11 @@ export class GestionCronogramas implements OnInit {
   mesAnterior(): void {
 
     this.fechaMesActual = new Date(
-
       this.fechaMesActual.getFullYear(),
-
       this.fechaMesActual.getMonth() - 1,
-
       1
-
     );
-
   }
-
-
   // =====================================================
   // MES SIGUIENTE
   // =====================================================
@@ -199,15 +124,10 @@ export class GestionCronogramas implements OnInit {
   mesSiguiente(): void {
 
     this.fechaMesActual = new Date(
-
       this.fechaMesActual.getFullYear(),
-
       this.fechaMesActual.getMonth() + 1,
-
       1
-
     );
-
   }
 
 
@@ -218,19 +138,12 @@ export class GestionCronogramas implements OnInit {
   get horariosAgrupados(): any[] {
 
     const grupos: any[] = [];
-
-
     for (const horario of this.horarios) {
-
-
       // Buscar si el empleado ya fue agregado
       // al arreglo de grupos.
-
       let grupo = grupos.find(
-
         (item) =>
           item.usuario_id === horario.usuario_id
-
       );
 
 
@@ -238,38 +151,23 @@ export class GestionCronogramas implements OnInit {
       // creamos el grupo del empleado.
 
       if (!grupo) {
-
         grupo = {
-
           usuario_id:
             horario.usuario_id,
-
           nombre:
             horario.nombre || '',
-
           apellido:
             horario.apellido || '',
-
           email:
             horario.email || '',
-
           horarios: []
-
         };
-
-
         grupos.push(grupo);
-
       }
-
-
       // Agregar el horario al empleado.
-
       grupo.horarios.push(horario);
 
     }
-
-
     // ===================================================
     // ORDENAR LOS HORARIOS DE CADA EMPLEADO
     // ===================================================
@@ -307,24 +205,14 @@ export class GestionCronogramas implements OnInit {
     const orden: Record<string, number> = {
 
       lunes: 1,
-
       martes: 2,
-
       miercoles: 3,
-
       jueves: 4,
-
       viernes: 5,
-
       sabado: 6,
-
       domingo: 7
-
     };
-
-
     return orden[dia.toLowerCase()] || 99;
-
   }
 
 
@@ -366,26 +254,16 @@ export class GestionCronogramas implements OnInit {
     const nombres: Record<string, string> = {
 
       lunes: 'Lunes',
-
       martes: 'Martes',
-
       miercoles: 'Miércoles',
-
       jueves: 'Jueves',
-
       viernes: 'Viernes',
-
       sabado: 'Sábado',
-
       domingo: 'Domingo'
-
     };
-
-
     return nombres[dia.toLowerCase()] || dia;
 
   }
-
 
   // =====================================================
   // CONSTRUCTOR
@@ -394,11 +272,8 @@ export class GestionCronogramas implements OnInit {
   constructor(
 
     private userService: UserService,
-
     private horarioService: HorarioService,
-
     private cdr: ChangeDetectorRef,
-
     @Inject(PLATFORM_ID)
     private platformId: Object
 
@@ -424,15 +299,10 @@ export class GestionCronogramas implements OnInit {
       return;
 
     }
-
-
     this.cargarEmpleados();
-
     this.cargarHorarios();
 
   }
-
-
   // =====================================================
   // CARGAR EMPLEADOS
   // =====================================================
@@ -581,17 +451,11 @@ export class GestionCronogramas implements OnInit {
     this.nuevoHorario.dias_semana = [
 
       'lunes',
-
       'martes',
-
       'miercoles',
-
       'jueves',
-
       'viernes'
-
     ];
-
   }
 
 
@@ -611,8 +475,6 @@ export class GestionCronogramas implements OnInit {
       );
 
   }
-
-
   // =====================================================
   // CAMBIAR PESTAÑA
   // =====================================================

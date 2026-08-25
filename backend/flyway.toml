@@ -1,0 +1,33 @@
+# =====================================================
+# WORKTRACK - CONFIGURACIÓN DE FLYWAY
+# =====================================================
+
+
+# -----------------------------------------------------
+# BASE DE DATOS LOCAL DE DESARROLLO
+# -----------------------------------------------------
+
+[environments.development]
+
+url = "jdbc:mariadb://127.0.0.1:3306/worktrack_flyway"
+
+user = "root"
+
+password = ""
+
+
+# -----------------------------------------------------
+# CONFIGURACIÓN GENERAL DE FLYWAY
+# -----------------------------------------------------
+
+[flyway]
+
+environment = "development"
+
+locations = [
+    "filesystem:../database/migrations"
+]
+
+validateMigrationNaming = true
+
+cleanDisabled = true
