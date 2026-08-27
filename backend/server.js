@@ -32,6 +32,7 @@ const cors = require('cors');
 
 const qrRoutes = require('./routes/qr.router');
 const asistenciaRoutes = require('./routes/asistencia.router');
+const solicitudRoutes = require('./routes/solicitud.router');
 const horarioRoutes = require('./routes/horario.router');
 const authRoutes = require('./routes/auth.router');
 const userRoutes = require('./routes/users.router');
@@ -70,6 +71,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/asistencias', asistenciaRoutes);
 
 app.use('/api/horarios', horarioRoutes);
+
+app.use('/api/solicitudes',solicitudRoutes);
 
 
 // ======================================================

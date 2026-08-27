@@ -1,44 +1,53 @@
-<!-- administracion.html -->
-
 <div class="dashboard-container">
 
-  <!-- HEADER -->
   <app-header></app-header>
 
-  <!-- CONTENIDO -->
   <main class="dashboard-content">
 
     <!-- NOTIFICACIONES -->
     <section class="card notification-card">
-
       <div class="card-header">
         <h2>Notificaciones del sistema</h2>
-        <span class="pending-badge">5 pendientes</span>
+
+        <span class="pending-badge">
+          5 pendientes
+        </span>
       </div>
 
       <ul>
-        <li>3 solicitudes de cambio de horario pendientes</li>
-        <li>2 nuevos empleados requieren asignación de cronograma</li>
-        <li>Sistema actualizado: v2.1.4 disponible</li>
+        <li>
+          3 solicitudes de cambio de horario
+          pendientes
+        </li>
+
+        <li>
+          2 nuevos empleados requieren asignación
+          de cronograma
+        </li>
+
+        <li>
+          Sistema actualizado: v2.1.4 disponible
+        </li>
       </ul>
 
-      <button class="primary-btn">
+      <button
+        type="button"
+        class="primary-btn"
+      >
         Ir al panel de administración
       </button>
-
     </section>
 
     <!-- PERFIL -->
     <section class="card profile-card">
-
       <div class="avatar">
         {{ admin.iniciales }}
       </div>
 
       <div class="profile-info">
-
         <h2>
-          {{ admin.nombre }} {{ admin.apellido }}
+          {{ admin.nombre }}
+          {{ admin.apellido }}
         </h2>
 
         <p>
@@ -48,65 +57,104 @@
         <p>
           👤 {{ admin.role }}
         </p>
-
       </div>
-
     </section>
 
     <!-- QR -->
-    <section class="admin-panel" (click)="irAqrDinamico()">
-
+    <section
+      class="admin-panel"
+      tabindex="0"
+      role="button"
+      (click)="irAqrDinamico()"
+      (keydown.enter)="irAqrDinamico()"
+    >
       <div>
         <h2>QR</h2>
-        <p>Generar código QR dinámico</p>
+
+        <p>
+          Generar código QR dinámico
+        </p>
       </div>
 
-      <span class="arrow">
-        →
-      </span>
-
+      <span class="arrow">→</span>
     </section>
 
-    <!-- PANEL ADMIN -->
-    <section class="admin-panel" (click)="irAEmployees()">
-
+    <!-- USUARIOS -->
+    <section
+      class="admin-panel"
+      tabindex="0"
+      role="button"
+      (click)="irAEmployees()"
+      (keydown.enter)="irAEmployees()"
+    >
       <div>
         <h2>Panel de Administración</h2>
-        <p>Gestión completa de empleados, roles y permisos</p>
+
+        <p>
+          Gestión completa de usuarios, roles
+          y permisos
+        </p>
       </div>
 
-      <span class="arrow">
-        →
-      </span>
+      <span class="arrow">→</span>
+    </section>
 
+    <!-- CRONOGRAMAS -->
+    <section
+      class="admin-panel"
+      tabindex="0"
+      role="button"
+      (click)="irAGestionCronogramas()"
+      (keydown.enter)="irAGestionCronogramas()"
+    >
+      <div>
+        <h2>Gestión de Cronogramas</h2>
+
+        <p>
+          Asignar, modificar y eliminar horarios
+          de los usuarios
+        </p>
+      </div>
+
+      <span class="arrow">→</span>
     </section>
 
     <!-- RESUMEN -->
     <section class="card summary-card">
-
       <h3>Resumen general</h3>
 
       <div class="summary-grid">
-
         <div class="summary-item">
-          <span class="summary-number purple-text">45</span>
-          <span class="summary-label">Empleados activos</span>
+          <span class="summary-number purple-text">
+            45
+          </span>
+
+          <span class="summary-label">
+            Empleados activos
+          </span>
         </div>
 
         <div class="summary-item">
-          <span class="summary-number purple-text">98%</span>
-          <span class="summary-label">Asistencia general</span>
+          <span class="summary-number purple-text">
+            98%
+          </span>
+
+          <span class="summary-label">
+            Asistencia general
+          </span>
         </div>
 
         <div class="summary-item">
-          <span class="summary-number purple-text">3</span>
-          <span class="summary-label">Solicitudes pendientes</span>
-        </div>
+          <span class="summary-number purple-text">
+            3
+          </span>
 
+          <span class="summary-label">
+            Solicitudes pendientes
+          </span>
+        </div>
       </div>
-
     </section>
 
   </main>
-
 </div>

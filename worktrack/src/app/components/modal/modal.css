@@ -1,0 +1,170 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.62);
+  backdrop-filter: blur(3px);
+  animation: aparecerFondo 0.2s ease;
+}
+
+.modal-box {
+  width: min(100%, 460px);
+  padding: 30px;
+  border-radius: 22px;
+  background: white;
+  text-align: center;
+  box-shadow: 0 24px 65px rgba(0, 0, 0, 0.28);
+  animation: aparecerModal 0.22s ease;
+}
+
+.modal-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 62px;
+  height: 62px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  font-size: 27px;
+}
+
+.icon-danger {
+  background: #fff0f0;
+  color: #d93025;
+}
+
+.icon-warning {
+  background: #fff8e8;
+  color: #f57c00;
+}
+
+.icon-success {
+  background: #eaf8ef;
+  color: #168447;
+}
+
+.icon-info {
+  background: #eef2ff;
+  color: #2947b8;
+}
+
+.modal-box h2 {
+  margin: 0 0 12px;
+  color: #1d2939;
+  font-size: 23px;
+}
+
+.modal-box > p {
+  margin: 0;
+  color: #526078;
+  line-height: 1.6;
+}
+
+.modal-extra {
+  margin-top: 16px;
+}
+
+.modal-extra:empty {
+  display: none;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.cancel-btn,
+.confirm-btn {
+  flex: 1;
+  min-height: 46px;
+  padding: 12px 16px;
+  border-radius: 11px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.cancel-btn {
+  border: 1px solid #cbd4e3;
+  background: white;
+  color: #344054;
+}
+
+.confirm-btn {
+  border: none;
+  color: white;
+}
+
+.confirm-danger {
+  background: #d93025;
+}
+
+.confirm-danger:hover:not(:disabled) {
+  background: #b42318;
+}
+
+.confirm-warning {
+  background: #f57c00;
+}
+
+.confirm-warning:hover:not(:disabled) {
+  background: #d96700;
+}
+
+.confirm-success {
+  background: #168447;
+}
+
+.confirm-success:hover:not(:disabled) {
+  background: #116c39;
+}
+
+.confirm-info {
+  background: #2947b8;
+}
+
+.confirm-info:hover:not(:disabled) {
+  background: #20398f;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@keyframes aparecerFondo {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes aparecerModal {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-box {
+    padding: 24px 18px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+}

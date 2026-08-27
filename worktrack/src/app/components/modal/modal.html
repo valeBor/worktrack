@@ -1,0 +1,66 @@
+<div
+  class="modal-overlay"
+  *ngIf="visible"
+  (click)="cerrarDesdeFondo($event)"
+>
+  <section
+    class="modal-box"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-titulo"
+    [attr.aria-describedby]="
+      mensaje ? 'modal-mensaje' : null
+    "
+  >
+    <div
+      class="modal-icon"
+      [ngClass]="'icon-' + tipo"
+    >
+      <i
+        class="bi"
+        [ngClass]="icono"
+      ></i>
+    </div>
+
+    <h2 id="modal-titulo">
+      {{ titulo }}
+    </h2>
+
+    <p
+      id="modal-mensaje"
+      *ngIf="mensaje"
+    >
+      {{ mensaje }}
+    </p>
+
+    <div class="modal-extra">
+      <ng-content></ng-content>
+    </div>
+
+    <div class="modal-actions">
+      <button
+        type="button"
+        class="cancel-btn"
+        *ngIf="mostrarCancelar"
+        [disabled]="procesando"
+        (click)="cancelarAccion()"
+      >
+        {{ textoCancelar }}
+      </button>
+
+      <button
+        type="button"
+        class="confirm-btn"
+        [ngClass]="'confirm-' + tipo"
+        [disabled]="procesando"
+        (click)="confirmarAccion()"
+      >
+        {{
+          procesando
+            ? 'Procesando...'
+            : textoConfirmar
+        }}
+      </button>
+    </div>
+  </section>
+</div>

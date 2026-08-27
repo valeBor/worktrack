@@ -1,0 +1,204 @@
+<section class="solicitudes-panel">
+  <header class="panel-header">
+    <div>
+      <h2>Solicitudes de cambio de horario</h2>
+      <p>Revisá los cambios solicitados por los empleados.</p>
+    </div>
+
+    <button type="button" class="reload-btn" [disabled]="cargando" (click)="cargarSolicitudes()">
+      <i class="bi bi-arrow-clockwise"></i>
+      Actualizar
+    </button>
+  </header>
+
+  <!-- ADMIN: SOLO CONSULTA -->
+  <div class="read-only-info" *ngIf="rolActual === 'admin'">
+    <i class="bi bi-eye"></i>
+    <span>El administrador puede consultar las solicitudes, pero la aprobación o el rechazo corresponde a Supervisor y Recursos Humanos.</span>
+  </div>
+
+  <!-- CARGANDO -->
+  <div class="state-card" *ngIf="cargando">
+    <div class="spinner"></div>
+    <p>Cargando solicitudes pendientes...</p>
+  </div>
+
+  <!-- ERROR -->
+  <div class="state-card error-state" *ngIf="!cargando && errorCarga">
+    <i class="bi bi-exclamation-circle"></i>
+    <h3>No fue posible cargar las solicitudes</h3>
+    <p>Verificá la conexión e intentá nuevamente.</p>
+
+    <button type="button" class="retry-btn" (click)="cargarSolicitudes()">
+      Volver a intentar
+    </button>
+  </div>
+
+  <!-- SIN SOLICITUDES -->
+  <div class="state-card" *ngIf="!cargando && !errorCarga && solicitudes.length === 0">
+    <i class="bi bi-clipboard2-check"></i>
+    <h3>No hay solicitudes pendientes</h3>
+    <p>Las nuevas solicitudes de los empleados aparecerán en esta sección.</p>
+  </div>
+
+  <!-- LISTADO -->
+  <div class="solicitudes-list" *ngIf="!cargando && !errorCarga && solicitudes.length > 0">
+    <article class="solicitud-card" *ngFor="let solicitud of solicitudes">
+      <div class="card-header">
+        <div class="employee-avatar">
+          {{ obtenerIniciales(solicitud) }}
+        </div>
+
+        <div class="employee-info">
+          <h3>{{ solicitud.usuario_nombre }} {{ solicitud.usuario_apellido }}</h3>
+          <span>{{ solicitud.usuario_email }}</span>
+          <small>Enviada el {{ formatearFechaHora(solicitud.creada_en) }}</small>
+        </div>
+
+        <span class="pending-badge">
+          <i class="bi bi-clock"></i>
+          Pendiente
+        </span>
+      </div>
+
+      <div class="date-row">
+        <i class="bi bi-calendar3"></i>
+        <span>Fecha solicitada:</span>
+        <strong>{{ formatearFecha(solicitud.fecha_solicitada) }}</strong>
+      </div>
+
+      <div class="schedule-comparison">
+        <div class="schedule-box current">
+          <span>Horario actual</span>
+          <strong>
+            {{ formatearHora(solicitud.hora_entrada_actual) }}
+            -
+            {{ formatearHora(solicitud.hora_salida_actual) }}
+          </strong>
+          <small>{{ solicitud.modalidad_actual }}</small>
+        </div>
+
+        <div class="comparison-arrow">
+          <i class="bi bi-arrow-right"></i>
+        </div>
+
+        <div class="schedule-box requested">
+          <span>Horario solicitado</span>
+          <strong>
+            {{ formatearHora(solicitud.hora_entrada_solicitada) }}
+            -
+            {{ formatearHora(solicitud.hora_salida_solicitada) }}
+          </strong>
+          <small>Solo para esta fecha</small>
+        </div>
+      </div>
+
+      <div class="reason-box">
+        <span>Motivo</span>
+        <p>{{ solicitud.motivo }}</p>
+      </div>
+
+      <div class="request-details">
+        <span>
+          <i class="bi bi-building"></i>
+          {{ solicitud.modalidad_actual }}
+        </span>
+
+        <span>
+          <i class="bi bi-hourglass-split"></i>
+          Tolerancia: {{ solicitud.tolerancia_actual }} min
+        </span>
+      </div>
+
+      <div class="card-actions" *ngIf="puedeResolver">
+        <button type="button" class="reject-btn" (click)="abrirModal(solicitud, 'RECHAZADA')">
+          <i class="bi bi-x-lg"></i>
+          Rechazar
+        </button>
+
+        <button type="button" class="approve-btn" (click)="abrirModal(solicitud, 'APROBADA')">
+          <i class="bi bi-check-lg"></i>
+          Aprobar
+        </button>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- MODAL REUTILIZABLE -->
+<app-modal
+  [visible]="mostrarModal"
+  [titulo]="tituloModal"
+  [mensaje]="mensajeModal"
+  [tipo]="tipoModal"
+  [textoConfirmar]="textoConfirmarModal"
+  textoCancelar="Cancelar"
+  [mostrarCancelar]="true"
+  [procesando]="procesando"
+  (confirmar)="confirmarResolucion()"
+  (cancelar)="cerrarModal()">
+
+  <div class="modal-content" *ngIf="solicitudSeleccionada">
+    <div class="modal-schedule">
+      <div>
+        <span>Horario actual</span>
+        <strong>
+          {{ formatearHora(solicitudSeleccionada.hora_entrada_actual) }}
+          -
+          {{ formatearHora(solicitudSeleccionada.hora_salida_actual) }}
+        </strong>
+      </div>
+
+      <i class="bi bi-arrow-right"></i>
+
+      <div>
+        <span>Horario solicitado</span>
+        <strong>
+          {{ formatearHora(solicitudSeleccionada.hora_entrada_solicitada) }}
+          -
+          {{ formatearHora(solicitudSeleccionada.hora_salida_solicitada) }}
+        </strong>
+      </div>
+    </div>
+
+    <div class="response-group">
+      <div class="response-label">
+        <label for="respuesta-solicitud">
+          {{ accionSeleccionada === 'RECHAZADA' ? 'Motivo del rechazo *' : 'Observación opcional' }}
+        </label>
+
+        <span>{{ respuesta.length }}/500</span>
+      </div>
+
+      <textarea
+        id="respuesta-solicitud"
+        rows="4"
+        maxlength="500"
+        [(ngModel)]="respuesta"
+        [class.input-error]="errorRespuesta"
+        [placeholder]="
+          accionSeleccionada === 'RECHAZADA'
+            ? 'Explicá por qué no se puede aprobar el cambio...'
+            : 'Podés agregar una observación para el empleado...'
+        ">
+      </textarea>
+
+      <small class="response-help" *ngIf="accionSeleccionada === 'APROBADA'">
+        La observación no es obligatoria para aprobar.
+      </small>
+
+      <small class="response-error" *ngIf="errorRespuesta">
+        {{ errorRespuesta }}
+      </small>
+    </div>
+  </div>
+</app-modal>
+
+<!-- TOAST REUTILIZABLE -->
+<app-toast
+  [visible]="toastVisible"
+  [mensaje]="toastMensaje"
+  [tipo]="toastTipo"
+  [duracion]="4000"
+  (cerrar)="cerrarToast()">
+</app-toast>

@@ -1,26 +1,19 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import {Router,RouterModule} from '@angular/router';
 import { Header } from '../../components/header/header';
 import { AuthService } from '../../services/auth.service';
 
-
 @Component({
   selector: 'app-admin',
-  standalone:true,
+  standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, Header],
   templateUrl: './admin.html',
-  styleUrl: './admin.css',
+  styleUrl: './admin.css'
 })
 export class Admin implements OnInit {
-
-constructor(private router: Router,
-            private auth: AuthService
-           ){}
-
-
- admin = {
+  admin = {
     nombre: '',
     apellido: '',
     email: '',
@@ -28,16 +21,17 @@ constructor(private router: Router,
     iniciales: ''
   };
 
- ngOnInit(): void {
+  constructor(
+    private router: Router,
+    private auth: AuthService
+  ) {}
 
+  ngOnInit(): void {
     const user = this.auth.getUser();
 
     if (!user) {
-
       this.router.navigate(['/login']);
-
       return;
-
     }
 
     this.admin = {
@@ -51,19 +45,21 @@ constructor(private router: Router,
     };
   }
 
+  irAEmployees(): void {
+    this.router.navigate([
+      '/employee-list'
+    ]);
+  }
 
+  irAqrDinamico(): void {
+    this.router.navigate([
+      '/qr-visor'
+    ]);
+  }
 
-
-
-
-irAEmployees(){
-  this.router.navigate(['/employee-list']);
-}
-
-irAqrDinamico(){
-  this.router.navigate(['/qr-visor'])
-}
- 
-
-  
+  irAGestionCronogramas(): void {
+    this.router.navigate([
+      '/gestion-cronogramas'
+    ]);
+  }
 }

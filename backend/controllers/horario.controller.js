@@ -1,267 +1,202 @@
-const horarioService = require("../services/horario.service");
+const horarioService = require(
+  '../services/horario.service'
+);
 
 // ======================================================
-// GET TODOS
+// RESPONDER ERROR
 // ======================================================
 
-exports.getHorarios =
-  async (req, res) => {
+function responderError(
+  res,
+  error,
+  mensajePredeterminado
+) {
+  console.error(mensajePredeterminado, error);
 
-    try {
+  return res.status(
+    error.statusCode || 500
+  ).json({
+    mensaje:
+      error.message ||
+      mensajePredeterminado
+  });
+}
 
-      const horarios =
-        await horarioService
-          .getHorarios();
+// ======================================================
+// USUARIOS GESTIONABLES
+// ======================================================
 
+exports.getUsuariosGestionables = async (
+  req,
+  res
+) => {
+  try {
+    const usuarios =
+      await horarioService
+        .getUsuariosGestionables(req.user);
 
-      return res.json(
-        horarios
+    return res.json(usuarios);
+  } catch (error) {
+    return responderError(
+      res,
+      error,
+      'Error al obtener los usuarios gestionables.'
+    );
+  }
+};
+
+// ======================================================
+// OBTENER HORARIOS PERMITIDOS
+// ======================================================
+
+exports.getHorarios = async (req, res) => {
+  try {
+    const horarios =
+      await horarioService.getHorarios(
+        req.user
       );
 
-
-    } catch (error) {
-
-      console.error(
-        "Error al obtener horarios:",
-        error
-      );
-
-
-      return res
-        .status(500)
-        .json({
-
-          mensaje:
-            "Error al obtener horarios."
-
-        });
-
-    }
-
-  };
-
+    return res.json(horarios);
+  } catch (error) {
+    return responderError(
+      res,
+      error,
+      'Error al obtener horarios.'
+    );
+  }
+};
 
 // ======================================================
-// GET HORARIOS DE UN EMPLEADO
+// OBTENER HORARIOS DE UN USUARIO
 // ======================================================
 
-exports.getHorariosUsuario =
-  async (req, res) => {
+exports.getHorariosUsuario = async (
+  req,
+  res
+) => {
+  try {
+    const { usuarioId } = req.params;
 
-    try {
-
-      const {
-        usuarioId
-      } = req.params;
-
-
-      const horarios =
-        await horarioService
-          .getHorariosUsuario(
-            usuarioId
-          );
-
-
-      return res.json(
-        horarios
-      );
-
-
-    } catch (error) {
-
-      return res
-        .status(
-          error.statusCode || 500
-        )
-        .json({
-
-          mensaje:
-            error.message ||
-            "Error al obtener horarios."
-
-        });
-
-    }
-
-  };
-
-
-// ======================================================
-// GET MI HORARIO DE HOY
-// ======================================================
-
-exports.getMiHorarioHoy =
-  async (req, res) => {
-
-    try {
-
-      const usuarioId =
-        req.user?.id;
-
-
-      const horario =
-        await horarioService
-          .getMiHorarioHoy(
-            usuarioId
-          );
-
-
-      return res.json(
-        horario
-      );
-
-
-    } catch (error) {
-
-      return res
-        .status(
-          error.statusCode || 500
-        )
-        .json({
-
-          mensaje:
-            error.message ||
-            "Error al obtener horario."
-
-        });
-
-    }
-
-  };
-
-
-// ======================================================
-// POST CREAR
-// ======================================================
-
-exports.createHorario =
-  async (req, res) => {
-
-    try {
-
-      const resultado =
-        await horarioService
-          .createHorario(
-            req.body
-          );
-
-
-      return res
-        .status(201)
-        .json(
-          resultado
+    const horarios =
+      await horarioService
+        .getHorariosUsuario(
+          req.user,
+          usuarioId
         );
 
+    return res.json(horarios);
+  } catch (error) {
+    return responderError(
+      res,
+      error,
+      'Error al obtener los horarios del usuario.'
+    );
+  }
+};
 
-    } catch (error) {
+// ======================================================
+// OBTENER MI HORARIO DE HOY
+// ======================================================
 
-      console.error(
-        "Error al crear horario:",
-        error
+exports.getMiHorarioHoy = async (
+  req,
+  res
+) => {
+  try {
+    const horario =
+      await horarioService
+        .getMiHorarioHoy(req.user?.id);
+
+    return res.json(horario);
+  } catch (error) {
+    return responderError(
+      res,
+      error,
+      'Error al obtener el horario de hoy.'
+    );
+  }
+};
+
+// ======================================================
+// CREAR CRONOGRAMA
+// ======================================================
+
+exports.createHorario = async (
+  req,
+  res
+) => {
+  try {
+    const resultado =
+      await horarioService.createHorario(
+        req.user,
+        req.body
       );
 
-
-      return res
-        .status(
-          error.statusCode || 500
-        )
-        .json({
-
-          mensaje:
-            error.message ||
-            "Error al crear cronograma."
-
-        });
-
-    }
-
-  };
-
+    return res.status(201).json(
+      resultado
+    );
+  } catch (error) {
+    return responderError(
+      res,
+      error,
+      'Error al crear el cronograma.'
+    );
+  }
+};
 
 // ======================================================
-// PUT
+// ACTUALIZAR CRONOGRAMA COMPLETO
 // ======================================================
 
-exports.updateHorario =
-  async (req, res) => {
+exports.updateCronogramaUsuario = async (
+  req,
+  res
+) => {
+  try {
+    const { usuarioId } = req.params;
 
-    try {
+    const resultado =
+      await horarioService
+        .updateCronogramaUsuario(
+          req.user,
+          usuarioId,
+          req.body
+        );
 
-      const {
-        id
-      } = req.params;
-
-
-      const resultado =
-        await horarioService
-          .updateHorario(
-            id,
-            req.body
-          );
-
-
-      return res.json(
-        resultado
-      );
-
-
-    } catch (error) {
-
-      return res
-        .status(
-          error.statusCode || 500
-        )
-        .json({
-
-          mensaje:
-            error.message ||
-            "Error al modificar horario."
-
-        });
-
-    }
-
-  };
-
+    return res.json(resultado);
+  } catch (error) {
+    return responderError(
+      res,
+      error,
+      'Error al actualizar el cronograma.'
+    );
+  }
+};
 
 // ======================================================
-// DELETE
+// ELIMINAR CRONOGRAMA COMPLETO
 // ======================================================
 
-exports.deleteHorario =
-  async (req, res) => {
+exports.deleteCronogramaUsuario = async (
+  req,
+  res
+) => {
+  try {
+    const { usuarioId } = req.params;
 
-    try {
+    const resultado =
+      await horarioService
+        .deleteCronogramaUsuario(
+          req.user,
+          usuarioId
+        );
 
-      const {
-        id
-      } = req.params;
-
-
-      const resultado =
-        await horarioService
-          .deleteHorario(id);
-
-
-      return res.json(
-        resultado
-      );
-
-
-    } catch (error) {
-
-      return res
-        .status(
-          error.statusCode || 500
-        )
-        .json({
-
-          mensaje:
-            error.message ||
-            "Error al eliminar horario."
-
-        });
-
-    }
-
-  };
+    return res.json(resultado);
+  } catch (error) {
+    return responderError(
+      res,
+      error,
+      'Error al eliminar el cronograma.'
+    );
+  }
+};

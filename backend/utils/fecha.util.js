@@ -82,6 +82,79 @@ function obtenerFechaHoraActual() {
 
 }
 
+/**
+ * Convierte una fecha:
+ *
+ * 2026-08-31
+ *
+ * en su día semanal:
+ *
+ * lunes
+ */
+function obtenerDiaSemanaDeFecha(fecha) {
+
+  const formatoValido =
+    /^\d{4}-\d{2}-\d{2}$/.test(
+      String(fecha || '')
+    );
+
+
+  if (!formatoValido) {
+
+    return null;
+
+  }
+
+
+  const [
+    anio,
+    mes,
+    dia
+  ] = fecha
+    .split('-')
+    .map(Number);
+
+
+  const fechaUtc = new Date(
+    Date.UTC(
+      anio,
+      mes - 1,
+      dia,
+      12,
+      0,
+      0
+    )
+  );
+
+
+  const fechaExiste =
+    fechaUtc.getUTCFullYear() === anio
+    &&
+    fechaUtc.getUTCMonth() === mes - 1
+    &&
+    fechaUtc.getUTCDate() === dia;
+
+
+  if (!fechaExiste) {
+
+    return null;
+
+  }
+
+
+  const nombreDia =
+    new Intl.DateTimeFormat(
+      'en-US',
+      {
+        weekday: 'long',
+        timeZone: 'UTC'
+      }
+    ).format(fechaUtc);
+
+
+  return DIAS_SEMANA[nombreDia] || null;
+
+}
 
 /**
  * Convierte:
@@ -117,7 +190,10 @@ function horaASegundos(hora) {
 }
 
 
+
 module.exports = {
   obtenerFechaHoraActual,
+  obtenerDiaSemanaDeFecha,
   horaASegundos
 };
+

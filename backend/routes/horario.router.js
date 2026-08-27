@@ -1,25 +1,22 @@
 const express = require('express');
 const router = express.Router();
 
-const horarioController =
-  require('../controllers/horario.controller');
+const horarioController = require('../controllers/horario.controller');
 
 const {
   verifyToken
 } = require('../middlewares/authMiddleware');
 
 const {
-  soloSupervisorAdmin
+  soloGestionHorarios
 } = require('../middlewares/roleMiddleware');
-
 
 // ======================================================
 // MI HORARIO DE HOY
 // ======================================================
 //
-// Cualquier usuario autenticado puede consultar
-// SU propio horario.
-//
+// Todo usuario autenticado puede consultar su horario.
+// ======================================================
 
 router.get(
   '/mio/hoy',
@@ -27,21 +24,35 @@ router.get(
   horarioController.getMiHorarioHoy
 );
 
+// ======================================================
+// USUARIOS QUE EL ROL PUEDE ADMINISTRAR
+// ======================================================
+//
+// admin      → usuarios habilitados para administración
+// rrhh       → supervisores
+// supervisor → empleados
+// ======================================================
+
+router.get(
+  '/usuarios-gestionables',
+  verifyToken,
+  soloGestionHorarios,
+  horarioController.getUsuariosGestionables
+);
 
 // ======================================================
-// TODOS LOS HORARIOS
+// TODOS LOS HORARIOS PERMITIDOS
 // ======================================================
 //
-// Solo Supervisor/Admin.
-//
+// La respuesta se filtra en el backend según el rol.
+// ======================================================
 
 router.get(
   '/',
   verifyToken,
-  soloSupervisorAdmin,
+  soloGestionHorarios,
   horarioController.getHorarios
 );
-
 
 // ======================================================
 // HORARIOS DE UN USUARIO
@@ -50,45 +61,44 @@ router.get(
 router.get(
   '/usuario/:usuarioId',
   verifyToken,
-  soloSupervisorAdmin,
+  soloGestionHorarios,
   horarioController.getHorariosUsuario
 );
 
-
 // ======================================================
-// CREAR HORARIO
+// CREAR CRONOGRAMA
 // ======================================================
 
 router.post(
   '/',
   verifyToken,
-  soloSupervisorAdmin,
+  soloGestionHorarios,
   horarioController.createHorario
 );
 
-
 // ======================================================
-// MODIFICAR HORARIO
+// REEMPLAZAR CRONOGRAMA COMPLETO DE UN USUARIO
+// ======================================================
+//
+// Permite modificar días, horas, modalidad y tolerancia.
 // ======================================================
 
 router.put(
-  '/:id',
+  '/usuario/:usuarioId',
   verifyToken,
-  soloSupervisorAdmin,
-  horarioController.updateHorario
+  soloGestionHorarios,
+  horarioController.updateCronogramaUsuario
 );
 
-
 // ======================================================
-// ELIMINAR HORARIO
+// ELIMINAR CRONOGRAMA COMPLETO DE UN USUARIO
 // ======================================================
 
 router.delete(
-  '/:id',
+  '/usuario/:usuarioId',
   verifyToken,
-  soloSupervisorAdmin,
-  horarioController.deleteHorario
+  soloGestionHorarios,
+  horarioController.deleteCronogramaUsuario
 );
-
 
 module.exports = router;

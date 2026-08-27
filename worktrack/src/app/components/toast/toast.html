@@ -1,0 +1,25 @@
+<div
+  class="toast"
+  *ngIf="visible && mensaje"
+  [ngClass]="'toast-' + tipo"
+  role="status"
+  aria-live="polite"
+>
+  <i
+    class="bi toast-icon"
+    [ngClass]="icono"
+  ></i>
+
+  <span class="toast-message">
+    {{ mensaje }}
+  </span>
+
+  <button
+    type="button"
+    class="toast-close"
+    aria-label="Cerrar notificación"
+    (click)="cerrarToast()"
+  >
+    ✕
+  </button>
+</div>

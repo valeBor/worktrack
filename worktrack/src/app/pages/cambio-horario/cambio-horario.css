@@ -4,21 +4,29 @@
   box-sizing: border-box;
 }
 
+
 .page-container {
   min-height: 100vh;
   background-color: #f5f6fa;
   font-family: Arial, Helvetica, sans-serif;
 }
 
+
 .content {
   width: 85%;
-  max-width: 900px;
+  max-width: 950px;
   margin: 35px auto;
+  padding-bottom: 40px;
 
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 26px;
 }
+
+
+/* ======================================================
+   BOTÓN NUEVA SOLICITUD
+   ====================================================== */
 
 .btn-new {
   width: 100%;
@@ -26,9 +34,14 @@
   border-radius: 18px;
   padding: 22px;
 
-  background: linear-gradient(90deg, #22c55e, #4ade80);
-  color: white;
+  background:
+    linear-gradient(
+      90deg,
+      #22c55e,
+      #4ade80
+    );
 
+  color: white;
   font-size: 18px;
   font-weight: 700;
 
@@ -39,12 +52,634 @@
   align-items: center;
   gap: 12px;
 
-  box-shadow: 0 8px 18px rgba(34, 197, 94, 0.25);
+  box-shadow:
+    0 8px 18px
+    rgba(34, 197, 94, 0.25);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
+
 
 .btn-new:hover {
   transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 24px
+    rgba(34, 197, 94, 0.3);
 }
+
+
+.btn-new:focus-visible,
+.btn-retry:focus-visible,
+.btn-cancel:focus-visible,
+.btn-submit:focus-visible {
+  outline: 3px solid
+    rgba(37, 99, 235, 0.3);
+
+  outline-offset: 3px;
+}
+
+
+/* ======================================================
+   FORMULARIO
+   ====================================================== */
+
+.form-card {
+  padding: 30px;
+  border-radius: 24px;
+
+  background-color: white;
+
+  box-shadow:
+    0 8px 28px
+    rgba(0, 0, 0, 0.08);
+}
+
+
+.form-header {
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e5e7eb;
+
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+
+.form-header-icon {
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+
+  border-radius: 15px;
+
+  background-color: #dcfce7;
+  color: #168447;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 23px;
+}
+
+
+.form-header h2 {
+  color: #1f2937;
+  font-size: 22px;
+}
+
+
+.form-header p {
+  margin-top: 5px;
+
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+
+.request-form {
+  margin-top: 26px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+
+.form-group label {
+  color: #374151;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+
+.required {
+  color: #dc2626;
+}
+
+
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+}
+
+
+.character-counter {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+
+/* ======================================================
+   INPUTS
+   ====================================================== */
+
+.input-wrapper {
+  min-height: 48px;
+  padding: 0 14px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+
+  background-color: white;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.input-wrapper:focus-within {
+  border-color: #22c55e;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(34, 197, 94, 0.14);
+}
+
+
+.input-wrapper > i {
+  flex-shrink: 0;
+
+  color: #6b7280;
+  font-size: 17px;
+}
+
+
+.input-wrapper input {
+  width: 100%;
+  min-width: 0;
+  height: 46px;
+
+  border: none;
+  outline: none;
+
+  background-color: transparent;
+
+  color: #1f2937;
+  font-family: inherit;
+  font-size: 15px;
+}
+
+
+.input-wrapper.input-error {
+  border-color: #dc2626;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(220, 38, 38, 0.1);
+}
+
+
+textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 14px 15px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  outline: none;
+
+  color: #1f2937;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+
+  resize: vertical;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+textarea:focus {
+  border-color: #22c55e;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(34, 197, 94, 0.14);
+}
+
+
+textarea.input-error {
+  border-color: #dc2626;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(220, 38, 38, 0.1);
+}
+
+
+.field-help {
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+
+.field-error {
+  color: #c62828;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+
+.range-error {
+  margin-top: -3px;
+}
+
+
+/* ======================================================
+   CONSULTA DEL HORARIO
+   ====================================================== */
+
+.schedule-status {
+  padding: 14px 16px;
+  border-radius: 12px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  font-size: 14px;
+}
+
+
+.loading-schedule {
+  background-color: #eff6ff;
+  color: #2947b8;
+}
+
+
+.schedule-error {
+  background-color: #fef2f2;
+  color: #c62828;
+}
+
+
+.small-spinner {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+
+  border: 3px solid #bfdbfe;
+  border-top-color: #2947b8;
+  border-radius: 50%;
+
+  animation:
+    girar 0.8s linear infinite;
+}
+
+
+/* ======================================================
+   HORARIO ACTUAL
+   ====================================================== */
+
+.current-schedule {
+  padding: 18px;
+  border: 1px solid #bbf7d0;
+  border-radius: 16px;
+
+  background-color: #f0fdf4;
+}
+
+
+.current-schedule-title {
+  margin-bottom: 16px;
+
+  color: #168447;
+  font-size: 14px;
+  font-weight: 700;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+.current-schedule-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 12px;
+}
+
+
+.current-data {
+  padding: 12px;
+  border-radius: 10px;
+
+  background-color:
+    rgba(255, 255, 255, 0.78);
+
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+
+.current-data span {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+
+.current-data strong {
+  color: #1f2937;
+  font-size: 14px;
+}
+
+
+/* ======================================================
+   SECCIÓN DEL HORARIO SOLICITADO
+   ====================================================== */
+
+.form-section {
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+
+  background-color: #fafafa;
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+
+.form-section-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+
+
+.form-section-title > i {
+  margin-top: 2px;
+
+  color: #7c3aed;
+  font-size: 19px;
+}
+
+
+.form-section-title h3 {
+  color: #374151;
+  font-size: 17px;
+}
+
+
+.form-section-title p {
+  margin-top: 4px;
+
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+
+.time-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 16px;
+}
+
+
+/* ======================================================
+   INFORMACIÓN
+   ====================================================== */
+
+.information-box {
+  padding: 15px 16px;
+  border: 1px solid #bfdbfe;
+  border-radius: 13px;
+
+  background-color: #eff6ff;
+  color: #2947b8;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+
+.information-box i {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+
+.information-box p {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+
+/* ======================================================
+   ACCIONES DEL FORMULARIO
+   ====================================================== */
+
+.form-actions {
+  padding-top: 4px;
+
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+
+.btn-cancel,
+.btn-submit {
+  min-height: 46px;
+  padding: 0 21px;
+
+  border-radius: 12px;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease,
+    background-color 0.2s ease;
+}
+
+
+.btn-cancel {
+  border: 1px solid #d1d5db;
+
+  background-color: white;
+  color: #4b5563;
+}
+
+
+.btn-cancel:hover:not(:disabled) {
+  background-color: #f3f4f6;
+}
+
+
+.btn-submit {
+  border: none;
+
+  background-color: #22c55e;
+  color: white;
+
+  box-shadow:
+    0 6px 14px
+    rgba(34, 197, 94, 0.22);
+}
+
+
+.btn-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  background-color: #16a34a;
+}
+
+
+.btn-cancel:disabled,
+.btn-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+
+.button-spinner {
+  width: 18px;
+  height: 18px;
+
+  border: 3px solid
+    rgba(255, 255, 255, 0.45);
+
+  border-top-color: white;
+  border-radius: 50%;
+
+  animation:
+    girar 0.8s linear infinite;
+}
+
+
+/* ======================================================
+   ESTADOS GENERALES DEL LISTADO
+   ====================================================== */
+
+.state-card {
+  min-height: 210px;
+  padding: 34px;
+  border-radius: 22px;
+
+  background-color: white;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+
+  text-align: center;
+  color: #6b7280;
+
+  box-shadow:
+    0 6px 20px
+    rgba(0, 0, 0, 0.07);
+}
+
+
+.state-card > i {
+  color: #22c55e;
+  font-size: 38px;
+}
+
+
+.state-card h3 {
+  color: #374151;
+  font-size: 20px;
+}
+
+
+.state-card p {
+  max-width: 520px;
+  line-height: 1.5;
+}
+
+
+.error-state > i {
+  color: #dc2626;
+}
+
+
+.btn-retry {
+  margin-top: 8px;
+  padding: 11px 18px;
+
+  border: none;
+  border-radius: 10px;
+
+  background-color: #2947b8;
+  color: white;
+
+  font-weight: 700;
+  cursor: pointer;
+}
+
+
+.spinner {
+  width: 38px;
+  height: 38px;
+
+  border: 4px solid #dcfce7;
+  border-top-color: #22c55e;
+  border-radius: 50%;
+
+  animation:
+    girar 0.8s linear infinite;
+}
+
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* ======================================================
+   GRUPOS DEL LISTADO
+   ====================================================== */
+
+.request-group {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
 
 .section-title {
   display: flex;
@@ -54,22 +689,77 @@
   color: #6b7280;
 }
 
-.section-title h3 {
-  font-size: 18px;
+
+.section-title i {
+  font-size: 20px;
 }
 
-.request-card {
-  background-color: white;
-  border-radius: 22px;
-  padding: 26px;
 
-  border-left: 4px solid #f97316;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+.section-title h3 {
+  font-size: 19px;
+}
+
+
+.titulo-pendiente {
+  color: #c65d09;
+}
+
+
+.titulo-aprobada {
+  color: #168447;
+}
+
+
+.titulo-rechazada {
+  color: #c62828;
+}
+
+
+.empty-group {
+  padding: 18px 20px;
+
+  border: 1px dashed #d1d5db;
+  border-radius: 14px;
+
+  background-color:
+    rgba(255, 255, 255, 0.65);
+
+  color: #6b7280;
+  text-align: center;
+}
+
+
+/* ======================================================
+   TARJETA DE SOLICITUD
+   ====================================================== */
+
+.request-card {
+  padding: 26px;
+  border-left:
+    5px solid #f97316;
+  border-radius: 22px;
+
+  background-color: white;
+
+  box-shadow:
+    0 6px 20px
+    rgba(0, 0, 0, 0.08);
 
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
+
+
+.request-card.estado-aprobada {
+  border-left-color: #168447;
+}
+
+
+.request-card.estado-rechazada {
+  border-left-color: #c62828;
+}
+
 
 .card-header {
   display: flex;
@@ -77,11 +767,14 @@
   gap: 14px;
 }
 
+
 .status-icon {
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
 
   border-radius: 14px;
+
   background-color: #f97316;
   color: white;
 
@@ -92,20 +785,38 @@
   font-size: 22px;
 }
 
-.card-header h2 {
-  font-size: 18px;
-  color: #374151;
+
+.status-icon.estado-aprobada {
+  background-color: #168447;
 }
 
-.card-header p {
-  font-size: 14px;
-  color: #9ca3af;
-  margin-top: 4px;
+
+.status-icon.estado-rechazada {
+  background-color: #c62828;
 }
+
+
+.header-text {
+  min-width: 0;
+}
+
+
+.card-header h2 {
+  color: #374151;
+  font-size: 19px;
+}
+
+
+.card-header p {
+  margin-top: 4px;
+
+  color: #9ca3af;
+  font-size: 14px;
+}
+
 
 .badge {
   margin-left: auto;
-
   padding: 8px 16px;
   border-radius: 999px;
 
@@ -116,58 +827,164 @@
   font-weight: 700;
 }
 
+
+.badge.estado-aprobada {
+  background-color: #ecfdf3;
+  color: #168447;
+}
+
+
+.badge.estado-rechazada {
+  background-color: #fef2f2;
+  color: #c62828;
+}
+
+
+/* ======================================================
+   FECHA Y HORARIOS DEL LISTADO
+   ====================================================== */
+
 .date-row {
+  color: #6b7280;
+  font-size: 15px;
+
   display: flex;
   align-items: center;
   gap: 8px;
-
-  color: #6b7280;
-  font-size: 15px;
 }
+
+
+.date-row strong {
+  color: #374151;
+}
+
 
 .schedule-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
   gap: 14px;
 }
 
+
 .schedule-box {
+  padding: 18px;
+
   border: 1px solid #e5e7eb;
   border-radius: 14px;
-  padding: 18px;
 
   display: flex;
   flex-direction: column;
+  gap: 7px;
+}
+
+
+.schedule-box span {
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+
+.schedule-box strong {
+  color: #374151;
+  font-size: 17px;
+}
+
+
+.schedule-box.requested {
+  border-color: #bbf7d0;
+  background-color: #f0fdf4;
+}
+
+
+/* ======================================================
+   DETALLES DEL LISTADO
+   ====================================================== */
+
+.request-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+
+.detail-chip {
+  padding: 7px 11px;
+  border-radius: 999px;
+
+  background-color: #f3f4f6;
+  color: #4b5563;
+
+  font-size: 13px;
+
+  display: inline-flex;
+  align-items: center;
   gap: 6px;
 }
 
-.schedule-box span {
-  font-size: 13px;
+
+/* ======================================================
+   MOTIVO Y RESPUESTA
+   ====================================================== */
+
+.reason span,
+.response-box span {
   color: #9ca3af;
-}
-
-.schedule-box strong {
-  font-size: 16px;
-  color: #374151;
-}
-
-.schedule-box.requested {
-  background-color: #f0fdf4;
-  border-color: #bbf7d0;
-}
-
-.reason span {
   font-size: 14px;
-  color: #9ca3af;
 }
 
-.reason p {
+
+.reason p,
+.response-box p {
   margin-top: 6px;
+
   color: #374151;
   line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
-/* MOBILE */
+
+.response-box {
+  padding: 16px;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+
+  background-color: #f8fafc;
+}
+
+
+.resolution-data {
+  padding-top: 15px;
+  border-top: 1px solid #e5e7eb;
+
+  color: #6b7280;
+  font-size: 13px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+/* ======================================================
+   TABLET
+   ====================================================== */
+
+@media (max-width: 800px) {
+
+  .current-schedule-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+}
+
+
+/* ======================================================
+   MOBILE
+   ====================================================== */
 
 @media (max-width: 600px) {
 
@@ -176,25 +993,83 @@
     margin: 24px auto;
   }
 
+
   .btn-new {
-    font-size: 16px;
     padding: 18px;
+    font-size: 16px;
   }
+
+
+  .form-card {
+    padding: 21px;
+    border-radius: 19px;
+  }
+
+
+  .form-header {
+    align-items: flex-start;
+  }
+
+
+  .form-header h2 {
+    font-size: 19px;
+  }
+
+
+  .time-grid,
+  .schedule-grid {
+    grid-template-columns: 1fr;
+  }
+
+
+  .current-schedule-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+
+  .form-section {
+    padding: 16px;
+  }
+
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+
+  .btn-cancel,
+  .btn-submit {
+    width: 100%;
+  }
+
 
   .request-card {
     padding: 20px;
   }
 
+
   .card-header {
     align-items: flex-start;
+    flex-wrap: wrap;
   }
+
+
+  .header-text {
+    flex: 1;
+  }
+
 
   .badge {
-    font-size: 12px;
+    margin-left: 62px;
     padding: 6px 12px;
+
+    font-size: 12px;
   }
 
-  .schedule-grid {
-    grid-template-columns: 1fr;
+
+  .state-card {
+    padding: 26px 20px;
   }
+
 }

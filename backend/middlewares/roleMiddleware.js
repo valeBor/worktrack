@@ -1,38 +1,60 @@
-exports.verifyRole = (...roles) => {
+// ======================================================
+// VERIFICAR UNO O MÁS ROLES
+// ======================================================
 
+exports.verifyRole = (...rolesPermitidos) => {
   return (req, res, next) => {
+    const role = String(req.user?.role || '').toLowerCase();
 
-    if (!roles.includes(req.user.role)) {
-
-      return res.status(403).json({
-        message: 'Sin permisos'
+    if (!role) {
+      return res.status(401).json({
+        mensaje: 'Usuario no autenticado.'
       });
+    }
 
+    if (!rolesPermitidos.includes(role)) {
+      return res.status(403).json({
+        mensaje: 'No tiene permisos para realizar esta acción.'
+      });
     }
 
     next();
-
   };
-
 };
 
 // ======================================================
-// SOLO SUPERVISOR O ADMIN
+// ROLES QUE PUEDEN GESTIONAR HORARIOS
+// ======================================================
+//
+// Este middleware solamente permite entrar al módulo.
+//
+// La validación de qué usuarios puede administrar cada
+// rol se realizará en horario.service.js.
+//
+// admin:
+// Puede administrar todos los horarios.
+//
+// rrhh:
+// Puede administrar horarios de supervisores.
+//
+// supervisor:
+// Puede administrar horarios de empleados.
+// No puede administrar su propio horario.
 // ======================================================
 
-exports.soloSupervisorAdmin = (req, res, next) => {
+exports.soloGestionHorarios = (req, res, next) => {
+  const role = String(req.user?.role || '').toLowerCase();
 
-  const role = req.user?.role;
+  const rolesPermitidos = [
+    'admin',
+    'rrhh',
+    'supervisor'
+  ];
 
-  if (
-    role !== 'supervisor' &&
-    role !== 'admin'
-  ) {
-
+  if (!rolesPermitidos.includes(role)) {
     return res.status(403).json({
-      mensaje: 'No tiene permisos para gestionar cronogramas'
+      mensaje: 'No tiene permisos para gestionar horarios.'
     });
-
   }
 
   next();

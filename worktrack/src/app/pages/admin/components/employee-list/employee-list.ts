@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-
 import { Header } from '../../../../components/header/header';
 import { User } from '../../../../models/user.models';
 import { EmployeeListChild } from '../employee-list-child/employee-list-child';
@@ -12,12 +11,7 @@ import { UserService } from '../../../../services/user-service';
 @Component({
   selector: 'app-employee-list',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    Header,
-    EmployeeListChild
-  ],
+  imports: [CommonModule,FormsModule,Header,EmployeeListChild],
   templateUrl: './employee-list.html',
   styleUrl: './employee-list.css'
 })
@@ -199,9 +193,7 @@ export class EmployeeList implements OnInit {
   showFormAgregar(): void {
 
     this.showFormAdd = true;
-
     this.viewListEmp = false;
-
     this.showComponentchild = false;
 
   }

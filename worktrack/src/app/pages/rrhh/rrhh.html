@@ -1,177 +1,128 @@
 <div class="rrhh-page">
 
-  <!-- HEADER -->
-  <app-header
-    [cantidadNotificaciones]="4">
-  </app-header>
+  <app-header></app-header>
 
   <main class="content">
 
-    <!-- ALERTAS -->
-    <section class="alert-card">
-
-      <div class="alert-header">
-        <i class="bi bi-exclamation-triangle alert-icon"></i>
-
-        <span class="alert-title">
-          Alertas de RRHH
-        </span>
-
-        <span class="alert-count">
-          4 nuevas
-        </span>
-      </div>
-
-      <ul class="alert-list">
-        <li>3 empleados con llegadas tarde</li>
-        <li>2 solicitudes de cambio de horario pendientes</li>
-        <li>1 ausencia sin justificar</li>
-      </ul>
-
-      <button class="btn-alertas">
-        Ver todas las alertas
-      </button>
-
-    </section>
-
     <!-- PERFIL -->
     <section class="card perfil-card">
-
       <div class="avatar">
         {{ rrhh.iniciales }}
       </div>
 
       <div class="perfil-info">
-
         <h2>
-          {{ rrhh.nombre }} {{ rrhh.apellido }}
+          {{ rrhh.nombre }}
+          {{ rrhh.apellido }}
         </h2>
 
-        <p>          
+        <p>
           ✉ {{ rrhh.email }}
         </p>
 
-        <p>        
-           👤 {{ rrhh.role }}
-        </p>
-
         <p>
-          
-          Área RRHH
+          👤 {{ rrhh.role }}
         </p>
 
+        <p>Área RRHH</p>
       </div>
-
-    </section>
-
-    <!-- ESTADO GENERAL -->
-    <section class="card today-card">
-
-      <h3>
-        <i class="bi bi-calendar-check"></i>
-        Estado general de hoy
-      </h3>
-
-      <div class="today-grid">
-
-        <div class="today-box">
-          <span>Presentes</span>
-          <strong>{{ resumenMes.presentes }}</strong>
-        </div>
-
-        <div class="today-box">
-          <span>Ausencias</span>
-          <strong>{{ resumenMes.ausencias }}</strong>
-        </div>
-
-      </div>
-
     </section>
 
     <!-- ACCIONES RRHH -->
     <section class="actions-grid">
 
-      <a routerLink="/asistencias" class="action-card green">
+      <!-- GESTIÓN DE CRONOGRAMAS -->
+      <a
+        routerLink="/gestion-cronogramas"
+        class="action-card green"
+      >
+        <div>
+          <i class="bi bi-calendar-week"></i>
 
+          <h3>Gestión de Cronogramas</h3>
+
+          <p>
+            Asignar, editar y eliminar horarios
+            de supervisores
+          </p>
+        </div>
+
+        <i class="bi bi-chevron-right"></i>
+      </a>
+
+      <!-- ASISTENCIA -->
+      <a
+        routerLink="/asistencias"
+        class="action-card blue"
+      >
         <div>
           <i class="bi bi-clipboard-check"></i>
+
           <h3>Asistencia</h3>
-          <p>Ver asistencia de empleados</p>
+
+          <p>
+            Consultar registros de asistencia
+          </p>
         </div>
 
         <i class="bi bi-chevron-right"></i>
-
       </a>
 
-      <a routerLink="/cambios-horario" class="action-card blue">
-
+      <!-- CAMBIOS DE HORARIO -->
+      <a
+        routerLink="/cambios-horario"
+        class="action-card violet"
+      >
         <div>
           <i class="bi bi-clock-history"></i>
+
           <h3>Cambios de horario</h3>
-          <p>Vista de solicitudes y cambios</p>
+
+          <p>
+            Revisar solicitudes de cambio
+          </p>
         </div>
 
         <i class="bi bi-chevron-right"></i>
-
       </a>
 
-      <a routerLink="/historial-horarios" class="action-card violet">
-
+      <!-- HISTORIAL -->
+      <a
+        routerLink="/historial-horarios"
+        class="action-card orange"
+      >
         <div>
           <i class="bi bi-journal-text"></i>
+
           <h3>Historial de horarios</h3>
-          <p>Ver cambios realizados</p>
+
+          <p>
+            Consultar cambios realizados
+          </p>
         </div>
 
         <i class="bi bi-chevron-right"></i>
-
       </a>
 
-      <a routerLink="/informes" class="action-card orange">
-
+      <!-- INFORMES -->
+      <a
+        routerLink="/informes"
+        class="action-card green"
+      >
         <div>
           <i class="bi bi-file-earmark-bar-graph"></i>
+
           <h3>Informes</h3>
-          <p>Reportes, alertas y modificaciones</p>
+
+          <p>
+            Consultar reportes de asistencia
+          </p>
         </div>
 
         <i class="bi bi-chevron-right"></i>
-
       </a>
-
-    </section>
-
-    <!-- RESUMEN MES -->
-    <section class="card month-card">
-
-      <h3>Este mes</h3>
-
-      <div class="month-grid">
-
-        <div>
-          <strong>{{ resumenMes.empleados }}</strong>
-          <span>Empleados</span>
-        </div>
-
-        <div>
-          <strong>{{ resumenMes.presentes }}</strong>
-          <span>Presentes hoy</span>
-        </div>
-
-        <div>
-          <strong>{{ resumenMes.ausencias }}</strong>
-          <span>Ausencias</span>
-        </div>
-
-        <div>
-          <strong>{{ resumenMes.modificaciones }}</strong>
-          <span>Modificaciones</span>
-        </div>
-
-      </div>
 
     </section>
 
   </main>
-
 </div>

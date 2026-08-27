@@ -1,75 +1,58 @@
-import { Injectable, inject } from '@angular/core';
-
-import {
-  HttpClient
-} from '@angular/common/http';
-
-import {
-  Observable
-} from 'rxjs';
-
-import {
-  Horario,
-  HorarioNuevo,
-  CrearHorarioResponse
+import {Injectable, inject} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {Horario, HorarioNuevo, GuardarHorarioResponse,EliminarHorarioResponse
 } from '../models/horario.model';
+import {User} from '../models/user.models';
 
-
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({providedIn: 'root'})
 export class HorarioService {
-
-  private http =
-    inject(HttpClient);
-
+  private http = inject(HttpClient);
 
   private apiUrl =
     'http://localhost:3000/api/horarios';
 
+  // ====================================================
+  // USUARIOS GESTIONABLES SEGÚN EL ROL
+  // ====================================================
+
+  getUsuariosGestionables(): Observable<User[]> {
+    return this.http.get<User[]>(
+      `${this.apiUrl}/usuarios-gestionables`
+    );
+  }
 
   // ====================================================
-  // OBTENER TODOS LOS CRONOGRAMAS
+  // OBTENER CRONOGRAMAS PERMITIDOS
   // ====================================================
 
-  getHorarios():
-    Observable<Horario[]> {
-
+  getHorarios(): Observable<Horario[]> {
     return this.http.get<Horario[]>(
       this.apiUrl
     );
-
   }
 
-
   // ====================================================
-  // HORARIOS DE UN EMPLEADO
+  // HORARIOS DE UN USUARIO
   // ====================================================
 
   getHorariosUsuario(
     usuarioId: number
   ): Observable<Horario[]> {
-
     return this.http.get<Horario[]>(
       `${this.apiUrl}/usuario/${usuarioId}`
     );
-
   }
 
-
   // ====================================================
-  // HORARIO DEL USUARIO LOGUEADO PARA HOY
+  // HORARIO PROPIO DE HOY
   // ====================================================
 
-  getMiHorarioHoy():
-    Observable<Horario> {
-
+  getMiHorarioHoy(): Observable<Horario> {
     return this.http.get<Horario>(
       `${this.apiUrl}/mio/hoy`
     );
-
   }
-
 
   // ====================================================
   // CREAR CRONOGRAMA
@@ -77,45 +60,36 @@ export class HorarioService {
 
   createHorario(
     horario: HorarioNuevo
-  ): Observable<CrearHorarioResponse> {
-
-    return this.http.post<CrearHorarioResponse>(
+  ): Observable<GuardarHorarioResponse> {
+    return this.http.post<GuardarHorarioResponse>(
       this.apiUrl,
       horario
     );
-
   }
 
-
   // ====================================================
-  // MODIFICAR
+  // ACTUALIZAR CRONOGRAMA COMPLETO
   // ====================================================
 
-  updateHorario(
-    id: number,
-    horario: Partial<Horario>
-  ): Observable<{ mensaje: string }> {
-
-    return this.http.put<{ mensaje: string }>(
-      `${this.apiUrl}/${id}`,
+  updateCronogramaUsuario(
+    usuarioId: number,
+    horario: HorarioNuevo
+  ): Observable<GuardarHorarioResponse> {
+    return this.http.put<GuardarHorarioResponse>(
+      `${this.apiUrl}/usuario/${usuarioId}`,
       horario
     );
-
   }
 
-
   // ====================================================
-  // ELIMINAR
+  // ELIMINAR CRONOGRAMA COMPLETO
   // ====================================================
 
-  deleteHorario(
-    id: number
-  ): Observable<{ mensaje: string }> {
-
-    return this.http.delete<{ mensaje: string }>(
-      `${this.apiUrl}/${id}`
+  deleteCronogramaUsuario(
+    usuarioId: number
+  ): Observable<EliminarHorarioResponse> {
+    return this.http.delete<EliminarHorarioResponse>(
+      `${this.apiUrl}/usuario/${usuarioId}`
     );
-
   }
-
 }
