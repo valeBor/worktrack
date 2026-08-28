@@ -4,7 +4,8 @@
 
   <div class="edit-card">
 
-    <!-- HEADER -->
+    <!-- ENCABEZADO -->
+
     <div class="edit-header">
 
       <h2>
@@ -17,167 +18,274 @@
 
     </div>
 
-    <form>
+    <form
+      [formGroup]="editEmployeeForm"
+      (ngSubmit)="editEmployee()"
+      novalidate
+    >
 
-      <!-- GRID -->
+      <!-- DATOS PERSONALES -->
+
       <div class="edit-grid">
 
-        <!-- Nombre -->
+        <!-- NOMBRE -->
+
         <div class="input-group">
 
-          <label>Nombre</label>
+          <label for="edit-nombre">
+            Nombre
+          </label>
 
           <input
+            id="edit-nombre"
             type="text"
-            [(ngModel)]="employeeToEdit.nombre"
-            name="nombre"
+            formControlName="nombre"
             placeholder="Juan"
+            autocomplete="given-name"
+            maxlength="30"
+            [class.input-invalid]="isEditFieldInvalid('nombre')"
           >
+
+          <small
+            *ngIf="isEditFieldInvalid('nombre')"
+            class="field-error"
+          >
+            {{ getEditFieldError('nombre') }}
+          </small>
 
         </div>
 
-        <!-- Apellido -->
+        <!-- APELLIDO -->
+
         <div class="input-group">
 
-          <label>Apellido</label>
+          <label for="edit-apellido">
+            Apellido
+          </label>
 
           <input
+            id="edit-apellido"
             type="text"
-            [(ngModel)]="employeeToEdit.apellido"
-            name="apellido"
+            formControlName="apellido"
             placeholder="Pérez"
+            autocomplete="family-name"
+            maxlength="30"
+            [class.input-invalid]="isEditFieldInvalid('apellido')"
           >
+
+          <small
+            *ngIf="isEditFieldInvalid('apellido')"
+            class="field-error"
+          >
+            {{ getEditFieldError('apellido') }}
+          </small>
 
         </div>
 
-        <!-- Email -->
+        <!-- EMAIL -->
+
         <div class="input-group">
 
-          <label>Email</label>
+          <label for="edit-email">
+            Email
+          </label>
 
           <input
+            id="edit-email"
             type="email"
-            [(ngModel)]="employeeToEdit.email"
-            name="email"
+            formControlName="email"
             placeholder="empleado@empresa.com"
+            autocomplete="email"
+            maxlength="100"
+            [class.input-invalid]="isEditFieldInvalid('email')"
           >
+
+          <small
+            *ngIf="isEditFieldInvalid('email')"
+            class="field-error"
+          >
+            {{ getEditFieldError('email') }}
+          </small>
 
         </div>
 
-        <!-- Password -->
+        <!-- CONTRASEÑA -->
+
         <div class="input-group">
 
-          <label>Contraseña</label>
+          <label for="edit-password">
+            Nueva contraseña
+          </label>
 
           <input
+            id="edit-password"
             type="password"
-            [(ngModel)]="employeeToEdit.password"
-            name="password"
-            placeholder="********"
+            formControlName="password"
+            placeholder="Dejar vacío para conservarla"
+            autocomplete="new-password"
+            maxlength="64"
+            [class.input-invalid]="isEditFieldInvalid('password')"
           >
+
+          <small
+            *ngIf="isEditFieldInvalid('password')"
+            class="field-error"
+          >
+            {{ getEditFieldError('password') }}
+          </small>
+
+          <small
+            *ngIf="!isEditFieldInvalid('password')"
+            class="field-help"
+          >
+            Dejala vacía para conservar la contraseña actual. Si la cambiás, debe tener entre 8 y 64 caracteres, mayúscula, minúscula y número.
+          </small>
 
         </div>
 
       </div>
 
       <!-- ROLES -->
+
       <div class="roles-section">
 
         <label class="role-title">
           Rol del empleado
         </label>
 
-        <div class="roles-grid">
+        <div
+          class="roles-grid"
+          [class.roles-invalid]="isEditFieldInvalid('rol_id')"
+        >
 
-          <div
+          <button
+            type="button"
             class="role-card"
-            [class.active]="employeeToEdit.role === 'empleado'"
-            (click)="employeeToEdit.role = 'empleado'; employeeToEdit.rol_id = 3 "
+            [class.active]="editEmployeeForm.get('rol_id')?.value === 3"
+            [attr.aria-pressed]="editEmployeeForm.get('rol_id')?.value === 3"
+            [disabled]="savingEdit"
+            (click)="selectRole(3)"
           >
 
-            <h3>Empleado</h3>
+            <h3>
+              Empleado
+            </h3>
 
             <p>
               Acceso básico
             </p>
 
-          </div>
+          </button>
 
-          <div
+          <button
+            type="button"
             class="role-card"
-            [class.active]="employeeToEdit.role === 'supervisor'"
-            (click)="employeeToEdit.role = 'supervisor'; employeeToEdit.rol_id = 2 "
+            [class.active]="editEmployeeForm.get('rol_id')?.value === 2"
+            [attr.aria-pressed]="editEmployeeForm.get('rol_id')?.value === 2"
+            [disabled]="savingEdit"
+            (click)="selectRole(2)"
           >
 
-            <h3>Supervisor</h3>
+            <h3>
+              Supervisor
+            </h3>
 
             <p>
               Gestión de equipos
             </p>
 
-          </div>
+          </button>
 
-          <div
+          <button
+            type="button"
             class="role-card"
-            [class.active]="employeeToEdit.role === 'rrhh'"
-            (click)="employeeToEdit.role = 'rrhh'; employeeToEdit.rol_id = 4 "
+            [class.active]="editEmployeeForm.get('rol_id')?.value === 4"
+            [attr.aria-pressed]="editEmployeeForm.get('rol_id')?.value === 4"
+            [disabled]="savingEdit"
+            (click)="selectRole(4)"
           >
 
-            <h3>RRHH</h3>
+            <h3>
+              RRHH
+            </h3>
 
             <p>
               Recursos humanos
             </p>
 
-          </div>
+          </button>
 
-          <div
+          <button
+            type="button"
             class="role-card"
-            [class.active]="employeeToEdit.role === 'admin'"
-            (click)="employeeToEdit.role = 'admin'; employeeToEdit.rol_id = 1 "
+            [class.active]="editEmployeeForm.get('rol_id')?.value === 1"
+            [attr.aria-pressed]="editEmployeeForm.get('rol_id')?.value === 1"
+            [disabled]="savingEdit"
+            (click)="selectRole(1)"
           >
 
-            <h3>Administrador</h3>
+            <h3>
+              Administrador
+            </h3>
 
             <p>
               Control total
             </p>
 
-          </div>
+          </button>
 
         </div>
+
+        <small
+          *ngIf="isEditFieldInvalid('rol_id')"
+          class="field-error role-error"
+        >
+          {{ getEditFieldError('rol_id') }}
+        </small>
 
       </div>
 
       <!-- ESTADO -->
+
       <div class="checkbox-container">
 
         <input
+          id="edit-estado"
           type="checkbox"
-          [(ngModel)]="employeeToEdit.estado"
-          name="estado"
+          formControlName="estado"
         >
 
-        <span>
+        <label for="edit-estado">
           Empleado activo
-        </span>
+        </label>
 
       </div>
 
+      <!-- ERROR GENERAL -->
+
+      <div
+        *ngIf="formError"
+        class="form-message error-message"
+      >
+        {{ formError }}
+      </div>
+
       <!-- BOTONES -->
+
       <div class="buttons-container">
 
         <button
-          type="button"
+          type="submit"
           class="btn-save"
-          (click)="editEmployee(employeeToEdit)"
+          [disabled]="savingEdit"
         >
-          Guardar cambios
+          {{ savingEdit ? 'Guardando...' : 'Guardar cambios' }}
         </button>
 
         <button
           type="button"
           class="btn-cancel"
+          [disabled]="savingEdit"
           (click)="cerrar()"
         >
           Cerrar
@@ -190,4 +298,3 @@
   </div>
 
 </div>
-

@@ -1,39 +1,65 @@
 const bcrypt = require('bcrypt');
-
-const userService =
-  require('../services/userService');
-
-const {
-  validateUser
-} = require('../utils/validators');
+const userService = require('../services/userService');
+const {validateId, validateUser, normalizeUserData} = require('../utils/validators');
 
 
 // ======================================================
-// GET USUARIOS
+// RESPONDER ERRORES
+// ======================================================
+
+const handleUserError = (error, res) => {
+  if (error.status) {
+    return res.status(error.status).json({
+      field: error.field,
+      message: error.message
+    });
+  }
+
+  // Protección adicional ante dos solicitudes
+  // simultáneas con el mismo email.
+  if (error.code === 'ER_DUP_ENTRY') {
+    return res.status(409).json({
+      field: 'email',
+      message: 'El email ya está registrado'
+    });
+  }
+
+  if (error.code === 'ER_NO_REFERENCED_ROW_2') {
+    return res.status(400).json({
+      field: 'rol_id',
+      message: 'El rol seleccionado no existe'
+    });
+  }
+
+  if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+    return res.status(409).json({
+      field: 'form',
+      message: 'No se puede eliminar el usuario porque tiene información relacionada'
+    });
+  }
+
+  console.error('Error interno de usuarios:', error);
+
+  return res.status(500).json({
+    field: 'form',
+    message: 'Error interno del servidor'
+  });
+};
+
+
+// ======================================================
+// OBTENER USUARIOS
 // ======================================================
 
 exports.getUsers = async (req, res) => {
-
   try {
-
     const users =
       await userService.getUsers();
 
-    res.json(users);
-
+    return res.json(users);
   } catch (error) {
-
-    console.error(
-      'Error al obtener usuarios:',
-      error
-    );
-
-    res.status(500).json({
-      message: 'Error al obtener usuarios'
-    });
-
+    return handleUserError(error, res);
   }
-
 };
 
 
@@ -42,77 +68,37 @@ exports.getUsers = async (req, res) => {
 // ======================================================
 
 exports.createUser = async (req, res) => {
-
   try {
-
-    const error =
+    const validationError =
       validateUser(req.body);
 
-    if (error) {
-
-      return res.status(400).json({
-        message: error
-      });
-
+    if (validationError) {
+      return res.status(400).json(
+        validationError
+      );
     }
 
+    const userData =
+      normalizeUserData(req.body);
 
-    const {
-      nombre,
-      apellido,
-      email,
-      password,
-      estado,
-      rol_id
-    } = req.body;
-
-
-    // Generamos hash de la contraseña.
-
-    const hashedPassword =
+    userData.password =
       await bcrypt.hash(
-        password,
+        userData.password,
         10
       );
 
+    const result =
+      await userService.createUser(
+        userData
+      );
 
-    const newUser = {
-
-      nombre,
-      apellido,
-      email,
-
-      password:
-        hashedPassword,
-
-      estado,
-      rol_id
-
-    };
-
-
-    await userService.createUser(
-      newUser
-    );
-
-
-    res.status(201).json({
-      message: 'Usuario creado'
+    return res.status(201).json({
+      message: 'Usuario creado correctamente',
+      id: result.insertId
     });
-
   } catch (error) {
-
-    console.error(
-      'Error al crear usuario:',
-      error
-    );
-
-    res.status(500).json({
-      message: 'Error servidor'
-    });
-
+    return handleUserError(error, res);
   }
-
 };
 
 
@@ -121,92 +107,61 @@ exports.createUser = async (req, res) => {
 // ======================================================
 
 exports.updateUser = async (req, res) => {
-
   try {
+    const {id} = req.params;
 
-    const { id } = req.params;
+    const idError =
+      validateId(id);
 
-
-    const {
-      nombre,
-      apellido,
-      email,
-      password,
-      estado,
-      rol_id
-    } = req.body;
-
-
-    // Creamos los datos que siempre
-    // se pueden modificar.
-
-    const userData = {
-
-      nombre,
-      apellido,
-      email,
-      estado,
-      rol_id
-
-    };
-
-
-    // ==================================================
-    // CONTRASEÑA
-    // ==================================================
-    //
-    // Solamente generamos un hash nuevo
-    // si Admin escribió una contraseña.
-    //
-    // Si viene:
-    //
-    // password: ""
-    //
-    // NO modificamos la contraseña existente.
-    // ==================================================
-
-    if (
-      password &&
-      password.trim() !== ''
-    ) {
-
-      const hashedPassword =
-        await bcrypt.hash(
-          password,
-          10
-        );
-
-      userData.password =
-        hashedPassword;
-
+    if (idError) {
+      return res.status(400).json(
+        idError
+      );
     }
 
+    const validationError =
+      validateUser(
+        req.body,
+        true
+      );
 
-    await userService.updateUser(
-      id,
-      userData
-    );
+    if (validationError) {
+      return res.status(400).json(
+        validationError
+      );
+    }
 
+    const userData =
+      normalizeUserData(req.body);
 
-    res.json({
-      message: 'Usuario actualizado',
+    if (userData.password) {
+      userData.password =
+        await bcrypt.hash(
+          userData.password,
+          10
+        );
+    }
+
+    const result =
+      await userService.updateUser(
+        Number(id),
+        userData
+      );
+
+    if (result.affectedRows !== 1) {
+      return res.status(404).json({
+        field: 'id',
+        message: 'El usuario no existe'
+      });
+    }
+
+    return res.json({
+      message: 'Usuario actualizado correctamente',
       id: Number(id)
     });
-
   } catch (error) {
-
-    console.error(
-      'Error al actualizar usuario:',
-      error
-    );
-
-
-    res.status(500).json({
-      message: 'Error servidor'
-    });
-
+    return handleUserError(error, res);
   }
-
 };
 
 
@@ -215,31 +170,34 @@ exports.updateUser = async (req, res) => {
 // ======================================================
 
 exports.deleteUser = async (req, res) => {
-
   try {
+    const {id} = req.params;
 
-    const { id } = req.params;
+    const idError =
+      validateId(id);
 
+    if (idError) {
+      return res.status(400).json(
+        idError
+      );
+    }
 
-    await userService.deleteUser(id);
+    const result =
+      await userService.deleteUser(
+        Number(id)
+      );
 
+    if (result.affectedRows !== 1) {
+      return res.status(404).json({
+        field: 'id',
+        message: 'El usuario no existe'
+      });
+    }
 
-    res.json({
-      message: 'Usuario eliminado'
+    return res.json({
+      message: 'Usuario eliminado correctamente'
     });
-
   } catch (error) {
-
-    console.error(
-      'Error al eliminar usuario:',
-      error
-    );
-
-
-    res.status(500).json({
-      message: 'Error servidor'
-    });
-
+    return handleUserError(error, res);
   }
-
 };

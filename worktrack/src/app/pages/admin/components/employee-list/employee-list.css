@@ -663,3 +663,100 @@
   }
 
 }
+
+/* ===================================================== */
+/* VALIDACIONES DEL FORMULARIO */
+/* ===================================================== */
+
+.input-group input.input-invalid {
+  border-color: #dc2626;
+  background-color: #fff7f7;
+}
+
+.input-group input.input-invalid:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+.field-error {
+  display: block;
+  margin-top: 7px;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.field-help {
+  display: block;
+  margin-top: 7px;
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+
+/* ===================================================== */
+/* VALIDACIÓN DE ROLES */
+/* ===================================================== */
+
+.role-card {
+  font-family: inherit;
+}
+
+.roles-invalid .role-card {
+  border-color: #fca5a5;
+}
+
+.role-error {
+  margin-top: 10px;
+}
+
+.role-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+  transform: none;
+}
+
+
+/* ===================================================== */
+/* MENSAJES GENERALES */
+/* ===================================================== */
+
+.form-message {
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.success-message {
+  margin-bottom: 25px;
+  border: 1px solid #86efac;
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.error-message {
+  margin-top: 25px;
+  border: 1px solid #fca5a5;
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+
+/* ===================================================== */
+/* BOTONES DESHABILITADOS */
+/* ===================================================== */
+
+.btn-save:disabled,
+.btn-cancel:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-save:disabled:hover,
+.btn-cancel:disabled:hover {
+  opacity: 0.6;
+}

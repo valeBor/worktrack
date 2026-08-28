@@ -9,24 +9,19 @@
 
   <div class="page-header">
 
-    <button
-      type="button"
-      class="add-btn"
-      (click)="viewListemployee()"
-    >
+    <button type="button" class="add-btn" (click)="viewListemployee()">
       Lista de Empleados
     </button>
 
-    <button
-      type="button"
-      class="add-btn"
-      (click)="showFormAgregar()"
-    >
+    <button type="button" class="add-btn" (click)="showFormAgregar()">
       + Alta Empleado
     </button>
 
   </div>
 
+  <div *ngIf="successMessage" class="form-message success-message">
+    {{ successMessage }}
+  </div>
 
   <!-- ================================================= -->
   <!-- LISTADO DE EMPLEADOS -->
@@ -38,11 +33,7 @@
 
     <div class="search-box">
 
-      <input
-        type="text"
-        placeholder="Buscar por nombre, apellido, email o rol..."
-        [(ngModel)]="searchText"
-      >
+      <input type="text" placeholder="Buscar por nombre, apellido, email o rol..." [(ngModel)]="searchText">
 
     </div>
 
@@ -76,90 +67,82 @@
 
       @if (activeEmployees.length > 0) {
 
-        <div class="employee-list">
+      <div class="employee-list">
 
-          @for (employee of activeEmployees; track employee.id) {
+        @for (employee of activeEmployees; track employee.id) {
 
-            <article class="employee-card active-employee">
+        <article class="employee-card active-employee">
 
-              <!-- AVATAR -->
+          <!-- AVATAR -->
 
-              <div class="avatar">
+          <div class="avatar">
 
-                {{ employee.nombre.charAt(0) }}
-                {{ employee.apellido.charAt(0) }}
+            {{ employee.nombre.charAt(0) }}
+            {{ employee.apellido.charAt(0) }}
 
-              </div>
-
-
-              <!-- INFORMACIÓN -->
-
-              <div class="employee-info">
-
-                <h3>
-
-                  {{ employee.nombre }}
-                  {{ employee.apellido }}
-
-                </h3>
-
-                <p>
-                  {{ employee.email }}
-                </p>
-
-                <span class="role">
-
-                  {{ employee.role }}
-
-                </span>
-
-              </div>
+          </div>
 
 
-              <!-- ESTADO -->
+          <!-- INFORMACIÓN -->
 
-              <div class="status active">
+          <div class="employee-info">
 
-                Activo
+            <h3>
 
-              </div>
+              {{ employee.nombre }}
+              {{ employee.apellido }}
+
+            </h3>
+
+            <p>
+              {{ employee.email }}
+            </p>
+
+            <span class="role">
+
+              {{ employee.role }}
+
+            </span>
+
+          </div>
 
 
-              <!-- ACCIONES -->
+          <!-- ESTADO -->
 
-              <div class="actions">
+          <div class="status active">
 
-                <button
-                  type="button"
-                  class="edit-btn"
-                  (click)="editEmployee(employee)"
-                >
-                  Editar
-                </button>
+            Activo
 
-                <button
-                  type="button"
-                  class="delete-btn"
-                  (click)="deleteEmployee(employee)"
-                >
-                  Eliminar
-                </button>
+          </div>
 
-              </div>
 
-            </article>
+          <!-- ACCIONES -->
 
-          }
+          <div class="actions">
 
-        </div>
+            <button type="button" class="edit-btn" (click)="editEmployee(employee)">
+              Editar
+            </button>
+
+            <button type="button" class="delete-btn" (click)="deleteEmployee(employee)">
+              Eliminar
+            </button>
+
+          </div>
+
+        </article>
+
+        }
+
+      </div>
 
       } @else {
 
-        <div class="empty-message">
+      <div class="empty-message">
 
-          No se encontraron empleados activos.
+        No se encontraron empleados activos.
 
-        </div>
+      </div>
 
       }
 
@@ -195,90 +178,82 @@
 
       @if (inactiveEmployees.length > 0) {
 
-        <div class="employee-list">
+      <div class="employee-list">
 
-          @for (employee of inactiveEmployees; track employee.id) {
+        @for (employee of inactiveEmployees; track employee.id) {
 
-            <article class="employee-card inactive-employee">
+        <article class="employee-card inactive-employee">
 
-              <!-- AVATAR -->
+          <!-- AVATAR -->
 
-              <div class="avatar inactive-avatar">
+          <div class="avatar inactive-avatar">
 
-                {{ employee.nombre.charAt(0) }}
-                {{ employee.apellido.charAt(0) }}
+            {{ employee.nombre.charAt(0) }}
+            {{ employee.apellido.charAt(0) }}
 
-              </div>
-
-
-              <!-- INFORMACIÓN -->
-
-              <div class="employee-info">
-
-                <h3>
-
-                  {{ employee.nombre }}
-                  {{ employee.apellido }}
-
-                </h3>
-
-                <p>
-                  {{ employee.email }}
-                </p>
-
-                <span class="role inactive-role">
-
-                  {{ employee.role }}
-
-                </span>
-
-              </div>
+          </div>
 
 
-              <!-- ESTADO -->
+          <!-- INFORMACIÓN -->
 
-              <div class="status">
+          <div class="employee-info">
 
-                Inactivo
+            <h3>
 
-              </div>
+              {{ employee.nombre }}
+              {{ employee.apellido }}
+
+            </h3>
+
+            <p>
+              {{ employee.email }}
+            </p>
+
+            <span class="role inactive-role">
+
+              {{ employee.role }}
+
+            </span>
+
+          </div>
 
 
-              <!-- ACCIONES -->
+          <!-- ESTADO -->
 
-              <div class="actions">
+          <div class="status">
 
-                <button
-                  type="button"
-                  class="edit-btn"
-                  (click)="editEmployee(employee)"
-                >
-                  Editar
-                </button>
+            Inactivo
 
-                <button
-                  type="button"
-                  class="delete-btn"
-                  (click)="deleteEmployee(employee)"
-                >
-                  Eliminar
-                </button>
+          </div>
 
-              </div>
 
-            </article>
+          <!-- ACCIONES -->
 
-          }
+          <div class="actions">
 
-        </div>
+            <button type="button" class="edit-btn" (click)="editEmployee(employee)">
+              Editar
+            </button>
+
+            <button type="button" class="delete-btn" (click)="deleteEmployee(employee)">
+              Eliminar
+            </button>
+
+          </div>
+
+        </article>
+
+        }
+
+      </div>
 
       } @else {
 
-        <div class="empty-message">
+      <div class="empty-message">
 
-          No se encontraron empleados inactivos.
+        No se encontraron empleados inactivos.
 
-        </div>
+      </div>
 
       }
 
@@ -309,8 +284,7 @@
 
         </div>
 
-
-        <form>
+        <form [formGroup]="newEmployeeForm" (ngSubmit)="addEmployeeInthis()" novalidate>
 
           <div class="form-grid">
 
@@ -322,16 +296,14 @@
                 Nombre
               </label>
 
-              <input
-                id="nombre"
-                type="text"
-                name="nombre"
-                placeholder="Juan"
-                [(ngModel)]="employeeNew.nombre"
-              >
+              <input id="nombre" type="text" formControlName="nombre" placeholder="Juan" autocomplete="given-name"
+                maxlength="30" [class.input-invalid]="isNewFieldInvalid('nombre')">
+
+              <small *ngIf="isNewFieldInvalid('nombre')" class="field-error">
+                {{ getNewFieldError('nombre') }}
+              </small>
 
             </div>
-
 
             <!-- APELLIDO -->
 
@@ -341,16 +313,14 @@
                 Apellido
               </label>
 
-              <input
-                id="apellido"
-                type="text"
-                name="apellido"
-                placeholder="Pérez"
-                [(ngModel)]="employeeNew.apellido"
-              >
+              <input id="apellido" type="text" formControlName="apellido" placeholder="Pérez" autocomplete="family-name"
+                maxlength="30" [class.input-invalid]="isNewFieldInvalid('apellido')">
+
+              <small *ngIf="isNewFieldInvalid('apellido')" class="field-error">
+                {{ getNewFieldError('apellido') }}
+              </small>
 
             </div>
-
 
             <!-- EMAIL -->
 
@@ -360,16 +330,14 @@
                 Email
               </label>
 
-              <input
-                id="email"
-                type="email"
-                name="email"
-                placeholder="empleado@empresa.com"
-                [(ngModel)]="employeeNew.email"
-              >
+              <input id="email" type="email" formControlName="email" placeholder="empleado@empresa.com"
+                autocomplete="email" maxlength="100" [class.input-invalid]="isNewFieldInvalid('email')">
+
+              <small *ngIf="isNewFieldInvalid('email')" class="field-error">
+                {{ getNewFieldError('email') }}
+              </small>
 
             </div>
-
 
             <!-- CONTRASEÑA -->
 
@@ -379,18 +347,20 @@
                 Contraseña
               </label>
 
-              <input
-                id="password"
-                type="password"
-                name="password"
-                placeholder="********"
-                [(ngModel)]="employeeNew.password"
-              >
+              <input id="password" type="password" formControlName="password" placeholder="********"
+                autocomplete="new-password" maxlength="64" [class.input-invalid]="isNewFieldInvalid('password')">
+
+              <small *ngIf="isNewFieldInvalid('password')" class="field-error">
+                {{ getNewFieldError('password') }}
+              </small>
+
+              <small *ngIf="!isNewFieldInvalid('password')" class="field-help">
+                Entre 8 y 64 caracteres, con mayúscula, minúscula y número.
+              </small>
 
             </div>
 
           </div>
-
 
           <!-- ROLES -->
 
@@ -400,18 +370,11 @@
               Rol
             </label>
 
-            <div class="roles-grid">
+            <div class="roles-grid" [class.roles-invalid]="isNewFieldInvalid('rol_id')">
 
-              <!-- EMPLEADO -->
-
-              <div
-                class="role-card"
-                [class.active]="employeeNew.role === 'empleado'"
-                (click)="
-                  employeeNew.role = 'empleado';
-                  employeeNew.rol_id = 3
-                "
-              >
+              <button type="button" class="role-card" [class.active]="newEmployeeForm.get('rol_id')?.value === 3"
+                [attr.aria-pressed]="newEmployeeForm.get('rol_id')?.value === 3" [disabled]="savingNew"
+                (click)="selectNewRole(3)">
 
                 <h3>
                   Empleado
@@ -421,19 +384,11 @@
                   Acceso básico
                 </p>
 
-              </div>
+              </button>
 
-
-              <!-- SUPERVISOR -->
-
-              <div
-                class="role-card"
-                [class.active]="employeeNew.role === 'supervisor'"
-                (click)="
-                  employeeNew.role = 'supervisor';
-                  employeeNew.rol_id = 2
-                "
-              >
+              <button type="button" class="role-card" [class.active]="newEmployeeForm.get('rol_id')?.value === 2"
+                [attr.aria-pressed]="newEmployeeForm.get('rol_id')?.value === 2" [disabled]="savingNew"
+                (click)="selectNewRole(2)">
 
                 <h3>
                   Supervisor
@@ -443,19 +398,11 @@
                   Gestión de equipos
                 </p>
 
-              </div>
+              </button>
 
-
-              <!-- RRHH -->
-
-              <div
-                class="role-card"
-                [class.active]="employeeNew.role === 'rrhh'"
-                (click)="
-                  employeeNew.role = 'rrhh';
-                  employeeNew.rol_id = 4
-                "
-              >
+              <button type="button" class="role-card" [class.active]="newEmployeeForm.get('rol_id')?.value === 4"
+                [attr.aria-pressed]="newEmployeeForm.get('rol_id')?.value === 4" [disabled]="savingNew"
+                (click)="selectNewRole(4)">
 
                 <h3>
                   RRHH
@@ -465,19 +412,11 @@
                   Recursos humanos
                 </p>
 
-              </div>
+              </button>
 
-
-              <!-- ADMINISTRADOR -->
-
-              <div
-                class="role-card"
-                [class.active]="employeeNew.role === 'admin'"
-                (click)="
-                  employeeNew.role = 'admin';
-                  employeeNew.rol_id = 1
-                "
-              >
+              <button type="button" class="role-card" [class.active]="newEmployeeForm.get('rol_id')?.value === 1"
+                [attr.aria-pressed]="newEmployeeForm.get('rol_id')?.value === 1" [disabled]="savingNew"
+                (click)="selectNewRole(1)">
 
                 <h3>
                   Administrador
@@ -487,51 +426,44 @@
                   Control total
                 </p>
 
-              </div>
+              </button>
 
             </div>
 
-          </div>
+            <small *ngIf="isNewFieldInvalid('rol_id')" class="field-error role-error">
+              {{ getNewFieldError('rol_id') }}
+            </small>
 
+          </div>
 
           <!-- ESTADO -->
 
           <div class="checkbox-container">
 
-            <input
-              id="estado"
-              type="checkbox"
-              name="estado"
-              [(ngModel)]="employeeNew.estado"
-            >
+            <input id="estado" type="checkbox" formControlName="estado">
 
             <label for="estado">
-
               Empleado activo
-
             </label>
 
           </div>
 
+          <!-- ERROR GENERAL -->
+
+          <div *ngIf="formError" class="form-message error-message">
+            {{ formError }}
+          </div>
 
           <!-- BOTONES -->
 
           <div class="buttons-container">
 
-            <button
-              type="button"
-              class="btn-cancel"
-              (click)="cancelFormAdd()"
-            >
+            <button type="button" class="btn-cancel" [disabled]="savingNew" (click)="cancelFormAdd()">
               Cerrar
             </button>
 
-            <button
-              type="button"
-              class="btn-save"
-              (click)="addEmployeeInthis()"
-            >
-              Crear Empleado
+            <button type="submit" class="btn-save" [disabled]="savingNew">
+              {{ savingNew ? 'Guardando...' : 'Crear Empleado' }}
             </button>
 
           </div>
@@ -544,22 +476,17 @@
 
   </div>
 
-
   <!-- ================================================= -->
   <!-- COMPONENTE HIJO PARA MODIFICAR EMPLEADO -->
   <!-- ================================================= -->
 
   <div *ngIf="showComponentchild">
 
-    <app-employee-list-child
-      [employeeToEdit]="employeeUPdate"
-      (employeeEdit)="editEmployeeTochild($event)"
-      (closeEmployeeListChild)="closeComponentchild()"
-    >
+    <app-employee-list-child [employeeToEdit]="employeeUPdate" (employeeEdit)="editEmployeeTochild($event)"
+      (closeEmployeeListChild)="closeComponentchild()">
     </app-employee-list-child>
 
   </div>
 
 </div>
 ```
-

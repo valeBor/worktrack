@@ -230,6 +230,44 @@ exports.getByEmail = async (email) => {
 
 };
 
+// ======================================================
+// BUSCAR USUARIO POR EMAIL CON ROL
+// ======================================================
+//
+// Se utiliza durante el login.
+//
+// Incluye el hash porque el backend necesita
+// comparar la contraseña.
+//
+// El hash nunca se envía al frontend.
+// ======================================================
+
+exports.getByEmailWithRole = async (email) => {
+  const query = `
+    SELECT
+      u.id,
+      u.nombre,
+      u.apellido,
+      u.email,
+      u.password,
+      u.estado,
+      u.rol_id,
+      r.nombre AS role
+    FROM usuarios u
+    JOIN roles r
+      ON u.rol_id = r.id
+    WHERE u.email = ?
+    LIMIT 1
+  `;
+
+  const [rows] = await db.query(
+    query,
+    [email]
+  );
+
+  return rows[0];
+};
+
 
 // ======================================================
 // BUSCAR USUARIO POR ID
@@ -303,4 +341,73 @@ exports.updatePassword = async (
 
   return result;
 
+};
+
+// ======================================================
+// COMPROBAR EMAIL EXISTENTE
+// ======================================================
+//
+// excludeUserId se utiliza durante la edición.
+// Permite conservar el email del propio usuario,
+// pero impide utilizar el email de otro.
+// ======================================================
+
+exports.emailExists = async (
+  email,
+  excludeUserId = null
+) => {
+  let query;
+  let values;
+
+  if (excludeUserId !== null) {
+    query = `
+      SELECT id
+      FROM usuarios
+      WHERE email = ?
+        AND id <> ?
+      LIMIT 1
+    `;
+
+    values = [
+      email,
+      excludeUserId
+    ];
+  } else {
+    query = `
+      SELECT id
+      FROM usuarios
+      WHERE email = ?
+      LIMIT 1
+    `;
+
+    values = [email];
+  }
+
+  const [rows] = await db.query(
+    query,
+    values
+  );
+
+  return rows.length > 0;
+};
+
+
+// ======================================================
+// COMPROBAR ROL EXISTENTE
+// ======================================================
+
+exports.roleExists = async (roleId) => {
+  const query = `
+    SELECT id
+    FROM roles
+    WHERE id = ?
+    LIMIT 1
+  `;
+
+  const [rows] = await db.query(
+    query,
+    [roleId]
+  );
+
+  return rows.length > 0;
 };
