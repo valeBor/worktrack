@@ -1,7 +1,6 @@
 const asistenciaService =
   require("../services/asistencia.service");
 
-
 // ==========================================================
 // REGISTRAR ASISTENCIA
 // ==========================================================
@@ -59,7 +58,6 @@ exports.registrar = async (req, res) => {
       });
   }
 };
-
 
 // ==========================================================
 // OBTENER MI ASISTENCIA DE HOY

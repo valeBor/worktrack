@@ -6,7 +6,7 @@
 
 .rrhh-page {
   min-height: 100vh;
-  background: #f5f6fa;
+  background: var(--color-bg);
   font-family: Arial, Helvetica, sans-serif;
   color: #0f172a;
 }
@@ -32,6 +32,7 @@
   color: white;
 
   box-shadow: 0 5px 18px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--color-border);
 }
 
 .alert-header {
@@ -100,7 +101,7 @@
 }
 
 .avatar {
-  background: linear-gradient(135deg, #9333ea, #2563eb);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   color: white;
 
   width: 75px;
@@ -143,7 +144,7 @@
 }
 
 .today-card h3 i {
-  color: #22c55e;
+  color: var(--color-secondary);
   margin-right: 6px;
 }
 
@@ -231,15 +232,15 @@
 /* COLORES ACCIONES */
 
 .green {
-  background: #22c55e;
+  background: var(--color-secondary);
 }
 
 .blue {
-  background: linear-gradient(135deg, #295be6, #1e40af);
+  background: var(--color-primary-soft);
 }
 
 .violet {
-  background: #7c24ce;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
 }
 
 .orange {
@@ -265,7 +266,7 @@
   font-weight: 800;
   display: block;
   margin-bottom: 10px;
-  color: #22c55e;
+  color: var(--color-secondary);
 }
 
 .month-grid span {

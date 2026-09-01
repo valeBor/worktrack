@@ -209,6 +209,9 @@ exports.forgotPassword = async (req, res) => {
 // ======================================================
 
 exports.resetPassword = async (req, res) => {
+
+  let tokenDecodificado;
+
   try {
     const {
       token,
@@ -259,8 +262,6 @@ exports.resetPassword = async (req, res) => {
         message: 'La contraseña debe incluir mayúscula, minúscula y número'
       });
     }
-
-    let tokenDecodificado;
 
     try {
       tokenDecodificado =

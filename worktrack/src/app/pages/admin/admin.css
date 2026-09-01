@@ -8,7 +8,7 @@
 
 .dashboard-container {
   min-height: 100vh;
-  background: #f5f6fa;
+  background: var(--color-bg);
   font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -31,12 +31,13 @@
   border-radius: 24px;
   padding: 30px;
   box-shadow: 0 5px 18px rgba(0,0,0,0.08);
+  border: 1px solid var(--color-border);
 }
 
 /* NOTIFICACIONES */
 
 .notification-card {
-  background: linear-gradient(135deg, #a855f7, #7e22ce);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   color: white;
 }
 
@@ -75,7 +76,7 @@
 
 .primary-btn {
   background: white;
-  color: #7e22ce;
+  color: var(--color-primary);
   border: none;
   padding: 8px 18px;
   border-radius: 20px;
@@ -98,7 +99,7 @@
   height: 75px;
   border-radius: 18px;
 
-  background: linear-gradient(135deg, #14b8a6, #22c55e);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   color: white;
 
   display: flex;
@@ -125,7 +126,7 @@
 /* BOTONES ADMIN */
 
 .admin-panel {
-  background: linear-gradient(135deg, #ae83d5, #7d52a3);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   color: white;
 
   border-radius: 24px;
@@ -193,7 +194,7 @@
 }
 
 .purple-text {
-  color: #7e22ce;
+  color: var(--color-primary);
 }
 
 /* RESPONSIVE */

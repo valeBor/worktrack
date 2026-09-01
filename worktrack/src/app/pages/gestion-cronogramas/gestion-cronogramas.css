@@ -1,6 +1,6 @@
 .cronograma-page {
   padding: 24px 6%;
-  background: #f4f7fb;
+  background: var(--color-bg);
   min-height: 100vh;
 }
 
@@ -28,7 +28,7 @@
 .role-badge {
   padding: 8px 18px;
   border-radius: 20px;
-  background: #2547a5;
+  background: var(--color-primary);
   color: white;
 }
 
@@ -44,6 +44,7 @@
   border-radius: 22px;
   background: white;
   box-shadow: 0 7px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--color-border);
 }
 
 .tab-btn {
@@ -58,12 +59,12 @@
 }
 
 .active-blue {
-  background: #2947a5;
+  background: var(--color-primary);
   color: white;
 }
 
 .active-green {
-  background: #20c565;
+  background: var(--color-secondary);
   color: white;
 }
 
@@ -82,6 +83,7 @@
   border-radius: 22px;
   background: white;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+  border: 1px solid var(--color-border);
 }
 
 .month-card h2 {
@@ -99,7 +101,7 @@
   padding: 15px;
   border: none;
   border-radius: 12px;
-  background: #2947b8;
+  background: var(--color-primary);
   color: white;
   cursor: pointer;
   font-size: 16px;
@@ -116,6 +118,7 @@
   border-radius: 22px;
   background: white;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+  border: 1px solid var(--color-border);
 }
 
 .form-header {
@@ -168,8 +171,8 @@
 
 .form-group input:focus,
 .form-group select:focus {
-  border-color: #2947b8;
-  outline: 3px solid rgba(41, 71, 184, 0.12);
+  border-color: var(--color-primary);
+  outline: 3px solid rgba(22, 48, 76, 0.12);
 }
 
 .form-group input:disabled,
@@ -187,7 +190,7 @@
   margin-top: 20px;
   padding: 16px;
   border-radius: 12px;
-  background: #f4f7fb;
+  background: var(--color-bg);
   color: #41516a;
 }
 
@@ -218,7 +221,7 @@
 
 .save-btn {
   border: none;
-  background: #2947b8;
+  background: var(--color-primary);
   color: white;
 }
 
@@ -270,9 +273,9 @@ button:disabled {
 }
 
 .dia-checkbox:has(input:checked) {
-  border-color: #2947b8;
+  border-color: var(--color-primary);
   background: #eef2ff;
-  color: #2947a5;
+  color: var(--color-primary);
 }
 
 .dia-checkbox input {
@@ -291,6 +294,7 @@ button:disabled {
   border-radius: 22px;
   background: white;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+  border: 1px solid var(--color-border);
 }
 
 .employee-header {
@@ -306,7 +310,7 @@ button:disabled {
   height: 48px;
   margin-right: 14px;
   border-radius: 14px;
-  background: #139fa0;
+  background: var(--color-secondary);
   color: white;
   font-weight: 700;
 }
@@ -385,7 +389,7 @@ button:disabled {
 }
 
 .schedule-day small {
-  color: #2947a5;
+  color: var(--color-primary);
   font-weight: 600;
 }
 
@@ -396,6 +400,7 @@ button:disabled {
   color: #65738b;
   text-align: center;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--color-border);
 }
 
 /* ============================================= */
