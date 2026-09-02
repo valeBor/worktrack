@@ -1,3 +1,6 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
 :root {
   --color-primary: #16304c;
   --color-secondary: #0aab65;
@@ -5,6 +8,3 @@
   --color-bg: #eef2f6;
   --color-border: #dde4ea;
 }
-@import 'bootstrap-icons/font/bootstrap-icons.css';
-@import 'bootstrap/dist/css/bootstrap.min.css';
-@import 'bootstrap-icons/font/bootstrap-icons.css';

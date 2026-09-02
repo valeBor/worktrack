@@ -60,13 +60,19 @@ exports.login = async (req, res) => {
 
     if (!user) {
       return res.status(401).json({
-        message: 'Credenciales inválidas'
+        message: 'Correo o contraseña incorrectos'
       });
     }
 
     if (Number(user.estado) !== 1) {
       return res.status(403).json({
         message: 'El usuario se encuentra inactivo'
+      });
+    }
+
+    if (Number(user.cuenta_bloqueada) === 1) {
+      return res.status(423).json({
+        message: 'La cuenta está bloqueada. Utilizá "¿Olvidaste tu contraseña?" para recuperarla.'
       });
     }
 
@@ -77,9 +83,46 @@ exports.login = async (req, res) => {
       );
 
     if (!validPassword) {
+      const estadoLogin =
+        await userModel.registrarIntentoFallido(
+          user.id
+        );
+
+      const intentosFallidos =
+        Number(estadoLogin.intentos_fallidos);
+
+      const cuentaBloqueada =
+        Number(estadoLogin.cuenta_bloqueada) === 1;
+
+      if (cuentaBloqueada) {
+        return res.status(423).json({
+          message: 'La cuenta fue bloqueada por cinco intentos fallidos. Utilizá "¿Olvidaste tu contraseña?" para recuperarla.'
+        });
+      }
+
+      const intentosRestantes =
+        5 - intentosFallidos;
+
+      if (intentosFallidos >= 3) {
+        const textoIntentos =
+          intentosRestantes === 1
+            ? 'Te queda 1 intento antes de bloquear la cuenta.'
+            : `Te quedan ${intentosRestantes} intentos antes de bloquear la cuenta.`;
+
+        return res.status(401).json({
+          message: `Correo o contraseña incorrectos. ${textoIntentos}`
+        });
+      }
+
       return res.status(401).json({
-        message: 'Credenciales inválidas'
+        message: 'Correo o contraseña incorrectos'
       });
+    }
+
+    if (Number(user.intentos_fallidos) > 0) {
+      await userModel.reiniciarIntentosLogin(
+        user.id
+      );
     }
 
     const token =
@@ -209,9 +252,6 @@ exports.forgotPassword = async (req, res) => {
 // ======================================================
 
 exports.resetPassword = async (req, res) => {
-
-  let tokenDecodificado;
-
   try {
     const {
       token,
@@ -262,6 +302,8 @@ exports.resetPassword = async (req, res) => {
         message: 'La contraseña debe incluir mayúscula, minúscula y número'
       });
     }
+
+    let tokenDecodificado;
 
     try {
       tokenDecodificado =

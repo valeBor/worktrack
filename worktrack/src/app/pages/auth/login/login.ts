@@ -1,12 +1,11 @@
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Component, Inject, PLATFORM_ID, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, Inject, PLATFORM_ID, AfterViewInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-
 import { environment } from '../../../../environments/environment';
-
 import { AuthService } from '../../../services/auth.service';
 import { AuthResponse } from '../../../models/auth-response.model';
+
 
 declare global {
   interface Window {
@@ -41,6 +40,7 @@ export class Login implements AfterViewInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private auth: AuthService,
+    private cdr: ChangeDetectorRef,
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
@@ -59,7 +59,7 @@ export class Login implements AfterViewInit, OnDestroy {
         '',
         [
           Validators.required,
-          Validators.minLength(6),
+          Validators.minLength(8),
           Validators.maxLength(64)
         ]
       ]
@@ -78,7 +78,6 @@ export class Login implements AfterViewInit, OnDestroy {
 
   loadTurnstileScript(): void {
     const scriptId = 'cloudflare-turnstile-script';
-
     const scriptExiste = document.getElementById(scriptId);
 
     if (scriptExiste) {
@@ -113,13 +112,16 @@ export class Login implements AfterViewInit, OnDestroy {
         size: 'flexible',
         callback: (token: string) => {
           this.turnstileToken = token;
+          this.cdr.detectChanges();
         },
         'expired-callback': () => {
           this.turnstileToken = null;
+          this.cdr.detectChanges();
         },
         'error-callback': () => {
           this.turnstileToken = null;
           this.error = 'Error en la verificación. Intentá nuevamente.';
+          this.cdr.detectChanges();
         }
       });
     }, 0);
@@ -186,38 +188,20 @@ export class Login implements AfterViewInit, OnDestroy {
         },
 
         error: (err) => {
-
           this.resetTurnstile();
 
-
-          if (err.status === 400) {
-
+          if (err.error?.message) {
             this.error =
-
-              err.error?.message ||
-
-              'La solicitud no es válida';
-
-
-          } else if (err.status === 401) {
-
+              err.error.message;
+          } else if (err.status === 0) {
             this.error =
-              'Email o contraseña incorrectos';
-
-
-          } else if (err.status === 403) {
-
-            this.error =
-              'El usuario se encuentra inactivo';
-
-
+              'No se pudo conectar con el servidor';
           } else {
-
             this.error =
-              'Error en el servidor';
-
+              'Ocurrió un error al iniciar sesión';
           }
 
+          this.cdr.detectChanges();
         }
       });
   }

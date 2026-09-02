@@ -98,16 +98,18 @@ exports.updateUser = async (id, userData) => {
   if (userData.password) {
 
     query = `
-      UPDATE usuarios
-      SET
-        nombre = ?,
-        apellido = ?,
-        email = ?,
-        password = ?,
-        estado = ?,
-        rol_id = ?
-      WHERE id = ?
-    `;
+  UPDATE usuarios
+  SET
+    nombre = ?,
+    apellido = ?,
+    email = ?,
+    password = ?,
+    estado = ?,
+    rol_id = ?,
+    intentos_fallidos = 0,
+    cuenta_bloqueada = 0
+  WHERE id = ?
+`;
 
     values = [
 
@@ -251,6 +253,8 @@ exports.getByEmailWithRole = async (email) => {
       u.email,
       u.password,
       u.estado,
+      u.intentos_fallidos,
+      u.cuenta_bloqueada,
       u.rol_id,
       r.nombre AS role
     FROM usuarios u
@@ -266,6 +270,68 @@ exports.getByEmailWithRole = async (email) => {
   );
 
   return rows[0];
+};
+
+// ======================================================
+// REGISTRAR INTENTO FALLIDO DE LOGIN
+// ======================================================
+
+exports.registrarIntentoFallido = async (id) => {
+  const updateQuery = `
+    UPDATE usuarios
+    SET
+      cuenta_bloqueada =
+        CASE
+          WHEN intentos_fallidos >= 4 THEN 1
+          ELSE cuenta_bloqueada
+        END,
+      intentos_fallidos =
+        LEAST(intentos_fallidos + 1, 5)
+    WHERE id = ?
+      AND cuenta_bloqueada = 0
+  `;
+
+  await db.query(
+    updateQuery,
+    [id]
+  );
+
+  const selectQuery = `
+    SELECT
+      intentos_fallidos,
+      cuenta_bloqueada
+    FROM usuarios
+    WHERE id = ?
+    LIMIT 1
+  `;
+
+  const [rows] = await db.query(
+    selectQuery,
+    [id]
+  );
+
+  return rows[0];
+};
+
+// ======================================================
+// REINICIAR INTENTOS FALLIDOS DE LOGIN
+// ======================================================
+
+exports.reiniciarIntentosLogin = async (id) => {
+  const query = `
+    UPDATE usuarios
+    SET
+      intentos_fallidos = 0,
+      cuenta_bloqueada = 0
+    WHERE id = ?
+  `;
+
+  const [result] = await db.query(
+    query,
+    [id]
+  );
+
+  return result;
 };
 
 
@@ -324,11 +390,13 @@ exports.updatePassword = async (
 ) => {
 
   const query = `
-    UPDATE usuarios
-    SET password = ?
-    WHERE id = ?
-  `;
-
+  UPDATE usuarios
+  SET
+    password = ?,
+    intentos_fallidos = 0,
+    cuenta_bloqueada = 0
+  WHERE id = ?
+`;
 
   const [result] = await db.query(
     query,
