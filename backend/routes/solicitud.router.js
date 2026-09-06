@@ -1,132 +1,62 @@
 const express = require('express');
 const router = express.Router();
-const solicitudController = require(
-  '../controllers/solicitud.controller'
-);
-
+const solicitudController = require('../controllers/solicitud.controller');
 const {verifyToken} = require('../middlewares/authMiddleware');
-
-const {verifyRole} = require('../middlewares/roleMiddleware');
+const {verifyPermission} = require('../middlewares/permissionMiddleware');
 
 // ======================================================
 // MI HORARIO PARA UNA FECHA
 // ======================================================
-//
-// El empleado selecciona una fecha futura
-// y el backend obtiene su horario semanal.
-//
-// No se recibe usuario_id.
-// ======================================================
 
 router.get(
   '/horario-fecha',
-
   verifyToken,
-
-  verifyRole(
-    'empleado'
-  ),
-
-  solicitudController
-    .getMiHorarioParaFecha
+  verifyPermission('CREAR_SOLICITUD_CAMBIO'),
+  solicitudController.getMiHorarioParaFecha
 );
-
 
 // ======================================================
 // MIS SOLICITUDES
 // ======================================================
-//
-// Solamente el empleado puede consultar
-// sus propias solicitudes.
-//
-// El usuario se obtiene desde req.user.id.
-// ======================================================
 
 router.get(
   '/mias',
-
   verifyToken,
-
-  verifyRole(
-    'empleado'
-  ),
-
-  solicitudController
-    .getMisSolicitudes
+  verifyPermission('VER_SOLICITUDES_PROPIAS'),
+  solicitudController.getMisSolicitudes
 );
 
-
 // ======================================================
-// CREAR SOLICITUD
-// ======================================================
-//
-// Solamente el empleado puede crear
-// una solicitud propia.
-//
-// No se recibe usuario_id.
+// CREAR SOLICITUD PROPIA
 // ======================================================
 
 router.post(
   '/',
-
   verifyToken,
-
-  verifyRole(
-    'empleado'
-  ),
-
-  solicitudController
-    .createSolicitud
+  verifyPermission('CREAR_SOLICITUD_CAMBIO'),
+  solicitudController.createSolicitud
 );
 
-
 // ======================================================
-// SOLICITUDES PENDIENTES
-// ======================================================
-//
-// supervisor, rrhh y admin pueden
-// consultar las solicitudes pendientes.
-//
-// Admin solamente puede consultarlas.
+// OBTENER SOLICITUDES PENDIENTES
 // ======================================================
 
 router.get(
   '/pendientes',
-
   verifyToken,
-
-  verifyRole(
-    'supervisor',
-    'rrhh',
-    'admin'
-  ),
-
-  solicitudController
-    .getSolicitudesPendientes
+  verifyPermission('VER_SOLICITUDES_PENDIENTES'),
+  solicitudController.getSolicitudesPendientes
 );
-
 
 // ======================================================
 // APROBAR O RECHAZAR SOLICITUD
 // ======================================================
-//
-// Solamente supervisor y rrhh
-// pueden resolver solicitudes.
-// ======================================================
 
 router.patch(
   '/:solicitudId/resolver',
-
   verifyToken,
-
-  verifyRole(
-    'supervisor',
-    'rrhh'
-  ),
-
-  solicitudController
-    .resolveSolicitud
+  verifyPermission('RESOLVER_SOLICITUDES'),
+  solicitudController.resolveSolicitud
 );
-
 
 module.exports = router;

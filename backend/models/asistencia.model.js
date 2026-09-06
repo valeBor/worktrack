@@ -40,15 +40,15 @@ exports.buscarAsistenciaPorFecha = async (
 
 
 /**
- * Busca el horario asignado al usuario
- * para un día específico.
+ * Busca el horario aplicable al usuario
+ * para un día y una fecha determinados.
  */
-exports.buscarHorarioHoy = async (
+exports.buscarHorarioParaFecha = async (
   connection,
   usuarioId,
-  diaSemana
+  diaSemana,
+  fecha
 ) => {
-
   const db = connection || pool;
 
   const sql = `
@@ -59,22 +59,32 @@ exports.buscarHorarioHoy = async (
       hora_entrada,
       hora_salida,
       tolerancia_minutos,
-      modalidad
+      modalidad,
+      vigente_desde,
+      vigente_hasta
     FROM horarios
     WHERE usuario_id = ?
       AND LOWER(dia_semana) = LOWER(?)
+      AND vigente_desde <= ?
+      AND (
+        vigente_hasta IS NULL
+        OR vigente_hasta >= ?
+      )
+    ORDER BY
+      vigente_desde DESC,
+      id DESC
     LIMIT 1
   `;
 
   const [rows] = await db.query(sql, [
     usuarioId,
-    diaSemana
+    diaSemana,
+    fecha,
+    fecha
   ]);
 
   return rows[0];
 };
-
-
 /**
  * Registra la entrada del empleado.
  */
@@ -153,4 +163,67 @@ exports.registrarSalida = async (
   ]);
 
   return result;
+};
+
+// ======================================================
+// OBTENER ASISTENCIAS DE UN PERÍODO
+// ======================================================
+
+exports.getByUsuarioAndPeriodo = async (
+  usuarioId,
+  fechaDesde,
+  fechaHasta
+) => {
+  const sql = `
+    SELECT
+      id,
+      usuario_id,
+      red_id,
+      DATE_FORMAT(
+        fecha,
+        '%Y-%m-%d'
+      ) AS fecha,
+      hora_entrada,
+      hora_salida,
+      tipo_asistencia,
+      ubicacion,
+      ip_detectada,
+      estado
+    FROM asistencia
+    WHERE usuario_id = ?
+      AND fecha BETWEEN ? AND ?
+    ORDER BY fecha DESC, id DESC
+  `;
+
+  const [rows] = await pool.query(sql, [
+    usuarioId,
+    fechaDesde,
+    fechaHasta
+  ]);
+
+  return rows;
+};
+
+// ======================================================
+// OBTENER PRIMERA FECHA DE ASISTENCIA
+// ======================================================
+
+exports.getPrimeraFechaByUsuario = async (
+  usuarioId
+) => {
+  const sql = `
+    SELECT
+      DATE_FORMAT(
+        MIN(fecha),
+        '%Y-%m-%d'
+      ) AS primera_fecha
+    FROM asistencia
+    WHERE usuario_id = ?
+  `;
+
+  const [rows] = await pool.query(sql, [
+    usuarioId
+  ]);
+
+  return rows[0]?.primera_fecha || null;
 };

@@ -1,35 +1,23 @@
-import {
-  Component,
-  OnInit,
-  Inject,
-  PLATFORM_ID,
-  ChangeDetectorRef
-} from '@angular/core';
-
-import {
-  CommonModule,
-  isPlatformBrowser
-} from '@angular/common';
-
+import {ChangeDetectorRef,Component,Inject,OnInit,PLATFORM_ID} from '@angular/core';
+import {CommonModule,isPlatformBrowser} from '@angular/common';
+import {HttpErrorResponse} from '@angular/common/http';
 import { Router } from '@angular/router';
-
 import { Header } from '../../components/header/header';
 import { AuthService } from '../../services/auth.service';
 import { HorarioService } from '../../services/horario.service';
 import { AsistenciaService } from '../../services/asistecia.service';
-
+import {AttendanceHistoryService} from '../../services/attendance-history.service';
 import { Horario } from '../../models/horario.model';
 import { AsistenciaHoy } from '../../models/asistencia.model';
 
 @Component({
   selector: 'app-employee',
   standalone: true,
-  imports: [Header, CommonModule],
+  imports: [Header,CommonModule],
   templateUrl: './employee.html',
   styleUrl: './employee.css'
 })
 export class Employee implements OnInit {
-
   isBrowser = false;
 
   empleado = {
@@ -45,41 +33,44 @@ export class Employee implements OnInit {
 
   cargandoHorario = true;
   cargandoAsistencia = true;
+  cargandoEstadisticas = true;
   registrando = false;
 
   mensaje = '';
-  error = '';
+  errorHorario = '';
+  errorAsistencia = '';
+  errorEstadisticas = '';
 
   estadisticas = {
-    diasTrabajados: 18,
-    horasTotales: 144,
-    ausencias: 2
+    diasTrabajados: 0,
+    horasTotales: 0,
+    ausencias: 0
   };
 
-  alertas = [
-    'Baja asistencia detectada (80%)',
-    '2 llegadas tarde este mes',
-    'Patrón de bajo rendimiento identificado'
-  ];
+  // Se completará cuando desarrollemos
+  // el módulo real de notificaciones.
+  alertas: string[] = [];
 
   constructor(
     private router: Router,
-    private auth: AuthService,
+    private authService: AuthService,
     private horarioService: HorarioService,
     private asistenciaService: AsistenciaService,
+    private historyService: AttendanceHistoryService,
     private cdr: ChangeDetectorRef,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: object
   ) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
+    this.isBrowser = isPlatformBrowser(
+      this.platformId
+    );
   }
 
   ngOnInit(): void {
-
     if (!this.isBrowser) {
       return;
     }
 
-    const user = this.auth.getUser();
+    const user = this.authService.getUser();
 
     if (!user) {
       this.router.navigate(['/login']);
@@ -98,83 +89,144 @@ export class Employee implements OnInit {
 
     this.cargarHorarioHoy();
     this.cargarAsistenciaHoy();
+    this.cargarEstadisticasMensuales();
   }
 
-  // =====================================================
+  // ====================================================
+  // ERROR GENERAL DEL ESTADO DE HOY
+  // ====================================================
+
+  get error(): string {
+    return (
+      this.errorHorario ||
+      this.errorAsistencia
+    );
+  }
+
+  // ====================================================
   // CARGAR HORARIO DE HOY
-  // =====================================================
+  // ====================================================
 
   cargarHorarioHoy(): void {
-
     this.cargandoHorario = true;
+    this.errorHorario = '';
 
     this.horarioService
       .getMiHorarioHoy()
       .subscribe({
-
-        next: (horario) => {
+        next: horario => {
           this.horarioHoy = horario;
           this.cargandoHorario = false;
           this.cdr.detectChanges();
         },
-
-        error: (err) => {
-          this.cargandoHorario = false;
+        error: (err: HttpErrorResponse) => {
           this.horarioHoy = null;
+          this.cargandoHorario = false;
 
-          this.error =
-            err.error?.mensaje ||
-            'No fue posible obtener el horario de hoy.';
+          if (err.status !== 404) {
+            this.errorHorario =
+              this.obtenerMensajeError(
+                err,
+                'No fue posible obtener el horario de hoy.'
+              );
+          }
 
           this.cdr.detectChanges();
         }
-
       });
   }
 
-  // =====================================================
-  // CARGAR ASISTENCIA REAL DE HOY
-  // =====================================================
+  // ====================================================
+  // CARGAR ASISTENCIA DE HOY
+  // ====================================================
 
   cargarAsistenciaHoy(): void {
-
     this.cargandoAsistencia = true;
+    this.errorAsistencia = '';
 
     this.asistenciaService
       .obtenerMiAsistenciaHoy()
       .subscribe({
-
-        next: (data) => {
+        next: data => {
           this.asistenciaHoy = data;
           this.cargandoAsistencia = false;
           this.cdr.detectChanges();
         },
-
-        error: (err) => {
+        error: (err: HttpErrorResponse) => {
+          this.asistenciaHoy = null;
           this.cargandoAsistencia = false;
 
-          this.error =
-            err.error?.mensaje ||
-            'No fue posible obtener la asistencia de hoy.';
+          this.errorAsistencia =
+            this.obtenerMensajeError(
+              err,
+              'No fue posible obtener la asistencia de hoy.'
+            );
 
           this.cdr.detectChanges();
         }
-
       });
   }
 
-  // =====================================================
+  // ====================================================
+  // CARGAR ESTADÍSTICAS MENSUALES
+  // ====================================================
+
+  cargarEstadisticasMensuales(): void {
+    this.cargandoEstadisticas = true;
+    this.errorEstadisticas = '';
+
+    this.historyService
+      .getMyHistory('mes_actual')
+      .subscribe({
+        next: history => {
+          this.estadisticas = {
+            diasTrabajados:
+              history.resumen.dias_presentes,
+            horasTotales:
+              history.resumen.horas_totales,
+            ausencias:
+              history.resumen.ausencias
+          };
+
+          this.cargandoEstadisticas = false;
+          this.cdr.detectChanges();
+        },
+        error: (err: HttpErrorResponse) => {
+          this.estadisticas = {
+            diasTrabajados: 0,
+            horasTotales: 0,
+            ausencias: 0
+          };
+
+          this.cargandoEstadisticas = false;
+          this.errorEstadisticas =
+            this.obtenerMensajeError(
+              err,
+              'No fue posible obtener las estadísticas mensuales.'
+            );
+
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
+  // ====================================================
   // ACCIÓN PRINCIPAL
-  // =====================================================
+  // ====================================================
 
   accionAsistencia(): void {
-
-    if (!this.horarioHoy) {
+    if (
+      !this.horarioHoy ||
+      !this.asistenciaHoy ||
+      this.asistenciaHoy.jornadaCompletada ||
+      this.registrando
+    ) {
       return;
     }
 
-    const modalidad =
-      String(this.horarioHoy.modalidad).toUpperCase();
+    const modalidad = String(
+      this.horarioHoy.modalidad
+    ).toUpperCase();
 
     if (modalidad === 'PRESENCIAL') {
       this.router.navigate(['/scanner']);
@@ -186,73 +238,60 @@ export class Employee implements OnInit {
     }
   }
 
-  // =====================================================
-  // REGISTRAR HOME
-  // =====================================================
+  // ====================================================
+  // REGISTRAR ASISTENCIA HOME
+  // ====================================================
 
   registrarAsistenciaHome(): void {
-
-    if (!this.asistenciaHoy) {
-      return;
-    }
-
-    if (this.asistenciaHoy.jornadaCompletada) {
-      return;
-    }
-
     const tipo =
-      this.asistenciaHoy.proximaAccion;
+      this.asistenciaHoy?.proximaAccion;
 
-    if (!tipo) {
+    if (
+      !tipo ||
+      this.asistenciaHoy?.jornadaCompletada ||
+      this.registrando
+    ) {
       return;
     }
 
     this.registrando = true;
     this.mensaje = '';
-    this.error = '';
+    this.errorAsistencia = '';
 
     this.asistenciaService
-      .registrarAsistencia({
-        tipo: tipo
-      })
+      .registrarAsistencia({tipo})
       .subscribe({
-
-        next: (respuesta) => {
+        next: respuesta => {
           this.registrando = false;
-
           this.mensaje =
             respuesta.mensaje ||
             'Asistencia registrada correctamente.';
 
-          // Volvemos al backend para obtener
-          // el estado real actualizado.
           this.cargarAsistenciaHoy();
-
+          this.cargarEstadisticasMensuales();
           this.cdr.detectChanges();
         },
-
-        error: (err) => {
+        error: (err: HttpErrorResponse) => {
           this.registrando = false;
-
-          this.error =
-            err.error?.mensaje ||
-            'No fue posible registrar la asistencia.';
-
-          // También recargamos por seguridad
-          // para mantener sincronizado el estado.
-          this.cargarAsistenciaHoy();
+          this.errorAsistencia =
+            this.obtenerMensajeError(
+              err,
+              'No fue posible registrar la asistencia.'
+            );
 
           this.cdr.detectChanges();
         }
-
       });
   }
 
-  // =====================================================
+  // ====================================================
   // TEXTO DEL BOTÓN
-  // =====================================================
+  // ====================================================
 
   get textoBotonAsistencia(): string {
+    if (this.registrando) {
+      return 'Registrando...';
+    }
 
     if (
       this.cargandoHorario ||
@@ -265,19 +304,24 @@ export class Employee implements OnInit {
       return 'Sin horario asignado';
     }
 
-    if (
-      String(this.horarioHoy.modalidad).toUpperCase()
-      === 'PRESENCIAL'
-    ) {
-      return 'Escanear QR';
+    if (!this.asistenciaHoy) {
+      return 'Asistencia no disponible';
     }
 
-    if (this.asistenciaHoy?.jornadaCompletada) {
+    if (this.asistenciaHoy.jornadaCompletada) {
       return 'Jornada completada';
     }
 
     if (
-      this.asistenciaHoy?.proximaAccion === 'salida'
+      String(this.horarioHoy.modalidad)
+        .toUpperCase() === 'PRESENCIAL'
+    ) {
+      return 'Escanear QR';
+    }
+
+    if (
+      this.asistenciaHoy.proximaAccion ===
+      'salida'
     ) {
       return 'Registrar salida';
     }
@@ -285,29 +329,40 @@ export class Employee implements OnInit {
     return 'Registrar entrada';
   }
 
-  // =====================================================
+  // ====================================================
   // SUBTÍTULO DEL BOTÓN
-  // =====================================================
+  // ====================================================
 
   get subtituloBotonAsistencia(): string {
+    if (
+      this.cargandoHorario ||
+      this.cargandoAsistencia
+    ) {
+      return 'Consultando estado actual';
+    }
 
     if (!this.horarioHoy) {
-      return 'Consulte con su supervisor';
+      return 'No tiene una jornada programada para hoy';
     }
 
-    if (
-      String(this.horarioHoy.modalidad).toUpperCase()
-      === 'PRESENCIAL'
-    ) {
-      return 'Registrar asistencia presencial';
+    if (!this.asistenciaHoy) {
+      return 'Intente nuevamente más tarde';
     }
 
-    if (this.asistenciaHoy?.jornadaCompletada) {
+    if (this.asistenciaHoy.jornadaCompletada) {
       return 'Entrada y salida registradas';
     }
 
     if (
-      this.asistenciaHoy?.proximaAccion === 'salida'
+      String(this.horarioHoy.modalidad)
+        .toUpperCase() === 'PRESENCIAL'
+    ) {
+      return 'Registrar asistencia presencial';
+    }
+
+    if (
+      this.asistenciaHoy.proximaAccion ===
+      'salida'
     ) {
       return 'Finalizar jornada HOME';
     }
@@ -315,55 +370,43 @@ export class Employee implements OnInit {
     return 'Iniciar jornada HOME';
   }
 
-  // =====================================================
-  // HORAS PARA MOSTRAR EN HTML
-  // =====================================================
+  // ====================================================
+  // HORAS PARA MOSTRAR
+  // ====================================================
 
   get horarioEntrada(): string {
-
-    if (!this.horarioHoy?.hora_entrada) {
-      return '--:--';
-    }
-
-    return this.horarioHoy.hora_entrada.substring(0, 5);
+    return this.horarioHoy?.hora_entrada
+      ? this.horarioHoy.hora_entrada.substring(0, 5)
+      : '--:--';
   }
 
   get horarioSalida(): string {
-
-    if (!this.horarioHoy?.hora_salida) {
-      return '--:--';
-    }
-
-    return this.horarioHoy.hora_salida.substring(0, 5);
+    return this.horarioHoy?.hora_salida
+      ? this.horarioHoy.hora_salida.substring(0, 5)
+      : '--:--';
   }
 
   get entradaRegistrada(): string {
-
     const hora =
       this.asistenciaHoy?.asistencia?.hora_entrada;
 
-    if (!hora) {
-      return '--:--';
-    }
-
-    return hora.substring(0, 5);
+    return hora
+      ? hora.substring(0, 5)
+      : '--:--';
   }
 
   get salidaRegistrada(): string {
-
     const hora =
       this.asistenciaHoy?.asistencia?.hora_salida;
 
-    if (!hora) {
-      return '--:--';
-    }
-
-    return hora.substring(0, 5);
+    return hora
+      ? hora.substring(0, 5)
+      : '--:--';
   }
 
-  // =====================================================
-  // RESTO DE NAVEGACIÓN
-  // =====================================================
+  // ====================================================
+  // NAVEGACIÓN
+  // ====================================================
 
   verHistorial(): void {
     this.router.navigate(['/historial']);
@@ -373,12 +416,18 @@ export class Employee implements OnInit {
     this.router.navigate(['/cambio-horario']);
   }
 
-  verAlertas(): void {
-    console.log('Ver alertas');
-  }
+  // ====================================================
+  // OBTENER MENSAJE DE ERROR
+  // ====================================================
 
-  cerrarSesion(): void {
-    this.auth.logout();
-    this.router.navigate(['/login']);
+  private obtenerMensajeError(
+    error: HttpErrorResponse,
+    mensajePredeterminado: string
+  ): string {
+    return (
+      error.error?.mensaje ||
+      error.error?.message ||
+      mensajePredeterminado
+    );
   }
 }

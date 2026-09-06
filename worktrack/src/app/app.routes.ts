@@ -11,13 +11,12 @@ import {CambioHorario} from './pages/cambio-horario/cambio-horario';
 import {GestionCronogramas} from './pages/gestion-cronogramas/gestion-cronogramas';
 import { roleGuard } from './guards/role.guard';
 import { authGuard } from './guards/auth.guard';
+import {AttendanceHistory} from './pages/attendance-history/attendance-history';
+import { NotFound } from './pages/not-found/not-found';
 
 export const routes: Routes = [
   {
-    path: '',
-    redirectTo: 'login',
-    pathMatch: 'full'
-  },
+    path: '', redirectTo: 'login', pathMatch: 'full'},
   {
     path: 'login',
     loadComponent: () =>
@@ -107,7 +106,24 @@ export const routes: Routes = [
     component: QrVisor,
     canActivate: [roleGuard],
     data: {
-      roles: ['admin','supervisor','rrhh']
+      roles: ['admin']
     }
+  },
+  {
+  path: 'historial',
+  component: AttendanceHistory,
+  canActivate: [roleGuard],
+  data: {
+    roles: [
+      'empleado',
+      'supervisor',
+      'rrhh',
+      'admin'
+    ]
   }
+},
+{
+  path: '**',
+  component: NotFound
+}
 ];

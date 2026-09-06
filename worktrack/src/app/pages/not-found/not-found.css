@@ -1,0 +1,133 @@
+:host {
+  display: block;
+}
+
+.page-wrapper {
+  min-height: 100vh;
+  background: var(--color-bg);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.not-found-content {
+  min-height: calc(100vh - 78px);
+  padding: 30px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-wrapper.without-header .not-found-content {
+  min-height: 100vh;
+}
+
+.not-found-card {
+  width: 100%;
+  max-width: 520px;
+  padding: 50px 36px;
+  border: 1px solid var(--color-border);
+  border-radius: 26px;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.09);
+  text-align: center;
+}
+
+.error-icon {
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 22px;
+  border-radius: 24px;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
+  color: #ffffff;
+  font-size: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.error-code {
+  color: var(--color-secondary);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.not-found-card h1 {
+  margin: 12px 0;
+  color: #0f172a;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.not-found-card p {
+  max-width: 390px;
+  margin: 0 auto 28px;
+  color: #64748b;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.back-button {
+  min-height: 48px;
+  padding: 12px 22px;
+  border: none;
+  border-radius: 14px;
+  background: var(--color-primary);
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.back-button:hover {
+  background: var(--color-primary-soft);
+  transform: translateY(-2px);
+  box-shadow: 0 7px 16px rgba(22, 48, 76, 0.2);
+}
+
+.back-button:focus-visible {
+  outline: 3px solid rgba(10, 171, 101, 0.3);
+  outline-offset: 3px;
+}
+
+@media (max-width: 650px) {
+  .not-found-content {
+    padding: 20px 14px;
+  }
+
+  .not-found-card {
+    padding: 38px 22px;
+    border-radius: 22px;
+  }
+
+  .error-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 21px;
+    font-size: 32px;
+  }
+
+  .not-found-card h1 {
+    font-size: 25px;
+  }
+
+  .not-found-card p {
+    font-size: 14px;
+  }
+
+  .back-button {
+    width: 100%;
+  }
+}

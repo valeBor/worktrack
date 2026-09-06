@@ -57,7 +57,7 @@ exports.getUsuariosGestionables = async (roles) => {
 };
 
 // ======================================================
-// OBTENER HORARIOS SEGÚN ROLES
+// OBTENER HORARIOS VIGENTES SEGÚN ROLES
 // ======================================================
 
 exports.getAllByRoles = async (roles) => {
@@ -72,6 +72,8 @@ exports.getAllByRoles = async (roles) => {
       h.hora_salida,
       h.tolerancia_minutos,
       h.modalidad,
+      h.vigente_desde,
+      h.vigente_hasta,
       u.nombre,
       u.apellido,
       u.email,
@@ -82,6 +84,7 @@ exports.getAllByRoles = async (roles) => {
     JOIN roles r
       ON u.rol_id = r.id
     WHERE LOWER(r.nombre) IN (${placeholders})
+      AND h.vigente_hasta IS NULL
     ORDER BY
       u.apellido,
       u.nombre,
@@ -103,7 +106,7 @@ exports.getAllByRoles = async (roles) => {
 };
 
 // ======================================================
-// HORARIOS DE UN USUARIO
+// HORARIOS VIGENTES DE UN USUARIO
 // ======================================================
 
 exports.getByUsuario = async (usuarioId) => {
@@ -116,6 +119,8 @@ exports.getByUsuario = async (usuarioId) => {
       h.hora_salida,
       h.tolerancia_minutos,
       h.modalidad,
+      h.vigente_desde,
+      h.vigente_hasta,
       u.nombre,
       u.apellido,
       u.email,
@@ -126,6 +131,7 @@ exports.getByUsuario = async (usuarioId) => {
     JOIN roles r
       ON u.rol_id = r.id
     WHERE h.usuario_id = ?
+      AND h.vigente_hasta IS NULL
     ORDER BY FIELD(
       LOWER(h.dia_semana),
       'lunes',
@@ -144,7 +150,7 @@ exports.getByUsuario = async (usuarioId) => {
 };
 
 // ======================================================
-// BUSCAR POR USUARIO Y DÍA
+// BUSCAR HORARIO VIGENTE POR USUARIO Y DÍA
 // ======================================================
 
 exports.getByUsuarioAndDia = async (
@@ -159,16 +165,62 @@ exports.getByUsuarioAndDia = async (
       hora_entrada,
       hora_salida,
       tolerancia_minutos,
-      modalidad
+      modalidad,
+      vigente_desde,
+      vigente_hasta
     FROM horarios
     WHERE usuario_id = ?
       AND LOWER(dia_semana) = LOWER(?)
+      AND vigente_hasta IS NULL
+    ORDER BY vigente_desde DESC, id DESC
     LIMIT 1
   `;
 
   const [rows] = await db.query(sql, [
     usuarioId,
     diaSemana
+  ]);
+
+  return rows[0];
+};
+
+// ======================================================
+// BUSCAR HORARIO APLICABLE EN UNA FECHA
+// ======================================================
+
+exports.getByUsuarioAndDiaEnFecha = async (
+  usuarioId,
+  diaSemana,
+  fecha
+) => {
+  const sql = `
+    SELECT
+      id,
+      usuario_id,
+      dia_semana,
+      hora_entrada,
+      hora_salida,
+      tolerancia_minutos,
+      modalidad,
+      vigente_desde,
+      vigente_hasta
+    FROM horarios
+    WHERE usuario_id = ?
+      AND LOWER(dia_semana) = LOWER(?)
+      AND vigente_desde <= ?
+      AND (
+        vigente_hasta IS NULL
+        OR vigente_hasta >= ?
+      )
+    ORDER BY vigente_desde DESC, id DESC
+    LIMIT 1
+  `;
+
+  const [rows] = await db.query(sql, [
+    usuarioId,
+    diaSemana,
+    fecha,
+    fecha
   ]);
 
   return rows[0];
@@ -189,9 +241,11 @@ exports.create = async (
       hora_salida,
       dia_semana,
       tolerancia_minutos,
-      modalidad
+      modalidad,
+      vigente_desde,
+      vigente_hasta
     )
-    VALUES (?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, NULL)
   `;
 
   const [result] = await connection.query(sql, [
@@ -200,45 +254,176 @@ exports.create = async (
     horario.hora_salida,
     horario.dia_semana,
     horario.tolerancia_minutos,
-    horario.modalidad
+    horario.modalidad,
+    horario.vigente_desde
   ]);
 
   return result;
 };
 
 // ======================================================
-// ELIMINAR CRONOGRAMA EN UNA TRANSACCIÓN
+// CERRAR CRONOGRAMA VIGENTE
 // ======================================================
 
-exports.removeByUsuario = async (
+exports.cerrarCronogramaVigente = async (
   connection,
+  usuarioId,
+  fechaActual,
+  fechaAnterior
+) => {
+  const sqlEliminarMismoDia = `
+    DELETE FROM horarios
+    WHERE usuario_id = ?
+      AND vigente_hasta IS NULL
+      AND vigente_desde >= ?
+  `;
+
+  const [eliminados] = await connection.query(
+    sqlEliminarMismoDia,
+    [
+      usuarioId,
+      fechaActual
+    ]
+  );
+
+  const sqlCerrarAnteriores = `
+    UPDATE horarios
+    SET vigente_hasta = ?
+    WHERE usuario_id = ?
+      AND vigente_hasta IS NULL
+      AND vigente_desde < ?
+  `;
+
+  const [cerrados] = await connection.query(
+    sqlCerrarAnteriores,
+    [
+      fechaAnterior,
+      usuarioId,
+      fechaActual
+    ]
+  );
+
+  return {
+    eliminados: eliminados.affectedRows,
+    cerrados: cerrados.affectedRows
+  };
+};
+
+// ======================================================
+// CERRAR CRONOGRAMA VIGENTE
+// ======================================================
+
+exports.cerrarCronogramaVigente = async (
+  connection,
+  usuarioId,
+  fechaInicioNuevaVigencia,
+  fechaCierreAnterior
+) => {
+  const sqlEliminarMismoDia = `
+    DELETE FROM horarios
+    WHERE usuario_id = ?
+      AND vigente_hasta IS NULL
+      AND vigente_desde >= ?
+  `;
+
+  const [eliminados] = await connection.query(
+    sqlEliminarMismoDia,
+    [
+      usuarioId,
+      fechaInicioNuevaVigencia
+    ]
+  );
+
+  const sqlCerrarAnteriores = `
+    UPDATE horarios
+    SET vigente_hasta = ?
+    WHERE usuario_id = ?
+      AND vigente_hasta IS NULL
+      AND vigente_desde < ?
+  `;
+
+  const [cerrados] = await connection.query(
+    sqlCerrarAnteriores,
+    [
+      fechaCierreAnterior,
+      usuarioId,
+      fechaInicioNuevaVigencia
+    ]
+  );
+
+  return {
+    eliminados: eliminados.affectedRows,
+    cerrados: cerrados.affectedRows
+  };
+};
+
+// ======================================================
+// OBTENER HORARIOS QUE APLICAN EN UN PERÍODO
+// ======================================================
+
+exports.getHistorialByUsuarioAndPeriodo = async (
+  usuarioId,
+  fechaDesde,
+  fechaHasta
+) => {
+  const sql = `
+    SELECT
+      id,
+      usuario_id,
+      dia_semana,
+      hora_entrada,
+      hora_salida,
+      tolerancia_minutos,
+      modalidad,
+      DATE_FORMAT(
+        vigente_desde,
+        '%Y-%m-%d'
+      ) AS vigente_desde,
+      DATE_FORMAT(
+        vigente_hasta,
+        '%Y-%m-%d'
+      ) AS vigente_hasta
+    FROM horarios
+    WHERE usuario_id = ?
+      AND vigente_desde <= ?
+      AND (
+        vigente_hasta IS NULL
+        OR vigente_hasta >= ?
+      )
+    ORDER BY
+      vigente_desde ASC,
+      id ASC
+  `;
+
+  const [rows] = await db.query(sql, [
+    usuarioId,
+    fechaHasta,
+    fechaDesde
+  ]);
+
+  return rows;
+};
+
+// ======================================================
+// OBTENER PRIMERA FECHA CON HORARIO CONOCIDO
+// ======================================================
+
+exports.getPrimeraVigenciaByUsuario = async (
   usuarioId
 ) => {
   const sql = `
-    DELETE FROM horarios
+    SELECT
+      DATE_FORMAT(
+        MIN(vigente_desde),
+        '%Y-%m-%d'
+      ) AS primera_vigencia
+    FROM horarios
     WHERE usuario_id = ?
   `;
 
-  const [result] = await connection.query(sql, [
+  const [rows] = await db.query(sql, [
     usuarioId
   ]);
 
-  return result;
-};
-
-// ======================================================
-// ELIMINAR CRONOGRAMA COMPLETO
-// ======================================================
-
-exports.deleteByUsuario = async (usuarioId) => {
-  const sql = `
-    DELETE FROM horarios
-    WHERE usuario_id = ?
-  `;
-
-  const [result] = await db.query(sql, [
-    usuarioId
-  ]);
-
-  return result;
+  return rows[0]?.primera_vigencia || null;
 };

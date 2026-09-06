@@ -1,15 +1,80 @@
 <div class="contenedor-qr">
 
-  <h2>QR de asistencia</h2>
+  <div class="qr-header">
+    <div>
+      <h2>
+        QR de asistencia
+      </h2>
 
-  <img
-    [src]="qrImage"
-    class="imagen-qr"
-    alt="QR"
-  />
+      <p>
+        Escaneá este código para registrar entrada o salida.
+      </p>
+    </div>
 
-  <p>
-    Escaneá este código para registrar entrada o salida
-  </p>
+    <button
+      type="button"
+      class="refresh-button"
+      [disabled]="loading"
+      (click)="loadQr()">
+
+      <i class="bi bi-arrow-clockwise"></i>
+
+      Actualizar
+    </button>
+  </div>
+
+  <div
+    class="loading-state"
+    *ngIf="loading && !qrImage">
+
+    <div
+      class="spinner-border"
+      role="status">
+    </div>
+
+    <span>
+      Generando código QR...
+    </span>
+  </div>
+
+  <div
+    class="error-state"
+    *ngIf="error && !qrImage">
+
+    <i class="bi bi-exclamation-triangle"></i>
+
+    <p>
+      {{ error }}
+    </p>
+
+    <button
+      type="button"
+      (click)="loadQr()">
+      Reintentar
+    </button>
+  </div>
+
+  <div
+    class="qr-content"
+    *ngIf="qrImage">
+
+    <img
+      [src]="qrImage"
+      class="imagen-qr"
+      alt="Código QR de asistencia">
+
+    <div class="expiration">
+      <i class="bi bi-clock"></i>
+
+      <span>
+        Se actualiza en
+        <strong>
+          {{ secondsRemaining }}
+        </strong>
+        segundos
+      </span>
+    </div>
+
+  </div>
 
 </div>

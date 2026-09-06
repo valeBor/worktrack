@@ -1,24 +1,9 @@
 import { Injectable } from '@angular/core';
-
-import {
-  HttpClient
-} from '@angular/common/http';
-
-import {
-  Observable
-} from 'rxjs';
-
-import {
-  User
-} from '../models/user.models';
-
-import {
-  AuthResponse
-} from '../models/auth-response.model';
-
-import {
-  environment
-} from '../../environments/environment';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {User} from '../models/user.models';
+import {AuthResponse} from '../models/auth-response.model';
+import {environment} from '../../environments/environment';
 
 
 // ======================================================
@@ -26,49 +11,32 @@ import {
 // ======================================================
 
 interface MessageResponse {
-
   message: string;
-
 }
-
-
 // ======================================================
 // DATOS PARA SOLICITAR RECUPERACIÓN
 // ======================================================
 
 interface ForgotPasswordData {
-
   email: string;
-
-  turnstileToken: string;
-
+ turnstileToken: string;
 }
-
-
 // ======================================================
 // DATOS PARA RESTABLECER CONTRASEÑA
 // ======================================================
 
 interface ResetPasswordData {
-
   token: string;
-
   newPassword: string;
-
   confirmPassword: string;
-
 }
 
 
 @Injectable({
-
   providedIn: 'root'
-
 })
 
 export class AuthService {
-
-
   // La URL ya no está escrita directamente.
   //
   // Desarrollo:
@@ -79,16 +47,13 @@ export class AuthService {
   private api =
     `${environment.apiUrl}/auth`;
 
-
   constructor(
     private http: HttpClient
   ) {}
 
-
   // ====================================================
   // LOGIN
   // ====================================================
-
   login(
     user: User
   ): Observable<AuthResponse> {
@@ -96,11 +61,8 @@ export class AuthService {
     return this.http.post<AuthResponse>(
 
       `${this.api}/login`,
-
       user
-
     );
-
   }
 
 
@@ -109,47 +71,28 @@ export class AuthService {
   // ====================================================
 
   forgotPassword(
-
     data: ForgotPasswordData
-
   ): Observable<MessageResponse> {
-
     return this.http.post<MessageResponse>(
-
       `${this.api}/forgot-password`,
-
       data
-
     );
 
   }
-
-
   // ====================================================
   // GUARDAR CONTRASEÑA NUEVA
   // ====================================================
-
   resetPassword(
-
     data: ResetPasswordData
-
   ): Observable<MessageResponse> {
-
     return this.http.post<MessageResponse>(
-
       `${this.api}/reset-password`,
-
       data
-
     );
-
   }
-
-
   // ====================================================
   // GUARDAR SESIÓN
   // ====================================================
-
   saveUser(
     res: AuthResponse
   ): void {
@@ -160,50 +103,29 @@ export class AuthService {
       return;
 
     }
-
-
     localStorage.setItem(
-
       'token',
-
       res.token
-
     );
 
-
     localStorage.setItem(
-
       'user',
-
       JSON.stringify(res.user)
-
     );
-
 
     localStorage.setItem(
-
       'role',
-
       res.user.role
-
     );
-
   }
-
-
   // ====================================================
   // OBTENER USUARIO LOGUEADO
   // ====================================================
-
   getUser():
     AuthResponse['user'] | null {
-
     if (typeof window === 'undefined') {
-
       return null;
-
     }
-
 
     return JSON.parse(
 
@@ -211,10 +133,7 @@ export class AuthService {
       'null'
 
     );
-
   }
-
-
   // ====================================================
   // OBTENER TOKEN
   // ====================================================
@@ -224,33 +143,19 @@ export class AuthService {
     if (typeof window === 'undefined') {
 
       return null;
-
     }
-
-
     return localStorage.getItem('token');
-
   }
-
-
   // ====================================================
   // OBTENER ROL
   // ====================================================
 
   getRole(): string | null {
-
     if (typeof window === 'undefined') {
-
       return null;
-
     }
-
-
     return localStorage.getItem('role');
-
   }
-
-
   // ====================================================
   // CERRAR SESIÓN
   // ====================================================
@@ -258,36 +163,21 @@ export class AuthService {
   logout(): void {
 
     if (typeof window === 'undefined') {
-
       return;
-
     }
 
-
     localStorage.removeItem('user');
-
     localStorage.removeItem('token');
-
     localStorage.removeItem('role');
-
   }
-
-
   // ====================================================
   // SABER SI EXISTE UNA SESIÓN
   // ====================================================
-
   isLoggedIn(): boolean {
 
     if (typeof window === 'undefined') {
-
       return false;
-
     }
-
-
     return !!localStorage.getItem('token');
-
   }
-
 }

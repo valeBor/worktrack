@@ -1,21 +1,15 @@
 const express = require('express');
 const router = express.Router();
-
 const horarioController = require('../controllers/horario.controller');
-
-const {
-  verifyToken
-} = require('../middlewares/authMiddleware');
-
-const {
-  soloGestionHorarios
-} = require('../middlewares/roleMiddleware');
+const {verifyToken} = require('../middlewares/authMiddleware');
+const {verifyPermission} = require('../middlewares/permissionMiddleware');
 
 // ======================================================
 // MI HORARIO DE HOY
 // ======================================================
 //
-// Todo usuario autenticado puede consultar su horario.
+// Todo usuario autenticado puede consultar
+// únicamente su propio horario.
 // ======================================================
 
 router.get(
@@ -25,43 +19,39 @@ router.get(
 );
 
 // ======================================================
-// USUARIOS QUE EL ROL PUEDE ADMINISTRAR
+// USUARIOS GESTIONABLES
 // ======================================================
 //
-// admin      → usuarios habilitados para administración
-// rrhh       → supervisores
-// supervisor → empleados
+// El servicio determina qué usuarios puede
+// administrar cada rol.
 // ======================================================
 
 router.get(
   '/usuarios-gestionables',
   verifyToken,
-  soloGestionHorarios,
+  verifyPermission('GESTIONAR_HORARIOS'),
   horarioController.getUsuariosGestionables
 );
 
 // ======================================================
-// TODOS LOS HORARIOS PERMITIDOS
-// ======================================================
-//
-// La respuesta se filtra en el backend según el rol.
+// OBTENER HORARIOS PERMITIDOS
 // ======================================================
 
 router.get(
   '/',
   verifyToken,
-  soloGestionHorarios,
+  verifyPermission('GESTIONAR_HORARIOS'),
   horarioController.getHorarios
 );
 
 // ======================================================
-// HORARIOS DE UN USUARIO
+// OBTENER HORARIOS DE UN USUARIO
 // ======================================================
 
 router.get(
   '/usuario/:usuarioId',
   verifyToken,
-  soloGestionHorarios,
+  verifyPermission('GESTIONAR_HORARIOS'),
   horarioController.getHorariosUsuario
 );
 
@@ -72,32 +62,33 @@ router.get(
 router.post(
   '/',
   verifyToken,
-  soloGestionHorarios,
+  verifyPermission('GESTIONAR_HORARIOS'),
   horarioController.createHorario
 );
 
 // ======================================================
-// REEMPLAZAR CRONOGRAMA COMPLETO DE UN USUARIO
-// ======================================================
-//
-// Permite modificar días, horas, modalidad y tolerancia.
+// ACTUALIZAR CRONOGRAMA COMPLETO
 // ======================================================
 
 router.put(
   '/usuario/:usuarioId',
   verifyToken,
-  soloGestionHorarios,
+  verifyPermission('GESTIONAR_HORARIOS'),
   horarioController.updateCronogramaUsuario
 );
 
 // ======================================================
-// ELIMINAR CRONOGRAMA COMPLETO DE UN USUARIO
+// FINALIZAR CRONOGRAMA COMPLETO
+// ======================================================
+//
+// El cronograma no se elimina históricamente.
+// El servicio cierra su vigencia.
 // ======================================================
 
 router.delete(
   '/usuario/:usuarioId',
   verifyToken,
-  soloGestionHorarios,
+  verifyPermission('GESTIONAR_HORARIOS'),
   horarioController.deleteCronogramaUsuario
 );
 

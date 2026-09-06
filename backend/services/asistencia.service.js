@@ -1,38 +1,10 @@
-const db = require(
-  '../config/db'
-);
-
-const asistenciaModel = require(
-  '../models/asistencia.model'
-);
-
-const solicitudModel = require(
-  '../models/solicitud.model'
-);
-
-const {
-  buscarRedAutorizada
-} = require(
-  './red.service'
-);
-
-const {
-  normalizarIp
-} = require(
-  '../utils/ip.util'
-);
-
-const {
-  obtenerFechaHoraActual,
-  horaASegundos
-} = require(
-  '../utils/fecha.util'
-);
-
-const qrService = require(
-  './qrService'
-);
-
+const db = require('../config/db');
+const asistenciaModel = require('../models/asistencia.model');
+const solicitudModel = require('../models/solicitud.model');
+const { buscarRedAutorizada } = require('./red.service');
+const { normalizarIp } = require('../utils/ip.util');
+const { obtenerFechaHoraActual, horaASegundos } = require('../utils/fecha.util');
+const qrService = require('./qrService');
 
 // ======================================================
 // CREAR ERROR
@@ -43,9 +15,7 @@ function crearError(
   statusCode = 400
 ) {
   const error = new Error(mensaje);
-
   error.statusCode = statusCode;
-
   return error;
 }
 
@@ -55,11 +25,7 @@ function crearError(
 // ======================================================
 
 exports.registrarAsistencia = async ({
-  usuarioId,
-  tipo,
-  token,
-  ipDetectada
-}) => {
+  usuarioId, tipo, token, ipDetectada }) => {
 
   // ====================================================
   // 1. VALIDACIONES BÁSICAS
@@ -90,31 +56,19 @@ exports.registrarAsistencia = async ({
 
   const connection =
     await db.getConnection();
-
-
   try {
-
     await connection.beginTransaction();
-
-
     // ==================================================
     // 3. OBTENER FECHA, HORA Y DÍA
     // ==================================================
 
-    const {
-      fecha,
-      hora,
-      diaSemana
-    } = obtenerFechaHoraActual();
-
+    const { fecha, hora, diaSemana } = obtenerFechaHoraActual();
 
     // ==================================================
     // 4. NORMALIZAR IP
     // ==================================================
 
-    const ip =
-      normalizarIp(ipDetectada);
-
+    const ip = normalizarIp(ipDetectada);
 
     if (!ip) {
       throw crearError(
@@ -122,8 +76,6 @@ exports.registrarAsistencia = async ({
         403
       );
     }
-
-
     // ==================================================
     // 5. BUSCAR HORARIO APLICABLE
     // ==================================================
@@ -144,11 +96,8 @@ exports.registrarAsistencia = async ({
 
 
     let horario;
-
     let origenHorario;
-
     let solicitudCambioId = null;
-
 
     if (cambioAprobado) {
 
@@ -171,29 +120,23 @@ exports.registrarAsistencia = async ({
       };
 
 
-      origenHorario =
-        'SOLICITUD_APROBADA';
-
-
-      solicitudCambioId =
-        cambioAprobado.id;
+      origenHorario = 'SOLICITUD_APROBADA';
+      solicitudCambioId = cambioAprobado.id;
 
     } else {
 
       horario =
         await asistenciaModel
-          .buscarHorarioHoy(
+          .buscarHorarioParaFecha(
             connection,
             usuarioId,
-            diaSemana
+            diaSemana,
+            fecha
           );
-
 
       origenHorario =
         'CRONOGRAMA_SEMANAL';
-
     }
-
 
     if (!horario) {
       throw crearError(
@@ -201,8 +144,6 @@ exports.registrarAsistencia = async ({
         403
       );
     }
-
-
     // ==================================================
     // 6. OBTENER Y VALIDAR MODALIDAD
     // ==================================================
@@ -223,8 +164,6 @@ exports.registrarAsistencia = async ({
         500
       );
     }
-
-
     // ==================================================
     // 7. BUSCAR ASISTENCIA DEL DÍA
     // ==================================================
@@ -242,31 +181,16 @@ exports.registrarAsistencia = async ({
     // 8. CONVERTIR HORARIOS A SEGUNDOS
     // ==================================================
 
-    const horaActualSegundos =
-      horaASegundos(hora);
-
-
-    const horaEntradaSegundos =
-      horaASegundos(
-        horario.hora_entrada
-      );
-
-
-    const horaSalidaSegundos =
-      horaASegundos(
-        horario.hora_salida
-      );
-
-
+    const horaActualSegundos = horaASegundos(hora);
+    const horaEntradaSegundos = horaASegundos(horario.hora_entrada);
+    const horaSalidaSegundos = horaASegundos(horario.hora_salida);
     // ==================================================
     // 9. CALCULAR TOLERANCIA
     // ==================================================
-
     const toleranciaSegundos =
       Number(
         horario.tolerancia_minutos || 0
       ) * 60;
-
 
     const inicioPermitido =
       horaEntradaSegundos
@@ -345,8 +269,6 @@ exports.registrarAsistencia = async ({
           400
         );
       }
-
-
       // No puede registrar dos salidas.
       if (asistenciaHoy.hora_salida) {
         throw crearError(
@@ -356,8 +278,6 @@ exports.registrarAsistencia = async ({
       }
 
     }
-
-
     // ==================================================
     // 12. DETERMINAR TIPO DE RED
     // ==================================================
@@ -366,8 +286,6 @@ exports.registrarAsistencia = async ({
       modalidad === 'PRESENCIAL'
         ? 'LOCAL'
         : 'VPN';
-
-
     // ==================================================
     // 13. VALIDAR RED
     // ==================================================
@@ -438,7 +356,6 @@ exports.registrarAsistencia = async ({
           );
         }
 
-
         throw crearError(
           'El código QR es inválido.',
           403
@@ -447,8 +364,6 @@ exports.registrarAsistencia = async ({
       }
 
     }
-
-
     // ==================================================
     // 15. REGISTRAR ENTRADA
     // ==================================================
@@ -463,8 +378,8 @@ exports.registrarAsistencia = async ({
 
       const estado =
         horaActualSegundos
-        <=
-        limiteTolerancia
+          <=
+          limiteTolerancia
           ? 'PRESENTE'
           : 'TARDE';
 
@@ -486,36 +401,24 @@ exports.registrarAsistencia = async ({
 
       await connection.commit();
 
-
       return {
         mensaje:
           'Entrada registrada correctamente',
-
         accion:
           'ENTRADA',
-
         asistenciaId:
           resultado.insertId,
-
         fecha,
-
         hora,
-
         modalidad,
-
         estado,
-
         origenHorario,
-
         solicitudCambioId,
-
         horarioAplicado: {
           hora_entrada:
             horario.hora_entrada,
-
           hora_salida:
             horario.hora_salida,
-
           tolerancia_minutos:
             Number(
               horario.tolerancia_minutos || 0
@@ -524,22 +427,16 @@ exports.registrarAsistencia = async ({
 
         ipDetectada:
           ip,
-
         red: {
           id:
             redAutorizada.id,
-
           nombre:
             redAutorizada.nombre,
-
           tipo:
             redAutorizada.tipo
         }
       };
-
     }
-
-
     // ==================================================
     // 16. REGISTRAR SALIDA
     // ==================================================
@@ -557,51 +454,35 @@ exports.registrarAsistencia = async ({
 
 
       await connection.commit();
-
-
       return {
         mensaje:
           'Salida registrada correctamente',
-
         accion:
           'SALIDA',
-
         asistenciaId:
           asistenciaHoy.id,
-
         fecha,
-
         hora,
-
         modalidad,
-
         origenHorario,
-
         solicitudCambioId,
-
         horarioAplicado: {
           hora_entrada:
             horario.hora_entrada,
-
           hora_salida:
             horario.hora_salida,
-
           tolerancia_minutos:
             Number(
               horario.tolerancia_minutos || 0
             )
         },
-
         ipDetectada:
           ip,
-
         red: {
           id:
             redAutorizada.id,
-
           nombre:
             redAutorizada.nombre,
-
           tipo:
             redAutorizada.tipo
         }
@@ -612,13 +493,9 @@ exports.registrarAsistencia = async ({
   } catch (error) {
 
     await connection.rollback();
-
     throw error;
-
   } finally {
-
     connection.release();
-
   }
 
 };
@@ -642,10 +519,7 @@ exports.obtenerMiAsistenciaHoy = async (
 
   // Utiliza la misma fecha configurada
   // para el registro de asistencia.
-  const {
-    fecha
-  } = obtenerFechaHoraActual();
-
+  const { fecha } = obtenerFechaHoraActual();
 
   const asistencia =
     await asistenciaModel
@@ -654,12 +528,9 @@ exports.obtenerMiAsistenciaHoy = async (
         usuarioId,
         fecha
       );
-
-
   // ====================================================
   // TODAVÍA NO REGISTRÓ NADA
   // ====================================================
-
   if (!asistencia) {
     return {
       fecha,
@@ -670,8 +541,6 @@ exports.obtenerMiAsistenciaHoy = async (
         false
     };
   }
-
-
   // ====================================================
   // REGISTRÓ ENTRADA, PERO NO SALIDA
   // ====================================================
@@ -690,8 +559,6 @@ exports.obtenerMiAsistenciaHoy = async (
         false
     };
   }
-
-
   // ====================================================
   // YA REGISTRÓ ENTRADA Y SALIDA
   // ====================================================
@@ -710,8 +577,6 @@ exports.obtenerMiAsistenciaHoy = async (
         true
     };
   }
-
-
   // Caso defensivo.
   return {
     fecha,
@@ -721,5 +586,4 @@ exports.obtenerMiAsistenciaHoy = async (
     jornadaCompletada:
       false
   };
-
 };

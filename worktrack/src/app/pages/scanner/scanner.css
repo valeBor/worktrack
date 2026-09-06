@@ -1,179 +1,323 @@
+:host {
+  display: block;
+}
+
 .qr-page {
   width: 100%;
   min-height: 100vh;
-  background-color: var(--color-bg);
-  font-family: 'Segoe UI', sans-serif;
-  display: block;
-}
-
-.header-scanner {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 12px;
-  background-color: var(--color-primary);
-  padding: 16px 20px;
-  color: white;
-  width: 100%;
-}
-
-.header-icon { font-size: 28px; }
-
-.header-info h1 { margin: 0; font-size: 18px; }
-
-.header-info span {
-  font-size: 13px;
-  color: #a0aec0;
-  display: block;
+  background: var(--color-bg);
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .body-content {
-  max-width: 480px;
+  width: 100%;
+  max-width: 520px;
   margin: 0 auto;
-  padding: 0 0 32px 0;
-  display: block;
+  padding: 24px 16px 38px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
-.section { padding: 20px 16px 8px; }
+/* =====================================================
+   TIPO DE REGISTRO
+===================================================== */
+
+.type-section {
+  width: 100%;
+}
 
 .section-label {
+  margin: 0 0 10px;
+  color: #475569;
   font-size: 14px;
-  color: #4a5568;
-  margin: 0 0 10px 0;
-  display: block;
+  font-weight: 600;
 }
 
 .toggle-container {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
 }
 
 .toggle-btn {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 14px;
-  border-radius: 14px;
+  min-height: 76px;
+  padding: 13px;
   border: 2px solid #e2e8f0;
-  background: white;
+  border-radius: 15px;
+  background: #ffffff;
+  color: #64748b;
   cursor: pointer;
   font-size: 14px;
-  color: #718096;
-}
-
-.toggle-btn.active {
-  border-color: #border-color: var(--color-secondary);;
-  color: color: var(--color-secondary);
-  background: #f0faf4;
-}
-
-.scanner-card {
-  margin: 16px;
-  background: white;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  border: 1px solid var(--color-border);
-}
-
-.camera-icon-wrapper { font-size: 40px; margin-bottom: 8px; }
-
-.scanner-card h2 { margin: 0 0 4px 0; font-size: 16px; }
-
-.scanner-card > p { margin: 0; font-size: 13px; color: #718096; }
-
-.preview-area {
-  background: #f7fafc;
-  border: 2px dashed #cbd5e0;
-  border-radius: 14px;
-  height: 200px;
-  width: 100%;
+  font-weight: 600;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #a0aec0;
-  margin: 16px 0;
-  font-size: 40px;
+  gap: 7px;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
-.preview-area p { font-size: 13px; margin: 8px 0 0 0; }
+.toggle-btn i {
+  font-size: 21px;
+}
 
-.btn-activar {
+.toggle-btn:hover:not(:disabled) {
+  border-color: var(--color-secondary);
+  transform: translateY(-1px);
+}
+
+.toggle-btn.active {
+  border-color: var(--color-secondary);
+  background: #f0fdf4;
+  color: var(--color-secondary);
+}
+
+.toggle-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =====================================================
+   ESCÁNER
+===================================================== */
+
+.scanner-card {
   width: 100%;
-  padding: 14px;
-  background: var(--color-secondary);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
+  padding: 24px;
+  border: 1px solid var(--color-border);
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.07);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.instructions-card {
-  margin: 0 16px 16px;
-  background: var(--color-primary);
-  border-radius: 20px;
-  padding: 20px 24px;
-  color: white;
+.camera-icon-wrapper {
+  width: 52px;
+  height: 52px;
+  margin-bottom: 12px;
+  border-radius: 16px;
+  background: #ecfdf5;
+  color: var(--color-secondary);
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.instructions-card h3 { margin: 0 0 12px 0; font-size: 15px; }
+.scanner-card h1 {
+  margin: 0 0 6px;
+  color: #0f172a;
+  font-size: 20px;
+  font-weight: 700;
+}
 
-.instructions-card ol { padding-left: 20px; margin: 0; }
-
-.instructions-card li {
+.scanner-description {
+  margin: 0;
+  color: #64748b;
   font-size: 13px;
-  color: #e2e8f0;
-  margin-bottom: 8px;
-}
-.body-content {
-  display: block !important;
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 0 0 32px 0;
-}
-
-.preview-area video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: inherit;
+  line-height: 1.5;
 }
 
 .preview-area {
   position: relative;
+  width: 100%;
+  height: 280px;
+  margin: 20px 0;
+  border: 2px dashed #cbd5e1;
+  border-radius: 16px;
+  background: #f8fafc;
+  color: #94a3b8;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .preview-area video {
   width: 100%;
   height: 100%;
-  object-fit: cover;
   border-radius: inherit;
+  object-fit: cover;
   display: block;
 }
 
 .preview-placeholder {
+  padding: 20px;
   text-align: center;
 }
 
-.success {
-  margin-top: 12px;
-  color: green;
+.preview-placeholder i {
+  font-size: 44px;
+}
+
+.preview-placeholder p {
+  margin: 12px 0 0;
+  font-size: 13px;
+}
+
+.scan-frame {
+  position: absolute;
+  width: 190px;
+  height: 190px;
+  border: 3px solid var(--color-secondary);
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 999px rgba(15, 23, 42, 0.18);
+  pointer-events: none;
+}
+
+/* =====================================================
+   BOTONES
+===================================================== */
+
+.camera-button {
+  width: 100%;
+  min-height: 48px;
+  padding: 13px 18px;
+  border: none;
+  border-radius: 13px;
+  background: var(--color-secondary);
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.camera-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 15px rgba(10, 171, 101, 0.2);
+}
+
+.camera-button.stop {
+  background: #dc2626;
+}
+
+/* =====================================================
+   PROCESANDO Y MENSAJES
+===================================================== */
+
+.processing-state {
+  width: 100%;
+  min-height: 48px;
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 14px;
   font-weight: 600;
 }
 
-.error {
-  margin-top: 12px;
-  color: red;
+.processing-state .spinner-border {
+  width: 21px;
+  height: 21px;
+}
+
+.scanner-message {
+  width: 100%;
+  margin-top: 15px;
+  padding: 13px 15px;
+  border-radius: 12px;
+  font-size: 13px;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+
+.success-message {
+  border: 1px solid #86efac;
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.error-message {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+/* =====================================================
+   INSTRUCCIONES
+===================================================== */
+
+.instructions-card {
+  width: 100%;
+  padding: 22px 24px;
+  border-radius: 20px;
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+.instructions-card h2 {
+  margin: 0 0 14px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.instructions-card ol {
+  margin: 0;
+  padding-left: 21px;
+}
+
+.instructions-card li {
+  margin-bottom: 8px;
+  color: #e2e8f0;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.instructions-card li:last-child {
+  margin-bottom: 0;
+}
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 600px) {
+  .body-content {
+    padding: 18px 13px 30px;
+  }
+
+  .scanner-card {
+    padding: 20px;
+  }
+
+  .preview-area {
+    height: 250px;
+  }
+
+  .scan-frame {
+    width: 170px;
+    height: 170px;
+  }
+}
+
+@media (max-width: 380px) {
+  .toggle-container {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-area {
+    height: 225px;
+  }
 }

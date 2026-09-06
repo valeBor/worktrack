@@ -1,69 +1,65 @@
-<!--
-  Elemento de video donde se visualiza la cámara del dispositivo.
-
-  #video:
-  Referencia local de Angular que permite acceder al elemento
-  desde TypeScript mediante @ViewChild('video').
-
-  [hidden]="!scannerActivo":
-  Oculta el video cuando la cámara está desactivada y lo muestra
-  cuando scannerActivo es true.
-
-  autoplay:
-  Reproduce automáticamente el flujo de video recibido desde la cámara.
-
-  muted:
-  Silencia el audio del video. Aunque la cámara no usa audio en este caso,
-  algunos navegadores requieren muted para reproducir automáticamente.
-
-  playsinline:
-  Evita que en dispositivos móviles el video se abra en pantalla completa,
-  manteniéndolo dentro del componente.
--->
-
 <div class="qr-page">
 
-  <div>
-   <app-header titulo="Lector de QR"
-     [mostrarVolver]="true">
-   </app-header><!--componente header toma 
-                                                   estilos importados del propio componente, 
-                                                   con bindeo cambia el titulo segun la pagina-->
+  <app-header
+    titulo="Lector de QR"
+    [mostrarVolver]="true">
+  </app-header>
 
-  </div>
+  <main class="body-content">
 
-  <div class="body-content">
+    <section class="type-section">
 
-    <div class="section">
-      <p class="section-label">Tipo de registro</p>
+      <p class="section-label">
+        Tipo de registro
+      </p>
 
       <div class="toggle-container">
 
         <button
+          type="button"
           class="toggle-btn"
           [class.active]="tipoRegistro === 'entrada'"
+          [disabled]="scannerActivo || procesando"
           (click)="seleccionarTipo('entrada')">
-          <span class="toggle-icon">→</span>
-          <span>Entrada</span>
+
+          <i class="bi bi-box-arrow-in-right"></i>
+
+          <span>
+            Entrada
+          </span>
         </button>
 
         <button
+          type="button"
           class="toggle-btn"
           [class.active]="tipoRegistro === 'salida'"
+          [disabled]="scannerActivo || procesando"
           (click)="seleccionarTipo('salida')">
-          <span class="toggle-icon">←</span>
-          <span>Salida</span>
+
+          <i class="bi bi-box-arrow-right"></i>
+
+          <span>
+            Salida
+          </span>
         </button>
 
       </div>
-    </div>
 
-    <div class="scanner-card">
+    </section>
 
-      <div class="camera-icon-wrapper">📷</div>
+    <section class="scanner-card">
 
-      <h2>Escanear código QR</h2>
-      <p>Activa la cámara para escanear</p>
+      <div class="camera-icon-wrapper">
+        <i class="bi bi-camera"></i>
+      </div>
+
+      <h1>
+        Escanear código QR
+      </h1>
+
+      <p class="scanner-description">
+        Activá la cámara y apuntá al código de asistencia.
+      </p>
 
       <div class="preview-area">
 
@@ -75,42 +71,111 @@
           playsinline>
         </video>
 
-        <div class="preview-placeholder" *ngIf="!scannerActivo">
-          <span>📷</span>
-          <p>Presiona el botón para activar la cámara</p>
+        <div
+          class="preview-placeholder"
+          *ngIf="!scannerActivo">
+
+          <i class="bi bi-qr-code-scan"></i>
+
+          <p>
+            Presioná el botón para activar la cámara.
+          </p>
+        </div>
+
+        <div
+          class="scan-frame"
+          *ngIf="scannerActivo">
         </div>
 
       </div>
 
       <button
-        class="btn-activar"
-        *ngIf="!scannerActivo"
+        type="button"
+        class="camera-button"
+        *ngIf="!scannerActivo && !procesando"
         (click)="activarCamara()">
-        📷 Activar cámara
+
+        <i class="bi bi-camera-video"></i>
+
+        Activar cámara
       </button>
 
       <button
-        class="btn-activar"
+        type="button"
+        class="camera-button stop"
         *ngIf="scannerActivo"
         (click)="detenerCamara()">
+
+        <i class="bi bi-camera-video-off"></i>
+
         Detener cámara
       </button>
 
-      <p class="success" *ngIf="mensaje">{{ mensaje }}</p>
-      <p class="error" *ngIf="error">{{ error }}</p>
+      <div
+        class="processing-state"
+        *ngIf="procesando">
 
-    </div>
+        <span
+          class="spinner-border"
+          role="status">
+        </span>
 
-    <div class="instructions-card">
-      <h3>Instrucciones</h3>
+        <span>
+          Validando asistencia...
+        </span>
+      </div>
+
+      <div
+        class="scanner-message success-message"
+        *ngIf="mensaje">
+
+        <i class="bi bi-check-circle"></i>
+
+        <span>
+          {{ mensaje }}
+        </span>
+      </div>
+
+      <div
+        class="scanner-message error-message"
+        *ngIf="error">
+
+        <i class="bi bi-exclamation-circle"></i>
+
+        <span>
+          {{ error }}
+        </span>
+      </div>
+
+    </section>
+
+    <section class="instructions-card">
+
+      <h2>
+        <i class="bi bi-info-circle"></i>
+        Instrucciones
+      </h2>
+
       <ol>
-        <li>Selecciona el tipo de registro (Entrada o Salida)</li>
-        <li>Activa la cámara y permite el acceso cuando se solicite</li>
-        <li>Apunta la cámara al código QR del punto de control</li>
-        <li>El escaneo se realizará automáticamente</li>
-      </ol>
-    </div>
+        <li>
+          Seleccioná entrada o salida.
+        </li>
 
-  </div>
+        <li>
+          Activá la cámara y permití su acceso.
+        </li>
+
+        <li>
+          Apuntá al código QR mostrado por la empresa.
+        </li>
+
+        <li>
+          Esperá la confirmación del registro.
+        </li>
+      </ol>
+
+    </section>
+
+  </main>
 
 </div>

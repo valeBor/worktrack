@@ -11,11 +11,20 @@ function responderError(
   error,
   mensajePredeterminado
 ) {
-  console.error(mensajePredeterminado, error);
+  const statusCode =
+    Number(error.statusCode) || 500;
 
-  return res.status(
-    error.statusCode || 500
-  ).json({
+  // Los errores 4xx son respuestas esperadas del negocio:
+  // sin horario, datos inválidos, falta de permiso, etc.
+  // Solamente registramos errores internos.
+  if (statusCode >= 500) {
+    console.error(
+      mensajePredeterminado,
+      error
+    );
+  }
+
+  return res.status(statusCode).json({
     mensaje:
       error.message ||
       mensajePredeterminado

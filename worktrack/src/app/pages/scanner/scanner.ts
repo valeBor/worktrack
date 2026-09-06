@@ -1,145 +1,267 @@
-import { CommonModule } from '@angular/common';
-import { Component, ElementRef, OnDestroy, ViewChild, ViewEncapsulation} from '@angular/core';
-//libreria que lee, libreria para escanear qr
-import {BrowserQRCodeReader, IScannerControls} from '@zxing/browser';
-//import { Router } from '@angular/router';
-import { AsistenciaService } from '../../services/asistecia.service';
-import { TipoRegistro } from '../../models/asistencia.model';
-import { Header } from '../../components/header/header';
+import {Component,ElementRef,NgZone,OnDestroy,ViewChild} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {BrowserQRCodeReader,IScannerControls} from '@zxing/browser';
+import {Header} from '../../components/header/header';
+import {AsistenciaService} from '../../services/asistecia.service';
+import {TipoRegistro} from '../../models/asistencia.model';
 
 @Component({
   selector: 'app-scanner',
   standalone: true,
-  imports: [CommonModule, Header],
+  imports: [CommonModule,Header],
   templateUrl: './scanner.html',
-  styleUrl: './scanner.css',
-
-  // Sin encapsulación de estilos.
-  // Se deja así porque ayudó a que el diseño de la cámara quede correctamente centrado.
-  // Importante: usar clases específicas para no afectar otros componentes.
-  encapsulation: ViewEncapsulation.None
+  styleUrl: './scanner.css'
 })
 export class Scanner implements OnDestroy {
-
-  // Captura el elemento <video #video> del HTML.
-  // Ese video muestra la cámara en vivo.
   @ViewChild('video')
   video!: ElementRef<HTMLVideoElement>;
 
-  // Tipo de asistencia seleccionado por el empleado.
   tipoRegistro: TipoRegistro = 'entrada';
 
-  // Controla si la cámara está activa o no.
   scannerActivo = false;
+  procesando = false;
 
-  // Mensajes que se muestran en pantalla.
   mensaje = '';
   error = '';
 
-  // Lector QR de la librería ZXing.
-  private codeReader = new BrowserQRCodeReader();
+  private readonly codeReader =
+    new BrowserQRCodeReader();
 
-  // Controles del scanner. Permiten detener la cámara.
   private controls?: IScannerControls;
-
-  // Evita que el mismo QR se lea muchas veces seguidas.
   private yaLeido = false;
 
   constructor(
-    private asistenciaService: AsistenciaService
+    private asistenciaService:
+      AsistenciaService,
+    private ngZone: NgZone
   ) {}
 
-  // Cambia entre entrada y salida.
-  seleccionarTipo(tipo: TipoRegistro): void {
+  // ====================================================
+  // SELECCIONAR TIPO
+  // ====================================================
+
+  seleccionarTipo(
+    tipo: TipoRegistro
+  ): void {
+    if (
+      this.scannerActivo ||
+      this.procesando
+    ) {
+      return;
+    }
+
     this.tipoRegistro = tipo;
   }
 
-  // Activa la cámara y comienza a buscar códigos QR.
+  // ====================================================
+  // ACTIVAR CÁMARA
+  // ====================================================
+
   async activarCamara(): Promise<void> {
+    if (
+      this.scannerActivo ||
+      this.procesando
+    ) {
+      return;
+    }
+
     this.mensaje = '';
     this.error = '';
     this.yaLeido = false;
     this.scannerActivo = true;
 
     try {
-      this.controls = await this.codeReader.decodeFromVideoDevice(
-        undefined,
-        this.video.nativeElement,
-        (result) => {
-          if (result && !this.yaLeido) {
-            this.yaLeido = true;
-
-            const textoQR = result.getText();
-
-            console.log('QR leído:', textoQR);
-
-            this.procesarQR(textoQR);
-
-            this.detenerCamara();
+      const constraints:
+        MediaStreamConstraints = {
+          audio: false,
+          video: {
+            facingMode: {
+              ideal: 'environment'
+            },
+            width: {
+              ideal: 1280
+            },
+            height: {
+              ideal: 720
+            }
           }
-        }
+        };
+
+      this.controls =
+        await this.codeReader
+          .decodeFromConstraints(
+            constraints,
+            this.video.nativeElement,
+            result => {
+              if (
+                !result ||
+                this.yaLeido
+              ) {
+                return;
+              }
+
+              this.ngZone.run(() => {
+                this.yaLeido = true;
+
+                const textoQR =
+                  result.getText();
+
+                this.detenerCamara();
+                this.procesarQR(textoQR);
+              });
+            }
+          );
+    } catch (error) {
+      console.error(
+        'Error al activar la cámara:',
+        error
       );
 
-    } catch (err) {
-      console.error(err);
+      this.error =
+        'No se pudo activar la cámara. Verificá los permisos del navegador.';
 
-      this.error = 'No se pudo activar la cámara. Verificá permisos.';
-      this.scannerActivo = false;
+      this.detenerCamara();
     }
   }
 
-  // Procesa el texto leído del QR.
-  // El QR generado por el backend contiene un JSON:
-  // { token: "...", timestamp: ... }
+  // ====================================================
+  // PROCESAR CONTENIDO DEL QR
+  // ====================================================
+
   procesarQR(textoQR: string): void {
+    const token =
+      this.obtenerToken(textoQR);
+
+    if (!token) {
+      this.error =
+        'El código leído no corresponde a un QR válido de WorkTrack.';
+
+      this.mensaje = '';
+      return;
+    }
+
+    this.registrarAsistencia(token);
+  }
+
+  // ====================================================
+  // OBTENER TOKEN DEL QR
+  // ====================================================
+
+  private obtenerToken(
+    textoQR: string
+  ): string | null {
+    const texto =
+      String(textoQR || '').trim();
+
+    if (!texto) {
+      return null;
+    }
+
+    /*
+     * Formato nuevo:
+     * token firmado directamente.
+     */
+    const partesToken =
+      texto.split('.');
+
+    if (
+      partesToken.length === 3 &&
+      partesToken.every(Boolean)
+    ) {
+      return texto;
+    }
+
+    /*
+     * Compatibilidad con el formato anterior:
+     * {"token":"...","timestamp":...}
+     */
     try {
-      const datosQR = JSON.parse(textoQR);
+      const datosQR =
+        JSON.parse(texto);
 
-      if (!datosQR.token) {
-        this.error = 'El QR no contiene un token válido.';
-        return;
-      }
+      const token =
+        String(
+          datosQR?.token || ''
+        ).trim();
 
-      this.registrarAsistencia(datosQR.token);
-
-    } catch (error) {
-      console.error(error);
-      this.error = 'El QR leído no tiene formato válido.';
+      return token || null;
+    } catch {
+      return null;
     }
   }
 
-  // Envía token QR + tipo entrada/salida al backend mediante el service.
-  registrarAsistencia(token: string): void {
-    const data = {
-      token,
-      tipo: this.tipoRegistro
-    };
+  // ====================================================
+  // REGISTRAR ASISTENCIA
+  // ====================================================
 
-    this.asistenciaService.registrarAsistencia(data).subscribe({
-      next: (resp) => {
-        this.mensaje = resp.mensaje || 'Asistencia registrada correctamente.';
-        this.error = '';
-      },
-      error: (err) => {
-        console.error(err);
+  private registrarAsistencia(
+    token: string
+  ): void {
+    this.procesando = true;
+    this.mensaje = '';
+    this.error = '';
 
-        this.error = err.error?.mensaje || 'Error al registrar asistencia.';
-        this.mensaje = '';
-      }
-    });
+    this.asistenciaService
+      .registrarAsistencia({
+        token,
+        tipo: this.tipoRegistro
+      })
+      .subscribe({
+        next: response => {
+          this.procesando = false;
+
+          this.mensaje =
+            response.mensaje ||
+            'Asistencia registrada correctamente.';
+
+          this.error = '';
+        },
+        error: err => {
+          this.procesando = false;
+
+          this.error =
+            err.error?.mensaje ||
+            'No fue posible registrar la asistencia.';
+
+          this.mensaje = '';
+        }
+      });
   }
 
-  // Detiene la cámara y libera el dispositivo.
+  // ====================================================
+  // DETENER CÁMARA
+  // ====================================================
+
   detenerCamara(): void {
     if (this.controls) {
       this.controls.stop();
       this.controls = undefined;
     }
 
+    const videoElement =
+      this.video?.nativeElement;
+
+    const mediaStream =
+      videoElement?.srcObject as
+        MediaStream | null;
+
+    if (mediaStream) {
+      mediaStream
+        .getTracks()
+        .forEach(track => {
+          track.stop();
+        });
+
+      videoElement.srcObject = null;
+    }
+
     this.scannerActivo = false;
   }
 
-  // Cuando salimos del componente, se apaga la cámara.
+  // ====================================================
+  // DESTRUIR COMPONENTE
+  // ====================================================
+
   ngOnDestroy(): void {
     this.detenerCamara();
   }

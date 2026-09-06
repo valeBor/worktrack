@@ -1,41 +1,51 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
-const { verifyToken } = require('../middlewares/authMiddleware');
-const { verifyRole } = require('../middlewares/roleMiddleware');
+const {verifyToken} = require('../middlewares/authMiddleware');
+const {verifyPermission} = require('../middlewares/permissionMiddleware');
 
+// ======================================================
+// OBTENER USUARIOS
+// ======================================================
 
-
-// GET
 router.get(
   '/',
   verifyToken,
+  verifyPermission('VER_USUARIOS'),
   userController.getUsers
 );
 
-// POST
+// ======================================================
+// CREAR USUARIO
+// ======================================================
+
 router.post(
   '/',
   verifyToken,
-  verifyRole('admin'),
+  verifyPermission('CREAR_USUARIOS'),
   userController.createUser
 );
 
-// PUT
+// ======================================================
+// ACTUALIZAR USUARIO
+// ======================================================
+
 router.put(
   '/:id',
   verifyToken,
-  verifyRole('admin'),
+  verifyPermission('EDITAR_USUARIOS'),
   userController.updateUser
 );
 
-// DELETE
+// ======================================================
+// ELIMINAR USUARIO
+// ======================================================
+
 router.delete(
   '/:id',
   verifyToken,
-  verifyRole('admin'),
+  verifyPermission('ELIMINAR_USUARIOS'),
   userController.deleteUser
 );
-
 
 module.exports = router;

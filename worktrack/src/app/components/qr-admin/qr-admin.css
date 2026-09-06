@@ -1,21 +1,150 @@
+:host {
+  display: block;
+}
+
 .contenedor-qr {
+  width: 100%;
+  padding: 28px;
+  border-radius: 22px;
+  background: #ffffff;
+}
 
-  background-color: white;
+.qr-header {
+  margin-bottom: 24px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
 
-  padding: 20px;
+.qr-header h2 {
+  margin: 0 0 7px;
+  color: #0f172a;
+  font-size: 25px;
+  font-weight: 700;
+}
 
-  border-radius: 16px;
+.qr-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.5;
+}
 
-  text-align: center;
+.refresh-button {
+  padding: 10px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 11px;
+  background: #ffffff;
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
 
+.refresh-button:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: var(--color-primary-soft);
+}
+
+.refresh-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.qr-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .imagen-qr {
+  width: min(400px, 100%);
+  height: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #ffffff;
+  display: block;
+}
 
-  width: 250px;
+.expiration {
+  margin-top: 18px;
+  padding: 9px 15px;
+  border-radius: 20px;
+  background: #f0fdf4;
+  color: #15803d;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-  height: 250px;
+.loading-state,
+.error-state {
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
 
-  margin-top: 20px;
+.loading-state {
+  color: #64748b;
+  gap: 15px;
+  font-size: 14px;
+}
 
+.loading-state .spinner-border {
+  width: 30px;
+  height: 30px;
+  color: var(--color-secondary);
+}
+
+.error-state {
+  padding: 30px;
+  color: #b91c1c;
+  text-align: center;
+}
+
+.error-state > i {
+  margin-bottom: 12px;
+  font-size: 34px;
+}
+
+.error-state p {
+  margin: 0 0 18px;
+  font-size: 14px;
+}
+
+.error-state button {
+  padding: 9px 18px;
+  border: none;
+  border-radius: 10px;
+  background: var(--color-primary);
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .contenedor-qr {
+    padding: 20px;
+  }
+
+  .qr-header {
+    flex-direction: column;
+  }
+
+  .refresh-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .qr-header h2 {
+    font-size: 21px;
+  }
 }

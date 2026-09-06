@@ -1,0 +1,417 @@
+<div class="page-wrapper">
+  <app-header
+    titulo="Historial de Asistencia"
+    [mostrarVolver]="true">
+  </app-header>
+
+  <main class="history-content">
+
+    <!-- ENCABEZADO -->
+    <section class="page-heading">
+      <div class="heading-icon">
+        <i class="bi bi-clock-history"></i>
+      </div>
+
+      <div>
+        <h1>Historial de asistencia</h1>
+        <p>
+          Consultá entradas, salidas y estadísticas de asistencia.
+        </p>
+      </div>
+    </section>
+
+    <!-- ERROR -->
+    <div
+      class="message-error"
+      *ngIf="error">
+      <i class="bi bi-exclamation-circle"></i>
+      <span>{{ error }}</span>
+    </div>
+
+    <!-- FILTROS -->
+    <section class="filters-card">
+
+      <!-- USUARIO -->
+      <div
+        class="filter-group user-filter"
+        *ngIf="canManageHistory">
+
+        <label for="historyUser">
+          <i class="bi bi-person"></i>
+          Usuario
+        </label>
+
+        <select
+          id="historyUser"
+          [(ngModel)]="selectedUserId"
+          (ngModelChange)="onUserChange()"
+          [disabled]="loadingUsers">
+
+          <option [ngValue]="null">
+            Mi historial
+          </option>
+
+          <option
+            *ngFor="let user of manageableUsers"
+            [ngValue]="user.id">
+            {{ user.apellido }}, {{ user.nombre }}
+            — {{ user.role }}
+            {{ user.estado ? '' : '(inactivo)' }}
+          </option>
+        </select>
+      </div>
+
+      <!-- PERÍODO -->
+      <div class="filter-group period-filter">
+        <label for="historyPeriod">
+          <i class="bi bi-calendar3"></i>
+          Período
+        </label>
+
+        <select
+          id="historyPeriod"
+          [(ngModel)]="selectedPeriod"
+          (ngModelChange)="onPeriodChange()"
+          [disabled]="loadingHistory">
+
+          <option value="mes_actual">
+            Mes actual
+          </option>
+
+          <option value="mes_anterior">
+            Mes anterior
+          </option>
+
+          <option value="todos">
+            Todos
+          </option>
+        </select>
+      </div>
+
+      <!-- EXPORTAR -->
+      <button
+        type="button"
+        class="export-button"
+        (click)="exportHistory()"
+        [disabled]="
+          loadingHistory ||
+          !history ||
+          history.registros.length === 0
+        ">
+        <i class="bi bi-download"></i>
+        Exportar
+      </button>
+    </section>
+
+    <!-- CARGANDO -->
+    <section
+      class="loading-card"
+      *ngIf="loadingHistory">
+
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">
+          Cargando historial...
+        </span>
+      </div>
+
+      <p>Cargando historial de asistencia...</p>
+    </section>
+
+    <ng-container *ngIf="!loadingHistory && history">
+
+      <!-- USUARIO CONSULTADO -->
+      <section class="user-card">
+        <div class="user-avatar">
+          {{ history.usuario.nombre.charAt(0).toUpperCase() }}
+          {{ history.usuario.apellido.charAt(0).toUpperCase() }}
+        </div>
+
+        <div class="user-information">
+          <h2>
+            {{ history.usuario.nombre }}
+            {{ history.usuario.apellido }}
+          </h2>
+
+          <p>
+            <i class="bi bi-envelope"></i>
+            {{ history.usuario.email }}
+          </p>
+
+          <div class="user-badges">
+            <span class="role-badge">
+              {{ history.usuario.role }}
+            </span>
+
+            <span
+              class="user-status"
+              [class.inactive]="!history.usuario.estado">
+              {{
+                history.usuario.estado
+                  ? 'Activo'
+                  : 'Inactivo'
+              }}
+            </span>
+          </div>
+        </div>
+
+        <div class="period-information">
+          <span>Período consultado</span>
+
+          <strong>
+            {{ formatDate(history.periodo.fecha_desde) }}
+            –
+            {{ formatDate(history.periodo.fecha_hasta) }}
+          </strong>
+        </div>
+      </section>
+
+      <!-- ESTADÍSTICAS -->
+      <section class="stats-grid">
+
+        <article class="stat-card present-card">
+          <div class="stat-icon">
+            <i class="bi bi-check-circle"></i>
+          </div>
+
+          <div class="stat-information">
+            <span>Días presentes</span>
+            <strong>
+              {{ history.resumen.dias_presentes }}
+            </strong>
+          </div>
+        </article>
+
+        <article class="stat-card hours-card">
+          <div class="stat-icon">
+            <i class="bi bi-clock"></i>
+          </div>
+
+          <div class="stat-information">
+            <span>Horas totales</span>
+            <strong>
+              {{ history.resumen.horas_totales }} h
+            </strong>
+          </div>
+        </article>
+
+        <article class="stat-card late-card">
+          <div class="stat-icon">
+            <i class="bi bi-alarm"></i>
+          </div>
+
+          <div class="stat-information">
+            <span>Llegadas tarde</span>
+            <strong>
+              {{ history.resumen.llegadas_tarde }}
+            </strong>
+          </div>
+        </article>
+
+        <article class="stat-card absent-card">
+          <div class="stat-icon">
+            <i class="bi bi-x-circle"></i>
+          </div>
+
+          <div class="stat-information">
+            <span>Ausencias</span>
+            <strong>
+              {{ history.resumen.ausencias }}
+            </strong>
+          </div>
+        </article>
+      </section>
+
+      <!-- INFORMACIÓN ADICIONAL -->
+      <section class="summary-card">
+        <div class="summary-item">
+          <span>Días programados</span>
+          <strong>
+            {{ history.resumen.dias_programados }}
+          </strong>
+        </div>
+
+        <div class="summary-item">
+          <span>Promedio diario</span>
+          <strong>
+            {{ history.resumen.promedio_horas_dia }} h
+          </strong>
+        </div>
+
+        <div class="summary-item">
+          <span>Registros incompletos</span>
+          <strong>
+            {{ history.resumen.registros_incompletos }}
+          </strong>
+        </div>
+
+        <div class="summary-item">
+          <span>Asistencia</span>
+          <strong>
+            {{ history.resumen.porcentaje_asistencia }}%
+          </strong>
+        </div>
+      </section>
+
+      <!-- REGISTROS -->
+      <section class="records-card">
+
+        <div class="records-header">
+          <div>
+            <h2>Registros de asistencia</h2>
+            <p>
+              {{ history.registros.length }}
+              {{
+                history.registros.length === 1
+                  ? 'registro'
+                  : 'registros'
+              }}
+            </p>
+          </div>
+        </div>
+
+        <!-- SIN REGISTROS -->
+        <div
+          class="empty-state"
+          *ngIf="history.registros.length === 0">
+
+          <i class="bi bi-calendar-x"></i>
+
+          <h3>No hay registros disponibles</h3>
+
+          <p>
+            No existen asistencias ni jornadas programadas
+            para el período seleccionado.
+          </p>
+        </div>
+
+        <!-- LISTADO -->
+        <div
+          class="records-list"
+          *ngIf="history.registros.length > 0">
+
+          <article
+            class="record-item"
+            *ngFor="
+              let record of history.registros;
+              trackBy: trackByDate
+            "
+            [ngClass]="getStatusClass(record)">
+
+            <div class="record-status-icon">
+
+              <i
+                class="bi bi-check-circle"
+                *ngIf="record.estado === 'PRESENTE'">
+              </i>
+
+              <i
+                class="bi bi-clock"
+                *ngIf="record.estado === 'TARDE'">
+              </i>
+
+              <i
+                class="bi bi-x-circle"
+                *ngIf="record.estado === 'AUSENTE'">
+              </i>
+
+              <i
+                class="bi bi-hourglass-split"
+                *ngIf="record.estado === 'PENDIENTE'">
+              </i>
+
+            </div>
+
+            <div class="record-main">
+
+              <div class="record-title">
+                <div>
+                  <h3>
+                    {{ formatDate(record.fecha) }}
+                  </h3>
+
+                  <p>
+                    {{ record.dia_semana | titlecase }}
+                  </p>
+                </div>
+
+                <span
+                  class="status-badge"
+                  [ngClass]="getStatusClass(record)">
+                  {{ getStatusLabel(record) }}
+                </span>
+              </div>
+
+              <div class="record-details">
+
+                <div class="detail-item">
+                  <span>Entrada</span>
+                  <strong>
+                    {{ formatTime(record.hora_entrada) }}
+                  </strong>
+                </div>
+
+                <div class="detail-item">
+                  <span>Salida</span>
+                  <strong>
+                    {{ formatTime(record.hora_salida) }}
+                  </strong>
+                </div>
+
+                <div class="detail-item">
+                  <span>Horas trabajadas</span>
+                  <strong>
+                    {{
+                      formatWorkedHours(
+                        record.horas_trabajadas
+                      )
+                    }}
+                  </strong>
+                </div>
+
+                <div class="detail-item">
+                  <span>Modalidad</span>
+                  <strong>
+                    {{ record.modalidad || '—' }}
+                  </strong>
+                </div>
+
+              </div>
+
+              <div
+                class="expected-schedule"
+                *ngIf="record.horario_esperado">
+
+                <i class="bi bi-calendar-check"></i>
+
+                <span>
+                  Horario esperado:
+                  {{
+                    formatTime(
+                      record.horario_esperado.hora_entrada
+                    )
+                  }}
+                  a
+                  {{
+                    formatTime(
+                      record.horario_esperado.hora_salida
+                    )
+                  }}
+                </span>
+              </div>
+
+              <div
+                class="schedule-change"
+                *ngIf="record.cambio_horario">
+
+                <i class="bi bi-arrow-left-right"></i>
+                Cambio de horario aprobado
+              </div>
+
+            </div>
+          </article>
+        </div>
+      </section>
+
+    </ng-container>
+  </main>
+</div>

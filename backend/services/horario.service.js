@@ -1,9 +1,6 @@
 const db = require('../config/db');
 const horarioModel = require('../models/horario.model');
-
-const {
-  obtenerFechaHoraActual
-} = require('../utils/fecha.util');
+const {obtenerFechaHoraActual, sumarDiasAFecha} = require('../utils/fecha.util');
 
 // ======================================================
 // CONSTANTES
@@ -277,7 +274,8 @@ function validarHorario(datos) {
 async function insertarCronograma(
   connection,
   usuarioId,
-  horario
+  horario,
+  vigenteDesde
 ) {
   const horariosCreados = [];
 
@@ -291,17 +289,48 @@ async function insertarCronograma(
         hora_salida: horario.hora_salida,
         tolerancia_minutos:
           horario.tolerancia_minutos,
-        modalidad: horario.modalidad
+        modalidad: horario.modalidad,
+        vigente_desde: vigenteDesde
       }
     );
 
     horariosCreados.push({
       id: result.insertId,
-      dia_semana: dia
+      dia_semana: dia,
+      vigente_desde: vigenteDesde
     });
   }
 
   return horariosCreados;
+}
+
+// ======================================================
+// CERRAR CRONOGRAMA ACTUAL
+// ======================================================
+
+async function cerrarCronogramaActual(
+  connection,
+  usuarioId,
+  fechaActual
+) {
+  const fechaAnterior = sumarDiasAFecha(
+    fechaActual,
+    -1
+  );
+
+  if (!fechaAnterior) {
+    throw crearError(
+      'No fue posible calcular la fecha de cierre del cronograma.',
+      500
+    );
+  }
+
+  return horarioModel.cerrarCronogramaVigente(
+    connection,
+    usuarioId,
+    fechaActual,
+    fechaAnterior
+  );
 }
 
 // ======================================================
@@ -356,13 +385,16 @@ exports.getHorariosUsuario = async (
 exports.getMiHorarioHoy = async (usuarioId) => {
   const id = validarId(usuarioId);
 
-  const { diaSemana } =
-    obtenerFechaHoraActual();
+  const {
+    fecha,
+    diaSemana
+  } = obtenerFechaHoraActual();
 
   const horario =
-    await horarioModel.getByUsuarioAndDia(
+    await horarioModel.getByUsuarioAndDiaEnFecha(
       id,
-      diaSemana
+      diaSemana,
+      fecha
     );
 
   if (!horario) {
@@ -402,6 +434,7 @@ exports.createHorario = async (
     );
   }
 
+  const {fecha} = obtenerFechaHoraActual();
   const connection = await db.getConnection();
 
   try {
@@ -411,7 +444,8 @@ exports.createHorario = async (
       await insertarCronograma(
         connection,
         usuario.id,
-        horario
+        horario,
+        fecha
       );
 
     await connection.commit();
@@ -419,6 +453,7 @@ exports.createHorario = async (
     return {
       mensaje: 'Cronograma creado correctamente.',
       cantidad: horariosCreados.length,
+      vigente_desde: fecha,
       horarios: horariosCreados
     };
   } catch (error) {
@@ -457,21 +492,24 @@ exports.updateCronogramaUsuario = async (
     );
   }
 
+  const {fecha} = obtenerFechaHoraActual();
   const connection = await db.getConnection();
 
   try {
     await connection.beginTransaction();
 
-    await horarioModel.removeByUsuario(
+    const cierre = await cerrarCronogramaActual(
       connection,
-      usuario.id
+      usuario.id,
+      fecha
     );
 
     const horariosCreados =
       await insertarCronograma(
         connection,
         usuario.id,
-        horario
+        horario,
+        fecha
       );
 
     await connection.commit();
@@ -479,6 +517,8 @@ exports.updateCronogramaUsuario = async (
     return {
       mensaje: 'Cronograma actualizado correctamente.',
       cantidad: horariosCreados.length,
+      vigente_desde: fecha,
+      cronograma_anterior: cierre,
       horarios: horariosCreados
     };
   } catch (error) {
@@ -505,19 +545,42 @@ exports.deleteCronogramaUsuario = async (
     false
   );
 
-  const result = await horarioModel.deleteByUsuario(
-    usuario.id
-  );
+  const horariosExistentes =
+    await horarioModel.getByUsuario(usuario.id);
 
-  if (result.affectedRows === 0) {
+  if (horariosExistentes.length === 0) {
     throw crearError(
       'El usuario no tiene un cronograma para eliminar.',
       404
     );
   }
 
-  return {
-    mensaje: 'Cronograma eliminado correctamente.',
-    cantidad: result.affectedRows
-  };
+  const {fecha} = obtenerFechaHoraActual();
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const cierre = await cerrarCronogramaActual(
+      connection,
+      usuario.id,
+      fecha
+    );
+
+    await connection.commit();
+
+    return {
+      mensaje: 'Cronograma eliminado correctamente.',
+      cantidad:
+        cierre.cerrados +
+        cierre.eliminados,
+      vigente_hasta:
+        sumarDiasAFecha(fecha, -1)
+    };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
 };

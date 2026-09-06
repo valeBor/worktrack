@@ -262,3 +262,76 @@ exports.getAprobadaByUsuarioAndFecha = async (
 
   return rows[0];
 };
+
+// ======================================================
+// OBTENER CAMBIOS APROBADOS DE UN PERÍODO
+// ======================================================
+
+exports.getAprobadasByUsuarioAndPeriodo = async (
+  usuarioId,
+  fechaDesde,
+  fechaHasta
+) => {
+  const sql = `
+    SELECT
+      id,
+      usuario_id,
+      DATE_FORMAT(
+        fecha_solicitada,
+        '%Y-%m-%d'
+      ) AS fecha_solicitada,
+      hora_entrada_actual,
+      hora_salida_actual,
+      modalidad_actual,
+      tolerancia_actual,
+      hora_entrada_solicitada,
+      hora_salida_solicitada,
+      motivo,
+      respuesta,
+      resuelto_por,
+      resuelta_en
+    FROM solicitudes
+    WHERE usuario_id = ?
+      AND tipo = 'CAMBIO_HORARIO'
+      AND estado = 'APROBADA'
+      AND fecha_solicitada
+        BETWEEN ? AND ?
+    ORDER BY
+      fecha_solicitada ASC,
+      id ASC
+  `;
+
+  const [rows] = await db.query(sql, [
+    usuarioId,
+    fechaDesde,
+    fechaHasta
+  ]);
+
+  return rows;
+};
+
+// ======================================================
+// OBTENER PRIMERA FECHA CON CAMBIO APROBADO
+// ======================================================
+
+exports.getPrimeraAprobadaByUsuario = async (
+  usuarioId
+) => {
+  const sql = `
+    SELECT
+      DATE_FORMAT(
+        MIN(fecha_solicitada),
+        '%Y-%m-%d'
+      ) AS primera_fecha
+    FROM solicitudes
+    WHERE usuario_id = ?
+      AND tipo = 'CAMBIO_HORARIO'
+      AND estado = 'APROBADA'
+  `;
+
+  const [rows] = await db.query(sql, [
+    usuarioId
+  ]);
+
+  return rows[0]?.primera_fecha || null;
+};

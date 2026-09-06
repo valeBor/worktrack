@@ -1,41 +1,51 @@
-const qrService = require("../services/qrService");
+const qrService =
+  require('../services/qrService');
+
+// ======================================================
+// GENERAR CÓDIGO QR
+// ======================================================
 
 exports.generarQR = async (req, res) => {
-
-  console.log(
-    "Generando QR:",
-    new Date()
-  );
-
   try {
-
-    const qrBuffer =
+    const resultado =
       await qrService.generarQR();
 
+    const imagenBase64 =
+      resultado.qrBuffer.toString('base64');
+
     res.setHeader(
-      "Content-Type",
-      "image/png"
+      'Cache-Control',
+      'no-store, no-cache, must-revalidate, private'
     );
 
     res.setHeader(
-      "Cache-Control",
-      "no-store"
+      'Pragma',
+      'no-cache'
     );
 
-    res.send(qrBuffer);
-
+    return res.status(200).json({
+      imagen:
+        `data:image/png;base64,${imagenBase64}`,
+      generado_en:
+        new Date(
+          resultado.generadoEn
+        ).toISOString(),
+      expira_en:
+        new Date(
+          resultado.expiraEn
+        ).toISOString(),
+      duracion_segundos:
+        resultado.duracionSegundos
+    });
   } catch (error) {
-
     console.error(
-      "Error generando QR:",
+      'Error al generar el código QR:',
       error
     );
 
-    res.status(500).json({
+    return res.status(500).json({
       mensaje:
-        "Error generando QR"
+        'Error interno al generar el código QR.'
     });
-
   }
-
 };

@@ -1,0 +1,47 @@
+<div
+  class="page-wrapper"
+  [class.without-header]="!isLoggedIn">
+
+  @if (isLoggedIn) {
+    <app-header
+      titulo="Página no encontrada">
+    </app-header>
+  }
+
+  <main class="not-found-content">
+    <section class="not-found-card">
+
+      <div class="error-icon">
+        <i class="bi bi-signpost-split"></i>
+      </div>
+
+      <span class="error-code">
+        Error 404
+      </span>
+
+      <h1>
+        Página no encontrada
+      </h1>
+
+      <p>
+        La dirección ingresada no existe o el recurso fue movido.
+      </p>
+
+      <button
+        type="button"
+        class="back-button"
+        (click)="goBack()">
+
+        <i
+          class="bi"
+          [class.bi-house-door]="isLoggedIn"
+          [class.bi-box-arrow-in-right]="!isLoggedIn">
+        </i>
+
+        {{ buttonText }}
+      </button>
+
+    </section>
+  </main>
+
+</div>
