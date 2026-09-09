@@ -103,6 +103,10 @@ export class SupervisorComponent implements OnInit {
 
   }
 
+  solicitarCambioHorario(): void {
+  this.router.navigate(['/cambio-horario']);
+}
+
 
 
   cerrarSesion(): void {

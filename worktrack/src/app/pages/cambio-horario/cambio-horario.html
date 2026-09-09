@@ -1,60 +1,35 @@
 <div class="page-container">
-
   <app-header
     titulo="Cambio de Horario"
-    subtitulo="Solicita modificaciones a tu cronograma"
     [mostrarVolver]="true">
   </app-header>
 
-
   <main class="content">
-
-    <!-- ==================================================
-         BOTÓN NUEVA SOLICITUD
-         ================================================== -->
-
+    <!-- NUEVA SOLICITUD -->
     <button
       type="button"
       class="btn-new"
       *ngIf="!mostrarFormulario"
       (click)="nuevaSolicitud()">
-
       <i class="bi bi-calendar-plus"></i>
-
-      <span>
-        Nueva solicitud de cambio
-      </span>
-
+      <span>Nueva solicitud de cambio</span>
     </button>
 
-
-    <!-- ==================================================
-         FORMULARIO
-         ================================================== -->
-
-    <section
-      class="form-card"
-      *ngIf="mostrarFormulario">
-
+    <!-- FORMULARIO -->
+    <section class="form-card" *ngIf="mostrarFormulario">
       <div class="form-header">
-
         <div class="form-header-icon">
           <i class="bi bi-calendar-plus"></i>
         </div>
 
         <div>
-          <h2>
-            Nueva solicitud de cambio
-          </h2>
-
+          <h2>Nueva solicitud de cambio</h2>
           <p>
-            Seleccioná una fecha y proponé
-            un nuevo horario para ese día.
+            Seleccioná una fecha y proponé un nuevo
+            horario o modalidad para ese día.
           </p>
         </div>
-
       </div>
-
 
       <form
         class="request-form"
@@ -62,31 +37,16 @@
         (ngSubmit)="guardarSolicitud()"
         novalidate>
 
-        <!-- ==============================================
-             FECHA SOLICITADA
-             ============================================== -->
-
+        <!-- FECHA -->
         <div class="form-group">
-
           <label for="fecha-solicitada">
-
             Fecha del cambio
-
-            <span class="required">
-              *
-            </span>
-
+            <span class="required">*</span>
           </label>
-
 
           <div
             class="input-wrapper"
-            [class.input-error]="
-              campoInvalido(
-                'fecha_solicitada'
-              )
-            ">
-
+            [class.input-error]="campoInvalido('fecha_solicitada')">
             <i class="bi bi-calendar3"></i>
 
             <input
@@ -95,264 +55,129 @@
               formControlName="fecha_solicitada"
               [min]="fechaMinima"
               (change)="consultarHorario()">
-
           </div>
-
 
           <div
             class="field-error"
-            *ngIf="
-              campoInvalido(
-                'fecha_solicitada'
-              )
-            ">
-
+            *ngIf="campoInvalido('fecha_solicitada')">
             <span
-              *ngIf="
-                tieneError(
-                  'fecha_solicitada',
-                  'required'
-                )
-              ">
-
+              *ngIf="tieneError('fecha_solicitada', 'required')">
               La fecha es obligatoria.
-
             </span>
-
 
             <span
-              *ngIf="
-                tieneError(
-                  'fecha_solicitada',
-                  'fechaNoFutura'
-                )
-              ">
-
+              *ngIf="tieneError('fecha_solicitada', 'fechaNoFutura')">
               Debés seleccionar una fecha futura.
-
             </span>
-
           </div>
 
-
           <p class="field-help">
-
-            El cambio afectará únicamente
-            la fecha seleccionada.
-
+            El cambio afectará únicamente la fecha seleccionada.
           </p>
-
         </div>
 
-
-        <!-- ==============================================
-             CONSULTANDO HORARIO
-             ============================================== -->
-
+        <!-- CONSULTANDO HORARIO -->
         <div
           class="schedule-status loading-schedule"
           *ngIf="consultandoHorario">
-
           <div class="small-spinner"></div>
-
-          <span>
-            Consultando tu horario actual...
-          </span>
-
+          <span>Consultando tu horario actual...</span>
         </div>
 
-
-        <!-- ==============================================
-             ERROR DEL HORARIO
-             ============================================== -->
-
+        <!-- ERROR DEL HORARIO -->
         <div
           class="schedule-status schedule-error"
-          *ngIf="
-            !consultandoHorario
-            &&
-            errorHorario
-          ">
-
+          *ngIf="!consultandoHorario && errorHorario">
           <i class="bi bi-exclamation-circle"></i>
-
-          <span>
-            {{ errorHorario }}
-          </span>
-
+          <span>{{ errorHorario }}</span>
         </div>
 
-
-        <!-- ==============================================
-             HORARIO ACTUAL
-             ============================================== -->
-
+        <!-- HORARIO ACTUAL -->
         <div
           class="current-schedule"
-          *ngIf="
-            !consultandoHorario
-            &&
-            horarioActual
-          ">
-
+          *ngIf="!consultandoHorario && horarioActual">
           <div class="current-schedule-title">
-
             <i class="bi bi-clock-history"></i>
-
-            <span>
-              Tu horario actual para ese día
-            </span>
-
+            <span>Tu horario actual para ese día</span>
           </div>
-
 
           <div class="current-schedule-grid">
-
             <div class="current-data">
-
-              <span>
-                Día
-              </span>
-
+              <span>Día</span>
               <strong>
-                {{
-                  horarioActual
-                    .dia_semana
-                    | titlecase
-                }}
+                {{ horarioActual.dia_semana | titlecase }}
               </strong>
-
             </div>
 
-
             <div class="current-data">
-
-              <span>
-                Entrada
-              </span>
-
+              <span>Entrada</span>
               <strong>
                 {{
                   formatearHora(
-                    horarioActual
-                      .horario_actual
-                      .hora_entrada
+                    horarioActual.horario_actual.hora_entrada
                   )
                 }}
               </strong>
-
             </div>
 
-
             <div class="current-data">
-
-              <span>
-                Salida
-              </span>
-
+              <span>Salida</span>
               <strong>
                 {{
                   formatearHora(
-                    horarioActual
-                      .horario_actual
-                      .hora_salida
+                    horarioActual.horario_actual.hora_salida
                   )
                 }}
               </strong>
-
             </div>
-
 
             <div class="current-data">
-
-              <span>
-                Modalidad
-              </span>
-
+              <span>Modalidad</span>
               <strong>
-                {{
-                  horarioActual
-                    .horario_actual
-                    .modalidad
-                }}
+                {{ horarioActual.horario_actual.modalidad }}
               </strong>
-
             </div>
-
           </div>
-
         </div>
 
-
-        <!-- ==============================================
-             HORARIO SOLICITADO
-             ============================================== -->
-
+        <!-- CAMBIO SOLICITADO -->
         <div class="form-section">
-
           <div class="form-section-title">
-
             <i class="bi bi-clock"></i>
 
             <div>
-
-              <h3>
-                Horario solicitado
-              </h3>
-
+              <h3>Cambio solicitado</h3>
               <p>
-                Indicá las nuevas horas
+                Indicá las horas y la modalidad que necesitás
                 para la fecha seleccionada.
               </p>
-
             </div>
-
           </div>
 
-
+          <!-- HORAS -->
           <div class="time-grid">
-
-            <!-- HORA DE ENTRADA -->
-
             <div class="form-group">
-
               <label for="hora-entrada">
-
                 Nueva hora de entrada
-
-                <span class="required">
-                  *
-                </span>
-
+                <span class="required">*</span>
               </label>
-
 
               <div
                 class="input-wrapper"
                 [class.input-error]="
-                  campoInvalido(
-                    'hora_entrada_solicitada'
-                  )
+                  campoInvalido('hora_entrada_solicitada')
                 ">
-
                 <i class="bi bi-box-arrow-in-right"></i>
 
                 <input
                   id="hora-entrada"
                   type="time"
                   formControlName="hora_entrada_solicitada">
-
               </div>
-
 
               <div
                 class="field-error"
-                *ngIf="
-                  campoInvalido(
-                    'hora_entrada_solicitada'
-                  )
-                ">
-
+                *ngIf="campoInvalido('hora_entrada_solicitada')">
                 <span
                   *ngIf="
                     tieneError(
@@ -360,11 +185,8 @@
                       'required'
                     )
                   ">
-
                   La hora de entrada es obligatoria.
-
                 </span>
-
 
                 <span
                   *ngIf="
@@ -373,59 +195,34 @@
                       'pattern'
                     )
                   ">
-
                   Ingresá una hora válida.
-
                 </span>
-
               </div>
-
             </div>
 
-
-            <!-- HORA DE SALIDA -->
-
             <div class="form-group">
-
               <label for="hora-salida">
-
                 Nueva hora de salida
-
-                <span class="required">
-                  *
-                </span>
-
+                <span class="required">*</span>
               </label>
-
 
               <div
                 class="input-wrapper"
                 [class.input-error]="
-                  campoInvalido(
-                    'hora_salida_solicitada'
-                  )
-                  ||
+                  campoInvalido('hora_salida_solicitada') ||
                   rangoHorarioInvalido()
                 ">
-
                 <i class="bi bi-box-arrow-right"></i>
 
                 <input
                   id="hora-salida"
                   type="time"
                   formControlName="hora_salida_solicitada">
-
               </div>
-
 
               <div
                 class="field-error"
-                *ngIf="
-                  campoInvalido(
-                    'hora_salida_solicitada'
-                  )
-                ">
-
+                *ngIf="campoInvalido('hora_salida_solicitada')">
                 <span
                   *ngIf="
                     tieneError(
@@ -433,11 +230,8 @@
                       'required'
                     )
                   ">
-
                   La hora de salida es obligatoria.
-
                 </span>
-
 
                 <span
                   *ngIf="
@@ -446,308 +240,199 @@
                       'pattern'
                     )
                   ">
-
                   Ingresá una hora válida.
-
                 </span>
-
               </div>
-
             </div>
-
           </div>
-
-
-          <!-- ERROR DEL RANGO -->
 
           <div
             class="field-error range-error"
             *ngIf="rangoHorarioInvalido()">
-
-            La hora de salida debe ser
-            posterior a la hora de entrada.
-
+            La hora de salida debe ser posterior
+            a la hora de entrada.
           </div>
 
-        </div>
-
-
-        <!-- ==============================================
-             MOTIVO
-             ============================================== -->
-
-        <div class="form-group">
-
-          <div class="label-row">
-
-            <label for="motivo">
-
-              Motivo
-
-              <span class="required">
-                *
-              </span>
-
+          <!-- MODALIDAD -->
+          <div class="form-group">
+            <label for="modalidad-solicitada">
+              Modalidad solicitada
+              <span class="required">*</span>
             </label>
 
+            <div
+              class="input-wrapper"
+              [class.input-error]="
+                campoInvalido('modalidad_solicitada')
+              ">
+              <i class="bi bi-building"></i>
+
+              <select
+                id="modalidad-solicitada"
+                formControlName="modalidad_solicitada">
+                <option value="" disabled>
+                  Seleccioná una modalidad
+                </option>
+                <option value="PRESENCIAL">
+                  Presencial
+                </option>
+                <option value="HOME">
+                  Home
+                </option>
+              </select>
+            </div>
+
+            <div
+              class="field-error"
+              *ngIf="campoInvalido('modalidad_solicitada')">
+              <span
+                *ngIf="
+                  tieneError(
+                    'modalidad_solicitada',
+                    'required'
+                  )
+                ">
+                La modalidad es obligatoria.
+              </span>
+            </div>
+
+            <p class="field-help">
+              Podés mantener la modalidad actual o solicitar
+              el cambio entre PRESENCIAL y HOME.
+            </p>
+          </div>
+        </div>
+
+        <!-- MOTIVO -->
+        <div class="form-group">
+          <div class="label-row">
+            <label for="motivo">
+              Motivo
+              <span class="required">*</span>
+            </label>
 
             <span class="character-counter">
-
               {{
-                solicitudForm
-                  .get('motivo')
-                  ?.value
-                  ?.length
-                || 0
+                solicitudForm.get('motivo')?.value?.length || 0
               }}/500
-
             </span>
-
           </div>
-
 
           <textarea
             id="motivo"
             rows="5"
             maxlength="500"
             formControlName="motivo"
-            placeholder="Explicá brevemente por qué necesitás cambiar tu horario..."
-            [class.input-error]="
-              campoInvalido(
-                'motivo'
-              )
-            ">
+            placeholder="Explicá brevemente por qué necesitás realizar el cambio..."
+            [class.input-error]="campoInvalido('motivo')">
           </textarea>
-
 
           <div
             class="field-error"
-            *ngIf="
-              campoInvalido(
-                'motivo'
-              )
-            ">
-
-            <span
-              *ngIf="
-                tieneError(
-                  'motivo',
-                  'required'
-                )
-              ">
-
+            *ngIf="campoInvalido('motivo')">
+            <span *ngIf="tieneError('motivo', 'required')">
               El motivo es obligatorio.
-
             </span>
 
-
-            <span
-              *ngIf="
-                tieneError(
-                  'motivo',
-                  'minlength'
-                )
-              ">
-
-              El motivo debe contener
-              al menos 5 caracteres.
-
+            <span *ngIf="tieneError('motivo', 'minlength')">
+              El motivo debe contener al menos 5 caracteres.
             </span>
 
-
-            <span
-              *ngIf="
-                tieneError(
-                  'motivo',
-                  'maxlength'
-                )
-              ">
-
-              El motivo no puede superar
-              los 500 caracteres.
-
+            <span *ngIf="tieneError('motivo', 'maxlength')">
+              El motivo no puede superar los 500 caracteres.
             </span>
-
           </div>
-
         </div>
 
-
-        <!-- ==============================================
-             INFORMACIÓN
-             ============================================== -->
-
+        <!-- INFORMACIÓN -->
         <div class="information-box">
-
           <i class="bi bi-info-circle"></i>
 
           <p>
-            Enviar esta solicitud no modifica
-            automáticamente tu cronograma.
-            El cambio debe ser aprobado por
-            un supervisor o por Recursos Humanos.
+            Enviar esta solicitud no modifica automáticamente
+            tu cronograma. {{ textoAprobacion }}
           </p>
-
         </div>
 
-
-        <!-- ==============================================
-             ACCIONES
-             ============================================== -->
-
+        <!-- ACCIONES -->
         <div class="form-actions">
-
           <button
             type="button"
             class="btn-cancel"
             [disabled]="guardando"
             (click)="cancelarFormulario()">
-
             Cancelar
-
           </button>
-
 
           <button
             type="submit"
             class="btn-submit"
             [disabled]="guardando">
-
-            <ng-container
-              *ngIf="!guardando">
-
+            <ng-container *ngIf="!guardando">
               <i class="bi bi-send"></i>
-
               Enviar solicitud
-
             </ng-container>
 
-
-            <ng-container
-              *ngIf="guardando">
-
+            <ng-container *ngIf="guardando">
               <div class="button-spinner"></div>
-
               Enviando...
-
             </ng-container>
-
           </button>
-
         </div>
-
       </form>
-
     </section>
 
-
-    <!-- ==================================================
-         LISTADO DE SOLICITUDES
-         ================================================== -->
-
-    <ng-container
-      *ngIf="!mostrarFormulario">
-
-      <!-- CARGANDO -->
-
-      <section
-        class="state-card"
-        *ngIf="cargando">
-
+    <!-- LISTADO -->
+    <ng-container *ngIf="!mostrarFormulario">
+      <section class="state-card" *ngIf="cargando">
         <div class="spinner"></div>
-
-        <p>
-          Cargando solicitudes...
-        </p>
-
+        <p>Cargando solicitudes...</p>
       </section>
-
-
-      <!-- ERROR DE CARGA -->
 
       <section
         class="state-card error-state"
-        *ngIf="
-          !cargando
-          &&
-          errorCarga
-        ">
-
+        *ngIf="!cargando && errorCarga">
         <i class="bi bi-exclamation-circle"></i>
-
-        <h3>
-          No pudimos cargar tus solicitudes
-        </h3>
-
-        <p>
-          Verificá la conexión
-          e intentá nuevamente.
-        </p>
+        <h3>No pudimos cargar tus solicitudes</h3>
+        <p>Verificá la conexión e intentá nuevamente.</p>
 
         <button
           type="button"
           class="btn-retry"
           (click)="cargarSolicitudes()">
-
           Volver a intentar
-
         </button>
-
       </section>
-
-
-      <!-- SIN SOLICITUDES -->
 
       <section
         class="state-card"
         *ngIf="
-          !cargando
-          &&
-          !errorCarga
-          &&
+          !cargando &&
+          !errorCarga &&
           solicitudes.length === 0
         ">
-
         <i class="bi bi-calendar2-check"></i>
-
-        <h3>
-          Todavía no tenés solicitudes
-        </h3>
-
+        <h3>Todavía no tenés solicitudes</h3>
         <p>
           Cuando solicites un cambio de horario,
-          podrás consultar su estado
-          desde esta pantalla.
+          podrás consultar su estado desde esta pantalla.
         </p>
-
       </section>
-
-
-      <!-- SOLICITUDES AGRUPADAS -->
 
       <ng-container
         *ngIf="
-          !cargando
-          &&
-          !errorCarga
-          &&
+          !cargando &&
+          !errorCarga &&
           solicitudes.length > 0
         ">
-
         <section
           class="request-group"
-          *ngFor="
-            let grupo
-            of gruposSolicitudes
-          ">
-
+          *ngFor="let grupo of gruposSolicitudes">
           <div
             class="section-title"
             [ngClass]="
-              'titulo-'
-              + grupo.estado.toLowerCase()
+              'titulo-' + grupo.estado.toLowerCase()
             ">
-
             <i
               class="bi"
               [ngClass]="grupo.icono">
@@ -757,105 +442,62 @@
               {{ grupo.titulo }}
               ({{ grupo.solicitudes.length }})
             </h3>
-
           </div>
-
 
           <div
             class="empty-group"
-            *ngIf="
-              grupo.solicitudes.length === 0
-            ">
-
+            *ngIf="grupo.solicitudes.length === 0">
             No hay solicitudes en este estado.
-
           </div>
-
 
           <article
             class="request-card"
             [ngClass]="
-              'estado-'
-              + solicitud.estado.toLowerCase()
+              'estado-' + solicitud.estado.toLowerCase()
             "
-            *ngFor="
-              let solicitud
-              of grupo.solicitudes
-            ">
+            *ngFor="let solicitud of grupo.solicitudes">
 
             <!-- CABECERA -->
-
             <div class="card-header">
-
               <div
                 class="status-icon"
                 [ngClass]="
-                  'estado-'
-                  + solicitud.estado.toLowerCase()
+                  'estado-' + solicitud.estado.toLowerCase()
                 ">
-
                 <i
                   class="bi"
                   [ngClass]="
-                    obtenerIconoEstado(
-                      solicitud.estado
-                    )
+                    obtenerIconoEstado(solicitud.estado)
                   ">
                 </i>
-
               </div>
 
-
               <div class="header-text">
-
                 <h2>
-                  {{
-                    obtenerTituloEstado(
-                      solicitud.estado
-                    )
-                  }}
+                  {{ obtenerTituloEstado(solicitud.estado) }}
                 </h2>
 
                 <p>
                   Enviada el
-                  {{
-                    formatearFechaHora(
-                      solicitud.creada_en
-                    )
-                  }}
+                  {{ formatearFechaHora(solicitud.creada_en) }}
                 </p>
-
               </div>
-
 
               <span
                 class="badge"
                 [ngClass]="
-                  'estado-'
-                  + solicitud.estado.toLowerCase()
+                  'estado-' + solicitud.estado.toLowerCase()
                 ">
-
-                {{
-                  obtenerEtiquetaEstado(
-                    solicitud.estado
-                  )
-                }}
-
+                {{ obtenerEtiquetaEstado(solicitud.estado) }}
               </span>
-
             </div>
 
-
             <!-- FECHA -->
-
             <div class="date-row">
-
               <i class="bi bi-calendar"></i>
 
               <span>
-
                 Fecha solicitada:
-
                 <strong>
                   {{
                     formatearFecha(
@@ -863,20 +505,14 @@
                     )
                   }}
                 </strong>
-
               </span>
-
             </div>
 
-
-            <!-- HORARIOS -->
-
+            <!-- COMPARACIÓN -->
             <div class="schedule-grid">
-
               <div class="schedule-box">
-
                 <span>
-                  Horario actual
+                  Actual · {{ solicitud.modalidad_actual }}
                 </span>
 
                 <strong>
@@ -892,106 +528,67 @@
                     )
                   }}
                 </strong>
-
               </div>
 
-
-              <div
-                class="schedule-box requested">
-
+              <div class="schedule-box requested">
                 <span>
-                  Horario solicitado
+                  Solicitado ·
+                  {{ solicitud.modalidad_solicitada }}
                 </span>
 
                 <strong>
                   {{
                     formatearHora(
-                      solicitud
-                        .hora_entrada_solicitada
+                      solicitud.hora_entrada_solicitada
                     )
                   }}
                   -
                   {{
                     formatearHora(
-                      solicitud
-                        .hora_salida_solicitada
+                      solicitud.hora_salida_solicitada
                     )
                   }}
                 </strong>
-
               </div>
-
             </div>
-
 
             <!-- DETALLES -->
-
             <div class="request-details">
-
               <span class="detail-chip">
-
-                <i class="bi bi-building"></i>
-
+                <i class="bi bi-arrow-left-right"></i>
                 {{ solicitud.modalidad_actual }}
-
+                →
+                {{ solicitud.modalidad_solicitada }}
               </span>
-
 
               <span class="detail-chip">
-
                 <i class="bi bi-hourglass-split"></i>
-
                 Tolerancia:
-                {{ solicitud.tolerancia_actual }}
-                min
-
+                {{ solicitud.tolerancia_actual }} min
               </span>
-
             </div>
-
 
             <!-- MOTIVO -->
-
             <div class="reason">
-
-              <span>
-                Motivo
-              </span>
-
-              <p>
-                {{ solicitud.motivo }}
-              </p>
-
+              <span>Motivo</span>
+              <p>{{ solicitud.motivo }}</p>
             </div>
 
-
             <!-- RESPUESTA -->
-
             <div
               class="response-box"
               *ngIf="solicitud.respuesta">
-
-              <span>
-                Respuesta del responsable
-              </span>
-
-              <p>
-                {{ solicitud.respuesta }}
-              </p>
-
+              <span>Respuesta del responsable</span>
+              <p>{{ solicitud.respuesta }}</p>
             </div>
 
-
             <!-- RESOLUCIÓN -->
-
             <div
               class="resolution-data"
               *ngIf="solicitud.resuelta_en">
-
               <i class="bi bi-person-check"></i>
 
               <span>
-
                 Resuelta el
                 {{
                   formatearFechaHora(
@@ -1001,45 +598,27 @@
 
                 <ng-container
                   *ngIf="
-                    solicitud.responsable_nombre
-                    ||
+                    solicitud.responsable_nombre ||
                     solicitud.responsable_apellido
                   ">
-
                   por
-                  {{
-                    solicitud.responsable_nombre
-                  }}
-                  {{
-                    solicitud.responsable_apellido
-                  }}
-
+                  {{ solicitud.responsable_nombre }}
+                  {{ solicitud.responsable_apellido }}
                 </ng-container>
-
               </span>
-
             </div>
-
           </article>
-
         </section>
-
       </ng-container>
-
     </ng-container>
-
   </main>
 
-
-  <!-- ==================================================
-       TOAST
-       ================================================== -->
-
+  <!-- TOAST REUTILIZABLE -->
   <app-toast
     [visible]="toastVisible"
     [mensaje]="toastMensaje"
     [tipo]="toastTipo"
+    [duracion]="4000"
     (cerrar)="cerrarToast()">
   </app-toast>
-
 </div>

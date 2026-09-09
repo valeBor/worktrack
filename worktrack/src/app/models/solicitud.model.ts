@@ -36,6 +36,7 @@ export interface SolicitudCambioHorario {
   tolerancia_actual: number;
   hora_entrada_solicitada: string;
   hora_salida_solicitada: string;
+  modalidad_solicitada: ModalidadHorario;
   motivo: string;
   creada_en: string;
   respuesta: string | null;
@@ -44,26 +45,14 @@ export interface SolicitudCambioHorario {
 
 
   // Responsable que aprobó o rechazó.
-  responsable_nombre?:
-    string | null;
-
-  responsable_apellido?:
-    string | null;
-
+  responsable_nombre?: string | null;
+  responsable_apellido?: string | null;
 
   // Datos incluidos al consultar pendientes.
-  usuario_nombre?:
-    string;
-
-  usuario_apellido?:
-    string;
-
-  usuario_email?:
-    string;
-
-  usuario_role?:
-    Role;
-
+  usuario_nombre?: string;
+  usuario_apellido?:string;
+  usuario_email?: string;
+  usuario_role?: Role;
 }
 
 
@@ -78,19 +67,12 @@ export interface SolicitudCambioHorario {
 // ======================================================
 
 export interface NuevaSolicitudCambioHorario {
-
   fecha_solicitada: string;
-
-  hora_entrada_solicitada:
-    string;
-
-  hora_salida_solicitada:
-    string;
-
+  hora_entrada_solicitada: string;
+  hora_salida_solicitada: string;
+  modalidad_solicitada: ModalidadHorario;
   motivo: string;
-
 }
-
 
 // ======================================================
 // HORARIO ACTUAL PARA UNA FECHA
@@ -99,21 +81,14 @@ export interface NuevaSolicitudCambioHorario {
 export interface HorarioActualFecha {
 
   fecha_solicitada: string;
-
   dia_semana: string;
-
   horario_actual: {
-
     hora_entrada: string;
-
     hora_salida: string;
-
     modalidad:
       ModalidadHorario;
-
     tolerancia_minutos:
       number;
-
   };
 
 }
@@ -126,32 +101,18 @@ export interface HorarioActualFecha {
 export interface SolicitudCreada {
 
   id: number;
-
   usuario_id: number;
-
   tipo: SolicitudTipo;
-
   estado: 'PENDIENTE';
-
   fecha_solicitada: string;
-
   hora_entrada_actual: string;
-
   hora_salida_actual: string;
-
-  hora_entrada_solicitada:
-    string;
-
-  hora_salida_solicitada:
-    string;
-
-  modalidad_actual:
-    ModalidadHorario;
-
+  hora_entrada_solicitada: string;
+  hora_salida_solicitada: string;
+  modalidad_solicitada: ModalidadHorario;
+  modalidad_actual: ModalidadHorario;
   tolerancia_actual: number;
-
   motivo: string;
-
 }
 
 
@@ -162,10 +123,7 @@ export interface SolicitudCreada {
 export interface CrearSolicitudResponse {
 
   mensaje: string;
-
-  solicitud:
-    SolicitudCreada;
-
+  solicitud: SolicitudCreada;
 }
 
 
@@ -191,11 +149,8 @@ export interface ResolverSolicitudRequest {
 export interface ResponsableSolicitud {
 
   nombre: string;
-
   apellido: string;
-
   role: Role;
-
 }
 
 
@@ -206,27 +161,21 @@ export interface ResponsableSolicitud {
 export interface ResolverSolicitudResponse {
 
   mensaje: string;
-
   solicitud: {
-
     id: number;
-
     estado:
       | 'APROBADA'
       | 'RECHAZADA';
-
-    respuesta:
-      string | null;
-
-    resuelto_por:
-      number;
-
-    responsable:
-      ResponsableSolicitud;
-
-    resuelta_en:
-      string;
-
+    respuesta:string | null;
+    resuelto_por:number;
+    responsable: ResponsableSolicitud;
+    resuelta_en: string;
   };
+}
 
+export interface GrupoSolicitudes {
+  estado: SolicitudEstado;
+  titulo: string;
+  icono: string;
+  solicitudes: SolicitudCambioHorario[];
 }

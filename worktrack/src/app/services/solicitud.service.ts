@@ -1,14 +1,9 @@
 import {Injectable, inject} from '@angular/core';
 import {HttpClient,HttpParams} from '@angular/common/http';
 import { Observable} from 'rxjs';
-import {
-  SolicitudCambioHorario,
-  NuevaSolicitudCambioHorario,
-  HorarioActualFecha,
-  CrearSolicitudResponse,
-  ResolverSolicitudRequest,
-  ResolverSolicitudResponse} from '../models/solicitud.model';
-
+import {SolicitudCambioHorario, NuevaSolicitudCambioHorario, HorarioActualFecha,
+  CrearSolicitudResponse, ResolverSolicitudRequest, ResolverSolicitudResponse} from '../models/solicitud.model';
+import {environment} from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -20,8 +15,7 @@ export class SolicitudService {
 
 
   private apiUrl =
-    'http://localhost:3000/api/solicitudes';
-
+  `${environment.apiUrl}/solicitudes`;
 
   // ====================================================
   // OBTENER MIS SOLICITUDES

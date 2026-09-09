@@ -1,9 +1,8 @@
 const db = require('../config/db');
 const solicitudModel = require('../models/solicitud.model');
 const horarioModel = require('../models/horario.model');
-
-const {obtenerFechaHoraActual, obtenerDiaSemanaDeFecha,
-  horaASegundos} = require('../utils/fecha.util');
+const { obtenerFechaHoraActual, obtenerDiaSemanaDeFecha,
+  horaASegundos } = require('../utils/fecha.util');
 
 // ======================================================
 // CONSTANTES DE NEGOCIO
@@ -127,6 +126,36 @@ function validarHora(hora, nombre, statusCode = 400) {
 }
 
 // ======================================================
+// VALIDAR MODALIDAD
+// ======================================================
+
+function validarModalidad(
+  modalidad,
+  nombre,
+  statusCode = 400
+) {
+  const valor = String(
+    modalidad || ''
+  )
+    .trim()
+    .toUpperCase();
+
+  if (
+    valor !== 'PRESENCIAL' &&
+    valor !== 'HOME'
+  ) {
+    throw crearError(
+      `${nombre} debe ser PRESENCIAL o HOME.`,
+      statusCode
+    );
+  }
+
+  return valor;
+}
+
+
+
+// ======================================================
 // VALIDAR FECHA SOLICITADA
 // ======================================================
 
@@ -138,7 +167,7 @@ function validarFechaSolicitada(fechaSolicitada) {
     throw crearError('La fecha solicitada es inválida.', 400);
   }
 
-  const {fecha: fechaActual} = obtenerFechaHoraActual();
+  const { fecha: fechaActual } = obtenerFechaHoraActual();
 
   if (fecha <= fechaActual) {
     throw crearError(
@@ -225,16 +254,11 @@ function validarHorarioActual(horario) {
     );
   }
 
-  const modalidad = String(horario?.modalidad || '')
-    .trim()
-    .toUpperCase();
-
-  if (modalidad !== 'PRESENCIAL' && modalidad !== 'HOME') {
-    throw crearError(
-      'La modalidad del horario asignado es inválida.',
-      409
-    );
-  }
+  const modalidad = validarModalidad(
+    horario?.modalidad,
+    'La modalidad del horario asignado',
+    409
+  );
 
   const tolerancia = Number(horario?.tolerancia_minutos);
 
@@ -291,7 +315,7 @@ function validarDatosCreacion(datos) {
     );
   }
 
-  const {fecha, diaSemana} = validarFechaSolicitada(
+  const { fecha, diaSemana } = validarFechaSolicitada(
     datos.fecha_solicitada
   );
 
@@ -305,6 +329,12 @@ function validarDatosCreacion(datos) {
     'La hora de salida solicitada'
   );
 
+  const modalidadSolicitada =
+    validarModalidad(
+      datos.modalidad_solicitada,
+      'La modalidad solicitada'
+    );
+
   if (horaASegundos(horaEntrada) >= horaASegundos(horaSalida)) {
     throw crearError(
       'La hora de salida solicitada debe ser posterior a la hora de entrada.',
@@ -317,6 +347,7 @@ function validarDatosCreacion(datos) {
     diaSemana,
     hora_entrada_solicitada: horaEntrada,
     hora_salida_solicitada: horaSalida,
+    modalidad_solicitada: modalidadSolicitada,
     motivo: validarMotivo(datos.motivo)
   };
 }
@@ -422,21 +453,24 @@ exports.createSolicitud = async (actorToken, datos) => {
 
   const horarioActual = validarHorarioActual(horario);
 
-  const mismoHorario =
+  const mismaConfiguracion =
     horaASegundos(horarioActual.horaEntrada) ===
-      horaASegundos(
-        solicitudValidada.hora_entrada_solicitada
-      ) &&
+    horaASegundos(
+      solicitudValidada.hora_entrada_solicitada
+    ) &&
     horaASegundos(horarioActual.horaSalida) ===
-      horaASegundos(
-        solicitudValidada.hora_salida_solicitada
-      );
+    horaASegundos(
+      solicitudValidada.hora_salida_solicitada
+    ) &&
+    horarioActual.modalidad ===
+    solicitudValidada.modalidad_solicitada;
 
-  if (mismoHorario) {
+  if (mismaConfiguracion) {
     throw crearError(
-      'El horario solicitado es igual al horario actual.',
+      'El horario y la modalidad solicitados son iguales a los actuales.',
       400
     );
+
   }
 
   const connection = await db.getConnection();
@@ -473,6 +507,8 @@ exports.createSolicitud = async (actorToken, datos) => {
         solicitudValidada.hora_entrada_solicitada,
       hora_salida_solicitada:
         solicitudValidada.hora_salida_solicitada,
+      modalidad_solicitada:
+        solicitudValidada.modalidad_solicitada,
       motivo: solicitudValidada.motivo
     };
 
@@ -508,7 +544,7 @@ exports.getMiHorarioParaFecha = async (
   fechaSolicitada
 ) => {
   const actor = await obtenerActor(actorToken);
-  const {fecha, diaSemana} =
+  const { fecha, diaSemana } =
     validarFechaSolicitada(fechaSolicitada);
 
   const horario = await horarioModel.getByUsuarioAndDiaEnFecha(
@@ -583,7 +619,7 @@ exports.resolveSolicitud = async (
 ) => {
   const responsable = await obtenerActor(actorToken);
   const id = validarId(solicitudId, 'solicitud');
-  const {estado, respuesta} = validarDatosResolucion(datos);
+  const { estado, respuesta } = validarDatosResolucion(datos);
 
   const connection = await db.getConnection();
 
@@ -633,7 +669,7 @@ exports.resolveSolicitud = async (
       solicitud.fecha_solicitada
     );
 
-    const {fecha, hora} = obtenerFechaHoraActual();
+    const { fecha, hora } = obtenerFechaHoraActual();
 
     if (estado === 'APROBADA') {
       if (!Boolean(solicitante.estado)) {

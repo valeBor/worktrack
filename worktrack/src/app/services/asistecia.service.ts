@@ -2,10 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import {
-  RegistrarAsistenciaRequest,
-  RegistrarAsistenciaResponse,
-  AsistenciaHoy
+import {RegistrarAsistenciaRequest, RegistrarAsistenciaResponse, AsistenciaHoy
 } from '../models/asistencia.model';
 
 @Injectable({

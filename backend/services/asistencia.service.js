@@ -102,21 +102,10 @@ exports.registrarAsistencia = async ({
     if (cambioAprobado) {
 
       horario = {
-        hora_entrada:
-          cambioAprobado
-            .hora_entrada_solicitada,
-
-        hora_salida:
-          cambioAprobado
-            .hora_salida_solicitada,
-
-        modalidad:
-          cambioAprobado
-            .modalidad_actual,
-
-        tolerancia_minutos:
-          cambioAprobado
-            .tolerancia_actual
+        hora_entrada:cambioAprobado.hora_entrada_solicitada,
+        hora_salida: cambioAprobado.hora_salida_solicitada,
+        modalidad:cambioAprobado.modalidad_solicitada,
+        tolerancia_minutos:cambioAprobado.tolerancia_actual
       };
 
 

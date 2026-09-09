@@ -1,23 +1,9 @@
-const historialModel = require(
-  '../models/historial-asistencia.model'
-);
-const asistenciaModel = require(
-  '../models/asistencia.model'
-);
-const horarioModel = require(
-  '../models/horario.model'
-);
-const solicitudModel = require(
-  '../models/solicitud.model'
-);
-
-const {
-  obtenerFechaHoraActual,
-  obtenerDiaSemanaDeFecha,
-  obtenerRangoMes,
-  obtenerFechasEntre,
-  horaASegundos
-} = require('../utils/fecha.util');
+const historialModel = require('../models/historial-asistencia.model');
+const asistenciaModel = require('../models/asistencia.model');
+const horarioModel = require('../models/horario.model');
+const solicitudModel = require('../models/solicitud.model');
+const {obtenerFechaHoraActual, obtenerDiaSemanaDeFecha, obtenerRangoMes, obtenerFechasEntre,
+  horaASegundos} = require('../utils/fecha.util');
 
 // ======================================================
 // CONSTANTES
@@ -259,7 +245,7 @@ function crearHorarioEsperado(
       hora_salida:
         cambioAprobado.hora_salida_solicitada,
       modalidad:
-        cambioAprobado.modalidad_actual,
+         cambioAprobado.modalidad_solicitada,
       tolerancia_minutos:
         Number(cambioAprobado.tolerancia_actual)
     };

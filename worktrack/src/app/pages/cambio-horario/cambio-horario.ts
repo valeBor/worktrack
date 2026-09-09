@@ -1,26 +1,16 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import {
-  AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule,
-  ValidationErrors, Validators
-} from '@angular/forms';
-import { HttpErrorResponse } from '@angular/common/http';
-import { Header } from '../../components/header/header';
-import { Toast, TipoToast } from '../../components/toast/toast';
-import { SolicitudService } from '../../services/solicitud.service';
-import {
-  HorarioActualFecha, NuevaSolicitudCambioHorario, SolicitudCambioHorario,
-  SolicitudEstado
-} from '../../models/solicitud.model';
-
-
-interface GrupoSolicitudes {
-  estado: SolicitudEstado;
-  titulo: string;
-  icono: string;
-  solicitudes: SolicitudCambioHorario[];
-}
-
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule,
+  ValidationErrors, Validators} from '@angular/forms';
+import {HttpErrorResponse} from '@angular/common/http';
+import {finalize} from 'rxjs/operators';
+import {Header} from '../../components/header/header';
+import {Toast, TipoToast} from '../../components/toast/toast';
+import {SolicitudService} from '../../services/solicitud.service';
+import {AuthService} from '../../services/auth.service';
+import { GrupoSolicitudes, HorarioActualFecha, NuevaSolicitudCambioHorario,
+  SolicitudCambioHorario, SolicitudEstado} from '../../models/solicitud.model';
+import {Role} from '../../models/user.models';
 
 @Component({
   selector: 'app-cambio-horario',
@@ -29,13 +19,12 @@ interface GrupoSolicitudes {
   templateUrl: './cambio-horario.html',
   styleUrl: './cambio-horario.css'
 })
-export class CambioHorario
-  implements OnInit {
-
+export class CambioHorario implements OnInit {
   solicitudes: SolicitudCambioHorario[] = [];
-
+  rolActual: Role | null = null;
   cargando = false;
   errorCarga = false;
+
   // ====================================================
   // FORMULARIO
   // ====================================================
@@ -48,8 +37,9 @@ export class CambioHorario
   horarioActual: HorarioActualFecha | null = null;
   errorHorario = '';
   fechaMinima: string;
+
   // ====================================================
-  // TOAST
+  // TOAST REUTILIZABLE
   // ====================================================
 
   toastVisible = false;
@@ -58,170 +48,130 @@ export class CambioHorario
 
   constructor(
     private formBuilder: FormBuilder,
-
     private solicitudService: SolicitudService,
+    private authService: AuthService,
     private changeDetector: ChangeDetectorRef
-
   ) {
-
-    this.fechaMinima =
-      this.obtenerFechaManana();
-
-
-    this.solicitudForm =
-      this.formBuilder.group(
-        {
-          fecha_solicitada: [
-            '',
-            [
-              Validators.required,
-              this.validarFechaFutura
-                .bind(this)
-            ]
-          ],
-
-          hora_entrada_solicitada: [
-            '',
-            [
-              Validators.required,
-              Validators.pattern(
-                /^([01]\d|2[0-3]):[0-5]\d$/
-              )
-            ]
-          ],
-
-          hora_salida_solicitada: [
-            '',
-            [
-              Validators.required,
-              Validators.pattern(
-                /^([01]\d|2[0-3]):[0-5]\d$/
-              )
-            ]
-          ],
-
-          motivo: [
-            '',
-            [
-              Validators.required,
-              Validators.minLength(5),
-              Validators.maxLength(500)
-            ]
+    this.fechaMinima = this.obtenerFechaManana();
+    this.solicitudForm = this.formBuilder.group(
+      {
+        fecha_solicitada: [
+          '',
+          [
+            Validators.required,
+            this.validarFechaFutura.bind(this)
           ]
-        },
-        {
-          validators:
-            this.validarRangoHorario
-        }
-      );
-
+        ],
+        hora_entrada_solicitada: [
+          '',
+          [
+            Validators.required,
+            Validators.pattern(/^([01]\d|2[0-3]):[0-5]\d$/)
+          ]
+        ],
+        hora_salida_solicitada: [
+          '',
+          [
+            Validators.required,
+            Validators.pattern(/^([01]\d|2[0-3]):[0-5]\d$/)
+          ]
+        ],
+        modalidad_solicitada: [
+          '',
+          [Validators.required]
+        ],
+        motivo: [
+          '',
+          [
+            Validators.required,
+            Validators.minLength(5),
+            Validators.maxLength(500)
+          ]
+        ]
+      },
+      {
+        validators: this.validarRangoHorario
+      }
+    );
   }
-
 
   // ====================================================
   // INICIALIZACIÓN
   // ====================================================
 
   ngOnInit(): void {
-
+    this.rolActual = this.authService.getRole() as Role | null;
     this.cargarSolicitudes();
-
   }
 
+  // ====================================================
+  // TEXTO SEGÚN EL ROL
+  // ====================================================
+
+  get textoAprobacion(): string {
+    if (this.rolActual === 'supervisor') {
+      return 'El cambio debe ser aprobado por Recursos Humanos.';
+    }
+
+    return 'El cambio debe ser aprobado por un supervisor o por Recursos Humanos.';
+  }
 
   // ====================================================
   // GRUPOS POR ESTADO
   // ====================================================
 
-  get gruposSolicitudes():
-    GrupoSolicitudes[] {
-
+  get gruposSolicitudes(): GrupoSolicitudes[] {
     return [
       {
-        estado:
-          'PENDIENTE',
-
-        titulo:
-          'Solicitudes pendientes',
-
-        icono:
-          'bi-clock',
-
-        solicitudes:
-          this.solicitudes.filter(
-            (solicitud) =>
-              solicitud.estado
-              ===
-              'PENDIENTE'
-          )
+        estado: 'PENDIENTE',
+        titulo: 'Solicitudes pendientes',
+        icono: 'bi-clock',
+        solicitudes: this.filtrarSolicitudes('PENDIENTE')
       },
       {
-        estado:
-          'APROBADA',
-
-        titulo:
-          'Solicitudes aprobadas',
-
-        icono:
-          'bi-check-circle',
-
-        solicitudes:
-          this.solicitudes.filter(
-            (solicitud) =>
-              solicitud.estado
-              ===
-              'APROBADA'
-          )
+        estado: 'APROBADA',
+        titulo: 'Solicitudes aprobadas',
+        icono: 'bi-check-circle',
+        solicitudes: this.filtrarSolicitudes('APROBADA')
       },
       {
-        estado:
-          'RECHAZADA',
-
-        titulo:
-          'Solicitudes rechazadas',
-
-        icono:
-          'bi-x-circle',
-
-        solicitudes:
-          this.solicitudes.filter(
-            (solicitud) =>
-              solicitud.estado
-              ===
-              'RECHAZADA'
-          )
+        estado: 'RECHAZADA',
+        titulo: 'Solicitudes rechazadas',
+        icono: 'bi-x-circle',
+        solicitudes: this.filtrarSolicitudes('RECHAZADA')
       }
     ];
-
   }
 
+  private filtrarSolicitudes(
+    estado: SolicitudEstado
+  ): SolicitudCambioHorario[] {
+    return this.solicitudes.filter(
+      solicitud => solicitud.estado === estado
+    );
+  }
 
   // ====================================================
   // CARGAR SOLICITUDES
   // ====================================================
 
   cargarSolicitudes(): void {
-
     this.cargando = true;
     this.errorCarga = false;
 
-    this.solicitudService
-      .getMisSolicitudes()
+    this.solicitudService.getMisSolicitudes()
+      .pipe(
+        finalize(() => {
+          this.cargando = false;
+          this.changeDetector.detectChanges();
+        })
+      )
       .subscribe({
-
-        next: (solicitudes) => {
+        next: solicitudes => {
           this.solicitudes = solicitudes;
-          this.cargando = false;
-          this.changeDetector
-            .detectChanges();
         },
-
-        error: (
-          error: HttpErrorResponse
-        ) => {
-
+        error: (error: HttpErrorResponse) => {
           this.solicitudes = [];
-          this.cargando = false;
           this.errorCarga = true;
 
           this.mostrarToast(
@@ -231,188 +181,162 @@ export class CambioHorario
             ),
             'error'
           );
-          this.changeDetector
-            .detectChanges();
-
         }
-
       });
-
   }
-
 
   // ====================================================
   // ABRIR FORMULARIO
   // ====================================================
 
   nuevaSolicitud(): void {
-
-    this.solicitudForm.reset();
-
-    this.formularioEnviado = false;
+    this.limpiarFormulario();
     this.guardando = false;
-    this.consultandoHorario = false;
-    this.horarioActual = null;
-    this.errorHorario = '';
     this.mostrarFormulario = true;
-
   }
+
   // ====================================================
   // CANCELAR FORMULARIO
   // ====================================================
 
   cancelarFormulario(): void {
-
     if (this.guardando) {
       return;
     }
 
-    this.solicitudForm.reset();
-    this.formularioEnviado =
-      false;
-    this.horarioActual = null;
-    this.errorHorario = '';
+    this.limpiarFormulario();
     this.mostrarFormulario = false;
   }
 
+  // ====================================================
+  // LIMPIAR FORMULARIO
+  // ====================================================
+
+  private limpiarFormulario(): void {
+    this.solicitudForm.reset();
+    this.formularioEnviado = false;
+    this.consultandoHorario = false;
+    this.horarioActual = null;
+    this.errorHorario = '';
+  }
 
   // ====================================================
   // CONSULTAR HORARIO DE LA FECHA
   // ====================================================
 
   consultarHorario(): void {
-
     this.horarioActual = null;
     this.errorHorario = '';
 
-    const controlFecha = this.solicitudForm.get('fecha_solicitada');
+    this.solicitudForm
+      .get('modalidad_solicitada')
+      ?.reset();
+
+    const controlFecha = this.solicitudForm.get(
+      'fecha_solicitada'
+    );
+
     controlFecha?.markAsTouched();
 
-    if (
-      !controlFecha
-      ||
-      controlFecha.invalid
-    ) {
+    if (!controlFecha || controlFecha.invalid) {
       return;
     }
 
+    const fecha = String(controlFecha.value || '');
+    this.consultandoHorario = true;
 
-    const fecha =
-      String(
-        controlFecha.value || ''
-      );
-
-
-    this.consultandoHorario =
-      true;
-
-    this.solicitudService
-      .getMiHorarioParaFecha(
-        fecha
+    this.solicitudService.getMiHorarioParaFecha(fecha)
+      .pipe(
+        finalize(() => {
+          this.consultandoHorario = false;
+          this.changeDetector.detectChanges();
+        })
       )
       .subscribe({
-
-        next: (horario) => {
+        next: horario => {
           this.horarioActual = horario;
-          this.consultandoHorario = false;
-          this.changeDetector
-            .detectChanges();
+
+          this.solicitudForm.patchValue({
+            modalidad_solicitada:
+              horario.horario_actual.modalidad
+          });
         },
-
-        error: (
-          error: HttpErrorResponse
-        ) => {
-
+        error: (error: HttpErrorResponse) => {
           this.horarioActual = null;
-          this.consultandoHorario = false;
+
           this.errorHorario = this.obtenerMensajeError(
             error,
             'No fue posible obtener el horario de la fecha seleccionada.'
           );
-          this.changeDetector.detectChanges();
-
         }
-
       });
-
   }
-
 
   // ====================================================
   // GUARDAR SOLICITUD
   // ====================================================
 
   guardarSolicitud(): void {
-
     this.formularioEnviado = true;
     this.solicitudForm.markAllAsTouched();
 
-    if (
-      this.solicitudForm.invalid
-    ) {
+    if (this.solicitudForm.invalid) {
       this.mostrarToast(
         'Revisá los campos marcados en el formulario.',
         'warning'
       );
-
       return;
     }
-
 
     if (!this.horarioActual) {
       this.mostrarToast(
         'Primero seleccioná una fecha con un horario asignado.',
         'warning'
       );
-
       return;
     }
-
 
     const valores = this.solicitudForm.getRawValue();
 
     if (
-      this.horarioActual
-        .fecha_solicitada
-      !==
+      this.horarioActual.fecha_solicitada !==
       valores.fecha_solicitada
     ) {
-      this.horarioActual =
-        null;
+      this.horarioActual = null;
 
       this.mostrarToast(
         'La fecha cambió. Volvé a consultar el horario actual.',
         'warning'
       );
-
       return;
     }
 
-
     const solicitud: NuevaSolicitudCambioHorario = {
-
-      fecha_solicitada: valores.fecha_solicitada,
-      hora_entrada_solicitada: valores.hora_entrada_solicitada,
-      hora_salida_solicitada: valores.hora_salida_solicitada,
-
+      fecha_solicitada:
+        valores.fecha_solicitada,
+      hora_entrada_solicitada:
+        valores.hora_entrada_solicitada,
+      hora_salida_solicitada:
+        valores.hora_salida_solicitada,
+      modalidad_solicitada:
+        valores.modalidad_solicitada,
       motivo:
-        String(
-          valores.motivo || ''
-        ).trim()
-
+        String(valores.motivo || '').trim()
     };
 
     this.guardando = true;
-    this.solicitudService
-      .createSolicitud(solicitud).subscribe({
 
-        next: (respuesta) => {
-
+    this.solicitudService.createSolicitud(solicitud)
+      .pipe(
+        finalize(() => {
           this.guardando = false;
+          this.changeDetector.detectChanges();
+        })
+      )
+      .subscribe({
+        next: respuesta => {
           this.mostrarFormulario = false;
-          this.solicitudForm.reset();
-          this.horarioActual = null;
-          this.formularioEnviado = false;
+          this.limpiarFormulario();
 
           this.mostrarToast(
             respuesta.mensaje,
@@ -420,16 +344,8 @@ export class CambioHorario
           );
 
           this.cargarSolicitudes();
-          this.changeDetector.detectChanges();
-
         },
-
-        error: (
-          error: HttpErrorResponse
-        ) => {
-
-          this.guardando = false;
-
+        error: (error: HttpErrorResponse) => {
           this.mostrarToast(
             this.obtenerMensajeError(
               error,
@@ -437,14 +353,9 @@ export class CambioHorario
             ),
             'error'
           );
-          this.changeDetector.detectChanges();
-
         }
-
       });
-
   }
-
 
   // ====================================================
   // VALIDAR FECHA FUTURA
@@ -453,32 +364,20 @@ export class CambioHorario
   validarFechaFutura(
     control: AbstractControl
   ): ValidationErrors | null {
-
-    const fecha =
-      String(
-        control.value || ''
-      );
-
+    const fecha = String(control.value || '');
 
     if (!fecha) {
       return null;
     }
 
-
-    if (
-      fecha < this.fechaMinima
-    ) {
+    if (fecha < this.fechaMinima) {
       return {
-        fechaNoFutura:
-          true
+        fechaNoFutura: true
       };
     }
 
-
     return null;
-
   }
-
 
   // ====================================================
   // VALIDAR ORDEN DE HORAS
@@ -487,84 +386,54 @@ export class CambioHorario
   validarRangoHorario(
     control: AbstractControl
   ): ValidationErrors | null {
+    const entrada = String(
+      control.get(
+        'hora_entrada_solicitada'
+      )?.value || ''
+    );
 
-    const entrada =
-      String(
-        control.get(
-          'hora_entrada_solicitada'
-        )?.value || ''
-      );
+    const salida = String(
+      control.get(
+        'hora_salida_solicitada'
+      )?.value || ''
+    );
 
-
-    const salida =
-      String(
-        control.get(
-          'hora_salida_solicitada'
-        )?.value || ''
-      );
-
-
-    if (
-      !entrada
-      ||
-      !salida
-    ) {
+    if (!entrada || !salida) {
       return null;
     }
 
-
     if (entrada >= salida) {
       return {
-        rangoHorarioInvalido:
-          true
+        rangoHorarioInvalido: true
       };
     }
 
-
     return null;
-
   }
-
 
   // ====================================================
   // FECHA MÍNIMA
   // ====================================================
 
   obtenerFechaManana(): string {
-
-    const fecha =
-      new Date();
-
+    const fecha = new Date();
 
     fecha.setDate(
       fecha.getDate() + 1
     );
 
+    const anio = fecha.getFullYear();
 
-    const anio =
-      fecha.getFullYear();
+    const mes = String(
+      fecha.getMonth() + 1
+    ).padStart(2, '0');
 
-    const mes =
-      String(
-        fecha.getMonth() + 1
-      ).padStart(
-        2,
-        '0'
-      );
-
-    const dia =
-      String(
-        fecha.getDate()
-      ).padStart(
-        2,
-        '0'
-      );
-
+    const dia = String(
+      fecha.getDate()
+    ).padStart(2, '0');
 
     return `${anio}-${mes}-${dia}`;
-
   }
-
 
   // ====================================================
   // VALIDACIONES VISUALES
@@ -573,184 +442,102 @@ export class CambioHorario
   campoInvalido(
     nombreCampo: string
   ): boolean {
-
-    const control =
-      this.solicitudForm.get(
-        nombreCampo
-      );
-
+    const control = this.solicitudForm.get(
+      nombreCampo
+    );
 
     return Boolean(
-      control
-      &&
-      control.invalid
-      &&
+      control &&
+      control.invalid &&
       (
-        control.touched
-        ||
+        control.touched ||
         this.formularioEnviado
       )
     );
-
   }
-
 
   tieneError(
     nombreCampo: string,
     error: string
   ): boolean {
-
     return Boolean(
       this.solicitudForm
         .get(nombreCampo)
         ?.hasError(error)
     );
-
   }
 
-
-  rangoHorarioInvalido():
-    boolean {
-
+  rangoHorarioInvalido(): boolean {
     return Boolean(
-      this.solicitudForm
-        .hasError(
-          'rangoHorarioInvalido'
-        )
-      &&
+      this.solicitudForm.hasError(
+        'rangoHorarioInvalido'
+      ) &&
       (
-        this.formularioEnviado
-        ||
+        this.formularioEnviado ||
         this.solicitudForm
-          .get(
-            'hora_salida_solicitada'
-          )
+          .get('hora_salida_solicitada')
           ?.touched
       )
     );
-
   }
 
-
   // ====================================================
-  // FORMATEAR FECHA
+  // FORMATOS
   // ====================================================
 
-  formatearFecha(
-    fecha: string
-  ): string {
-
+  formatearFecha(fecha: string): string {
     if (!fecha) {
       return '-';
     }
 
-
-    const partes =
-      fecha
-        .substring(0, 10)
-        .split('-');
-
+    const partes = fecha
+      .substring(0, 10)
+      .split('-');
 
     if (partes.length !== 3) {
       return fecha;
     }
 
-
-    const [
-      anio,
-      mes,
-      dia
-    ] = partes;
-
+    const [anio, mes, dia] = partes;
 
     return `${dia}/${mes}/${anio}`;
-
   }
-
-
-  // ====================================================
-  // FORMATEAR FECHA Y HORA
-  // ====================================================
 
   formatearFechaHora(
     fechaHora: string | null
   ): string {
-
     if (!fechaHora) {
       return '-';
     }
 
+    const valorNormalizado = fechaHora.includes('T')
+      ? fechaHora
+      : fechaHora.replace(' ', 'T');
 
-    const valorNormalizado =
-      fechaHora.includes('T')
-        ? fechaHora
-        : fechaHora.replace(
-          ' ',
-          'T'
-        );
+    const fecha = new Date(valorNormalizado);
 
-
-    const fecha =
-      new Date(
-        valorNormalizado
-      );
-
-
-    if (
-      Number.isNaN(
-        fecha.getTime()
-      )
-    ) {
+    if (Number.isNaN(fecha.getTime())) {
       return fechaHora;
     }
-
 
     return new Intl.DateTimeFormat(
       'es-AR',
       {
-        day:
-          '2-digit',
-
-        month:
-          '2-digit',
-
-        year:
-          'numeric',
-
-        hour:
-          '2-digit',
-
-        minute:
-          '2-digit',
-
-        hourCycle:
-          'h23'
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23'
       }
     ).format(fecha);
-
   }
 
-
-  // ====================================================
-  // FORMATEAR HORA
-  // ====================================================
-
-  formatearHora(
-    hora: string
-  ): string {
-
-    if (!hora) {
-      return '--:--';
-    }
-
-
-    return hora.substring(
-      0,
-      5
-    );
-
+  formatearHora(hora: string): string {
+    return hora
+      ? hora.substring(0, 5)
+      : '--:--';
   }
-
 
   // ====================================================
   // TEXTOS DEL ESTADO
@@ -759,62 +546,41 @@ export class CambioHorario
   obtenerTituloEstado(
     estado: SolicitudEstado
   ): string {
-
     switch (estado) {
-
       case 'APROBADA':
         return 'Solicitud aprobada';
-
       case 'RECHAZADA':
         return 'Solicitud rechazada';
-
       default:
         return 'En revisión';
-
     }
-
   }
-
 
   obtenerEtiquetaEstado(
     estado: SolicitudEstado
   ): string {
-
     switch (estado) {
-
       case 'APROBADA':
         return 'Aprobada';
-
       case 'RECHAZADA':
         return 'Rechazada';
-
       default:
         return 'Pendiente';
-
     }
-
   }
-
 
   obtenerIconoEstado(
     estado: SolicitudEstado
   ): string {
-
     switch (estado) {
-
       case 'APROBADA':
         return 'bi-check-lg';
-
       case 'RECHAZADA':
         return 'bi-x-lg';
-
       default:
         return 'bi-clock';
-
     }
-
   }
-
 
   // ====================================================
   // MENSAJE DE ERROR
@@ -824,42 +590,27 @@ export class CambioHorario
     error: HttpErrorResponse,
     mensajePredeterminado: string
   ): string {
-
     return (
-      error.error?.mensaje
-      ||
+      error.error?.mensaje ||
+      error.error?.message ||
       mensajePredeterminado
     );
-
   }
 
-
   // ====================================================
-  // TOAST
+  // TOAST REUTILIZABLE
   // ====================================================
 
   mostrarToast(
     mensaje: string,
     tipo: TipoToast
   ): void {
-
-    this.toastMensaje =
-      mensaje;
-
-    this.toastTipo =
-      tipo;
-
-    this.toastVisible =
-      true;
-
+    this.toastMensaje = mensaje;
+    this.toastTipo = tipo;
+    this.toastVisible = true;
   }
-
 
   cerrarToast(): void {
-
-    this.toastVisible =
-      false;
-
+    this.toastVisible = false;
   }
-
 }

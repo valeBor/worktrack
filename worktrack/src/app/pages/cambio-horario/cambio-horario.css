@@ -222,19 +222,21 @@
 }
 
 
-.input-wrapper input {
+.input-wrapper input,
+.input-wrapper select {
   width: 100%;
   min-width: 0;
   height: 46px;
-
   border: none;
   outline: none;
-
   background-color: transparent;
-
   color: #1f2937;
   font-family: inherit;
   font-size: 15px;
+}
+
+.input-wrapper select {
+  cursor: pointer;
 }
 
 

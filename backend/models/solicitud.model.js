@@ -17,6 +17,7 @@ const CAMPOS_SOLICITUD = `
   s.tolerancia_actual,
   s.hora_entrada_solicitada,
   s.hora_salida_solicitada,
+  s.modalidad_solicitada,
   s.motivo,
   s.creada_en,
   s.respuesta,
@@ -45,10 +46,10 @@ exports.create = async (
       tolerancia_actual,
       hora_entrada_solicitada,
       hora_salida_solicitada,
+      modalidad_solicitada,
       motivo
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   const [result] = await connection.query(
     sql,
@@ -63,6 +64,7 @@ exports.create = async (
       solicitud.tolerancia_actual,
       solicitud.hora_entrada_solicitada,
       solicitud.hora_salida_solicitada,
+      solicitud.modalidad_solicitada,
       solicitud.motivo
     ]
   );
@@ -286,6 +288,7 @@ exports.getAprobadasByUsuarioAndPeriodo = async (
       tolerancia_actual,
       hora_entrada_solicitada,
       hora_salida_solicitada,
+      modalidad_solicitada,
       motivo,
       respuesta,
       resuelto_por,

@@ -93,7 +93,7 @@ export const routes: Routes = [
     component: CambioHorario,
     canActivate: [roleGuard],
     data: {
-      roles: ['empleado']
+      roles: ['empleado','supervisor' ]
     }
   },
   {

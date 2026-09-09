@@ -1,7 +1,6 @@
 <div class="page-wrapper">
 
-  <app-header
-     [mostrarVolver]="true">
+  <app-header [mostrarVolver]="true">
   </app-header>
 
   <main class="content">
@@ -39,6 +38,26 @@
           <div class="accion-sub">Administrar horarios y solicitudes</div>
         </div>
       </div>
+      <span class="accion-arrow">›</span>
+    </button>
+
+    <button type="button" class="accion-btn blue full-width" (click)="solicitarCambioHorario()">
+      <div class="accion-content">
+        <span class="accion-icon">
+          <i class="bi bi-calendar2-week"></i>
+        </span>
+
+        <div>
+          <div class="accion-title">
+            Cambio de horario
+          </div>
+
+          <div class="accion-sub">
+            Solicitar una modificación para un día
+          </div>
+        </div>
+      </div>
+
       <span class="accion-arrow">›</span>
     </button>
 
@@ -95,7 +114,7 @@
       </div>
     </div>
 
-    
+
     <!-- ESTADÍSTICAS -->
     <div class="card stats-card">
       <h3>Este mes</h3>
