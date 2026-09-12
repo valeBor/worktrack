@@ -1,5 +1,4 @@
 <div class="rrhh-page">
-
   <app-header></app-header>
 
   <main class="content">
@@ -17,14 +16,19 @@
         </h2>
 
         <p>
-          ✉ {{ rrhh.email }}
+          <i class="bi bi-envelope"></i>
+          {{ rrhh.email }}
         </p>
 
         <p>
-          👤 {{ rrhh.role }}
+          <i class="bi bi-person-badge"></i>
+          {{ rrhh.role }}
         </p>
 
-        <p>Área RRHH</p>
+        <p>
+          <i class="bi bi-building"></i>
+          Área RRHH
+        </p>
       </div>
     </section>
 
@@ -33,89 +37,76 @@
 
       <!-- GESTIÓN DE CRONOGRAMAS -->
       <a
-        routerLink="/gestion-cronogramas"
+        [routerLink]="['/gestion-cronogramas']"
         class="action-card green"
-      >
+        aria-label="Ir a gestión de cronogramas">
+
         <div>
           <i class="bi bi-calendar-week"></i>
 
           <h3>Gestión de Cronogramas</h3>
 
           <p>
-            Asignar, editar y eliminar horarios
-            de supervisores
+            Asignar, editar y finalizar horarios de supervisores
           </p>
         </div>
 
         <i class="bi bi-chevron-right"></i>
       </a>
 
-      <!-- ASISTENCIA -->
+      <!-- REPORTE DIARIO -->
       <a
-        routerLink="/asistencias"
+        [routerLink]="['/reporte-asistencia']"
+        [queryParams]="{tab: 'diario'}"
         class="action-card blue"
-      >
+        aria-label="Ir al reporte diario de asistencia">
+
         <div>
           <i class="bi bi-clipboard-check"></i>
 
-          <h3>Asistencia</h3>
+          <h3>Reporte Diario</h3>
 
           <p>
-            Consultar registros de asistencia
+            Consultar asistencias y ausencias de hoy
           </p>
         </div>
 
         <i class="bi bi-chevron-right"></i>
       </a>
 
-      <!-- CAMBIOS DE HORARIO -->
+      <!-- HISTORIAL DE ASISTENCIA -->
       <a
-        routerLink="/cambios-horario"
-        class="action-card violet"
-      >
-        <div>
-          <i class="bi bi-clock-history"></i>
-
-          <h3>Cambios de horario</h3>
-
-          <p>
-            Revisar solicitudes de cambio
-          </p>
-        </div>
-
-        <i class="bi bi-chevron-right"></i>
-      </a>
-
-      <!-- HISTORIAL -->
-      <a
-        routerLink="/historial-horarios"
+        [routerLink]="['/reporte-asistencia']"
+        [queryParams]="{tab: 'historial'}"
         class="action-card orange"
-      >
+        aria-label="Ir al historial global de asistencia">
+
         <div>
           <i class="bi bi-journal-text"></i>
 
-          <h3>Historial de horarios</h3>
+          <h3>Historial</h3>
 
           <p>
-            Consultar cambios realizados
+            Consultar registros históricos de asistencia
           </p>
         </div>
 
         <i class="bi bi-chevron-right"></i>
       </a>
 
-      <!-- INFORMES -->
+      <!-- REPORTES -->
       <a
-        routerLink="/informes"
+        [routerLink]="['/reportes']"
         class="action-card green"
-      >
-        <div>
-          <i class="bi bi-file-earmark-bar-graph"></i>
+        aria-label="Ir a reportes y estadísticas">
 
-          <h3>Informes</h3>
+        <div>
+          <i class="bi bi-bar-chart-line"></i>
+
+          <h3>Reportes</h3>
 
           <p>
-            Consultar reportes de asistencia
+            Consultar gráficos y estadísticas de asistencia
           </p>
         </div>
 
@@ -123,6 +114,5 @@
       </a>
 
     </section>
-
   </main>
 </div>

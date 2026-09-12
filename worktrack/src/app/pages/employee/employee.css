@@ -106,11 +106,9 @@
 
 .accion-btn.purple {
   min-height: 92px;
-  background: linear-gradient(
-    135deg,
-    var(--color-primary),
-    #6d28d9
-  );
+  background: linear-gradient(135deg,
+      var(--color-primary),
+      #6d28d9);
 }
 
 .accion-btn.full-width {
@@ -166,11 +164,9 @@
 .alert-card {
   padding: 22px;
   border-radius: 20px;
-  background: linear-gradient(
-    135deg,
-    #f97316,
-    #fbbf24
-  );
+  background: linear-gradient(135deg,
+      #f97316,
+      #fbbf24);
   color: #ffffff;
   box-shadow: 0 7px 18px rgba(249, 115, 22, 0.18);
 }
@@ -253,11 +249,9 @@
   width: 70px;
   height: 70px;
   border-radius: 19px;
-  background: linear-gradient(
-    135deg,
-    var(--color-primary),
-    var(--color-secondary)
-  );
+  background: linear-gradient(135deg,
+      var(--color-primary),
+      var(--color-secondary));
   color: #ffffff;
   font-size: 22px;
   font-weight: 700;
@@ -419,7 +413,7 @@
   gap: 9px;
 }
 
-.stats-header > span {
+.stats-header>span {
   color: #64748b;
   font-size: 12px;
 }
@@ -441,6 +435,22 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   text-align: center;
+}
+
+.hours-text {
+  color: #2563eb;
+}
+
+.late-text {
+  color: #f97316;
+}
+
+.percentage-text {
+  color: #7c3aed;
+}
+
+.incomplete-text {
+  color: #d97706;
 }
 
 .stat-item {

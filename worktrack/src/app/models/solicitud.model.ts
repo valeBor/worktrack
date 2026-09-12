@@ -47,6 +47,7 @@ export interface SolicitudCambioHorario {
   // Responsable que aprobó o rechazó.
   responsable_nombre?: string | null;
   responsable_apellido?: string | null;
+  responsable_role?: Role | null;
 
   // Datos incluidos al consultar pendientes.
   usuario_nombre?: string;

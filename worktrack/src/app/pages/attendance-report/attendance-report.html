@@ -1,0 +1,811 @@
+<div class="report-page">
+  <app-header
+    titulo="Asistencia del personal"
+    [mostrarVolver]="true">
+  </app-header>
+
+  <main class="report-content">
+
+    <!-- ENCABEZADO -->
+    <section class="page-heading">
+      <div class="heading-icon">
+        <i class="bi bi-clipboard-data"></i>
+      </div>
+
+      <div>
+        <h1>Asistencia del personal</h1>
+
+        <p>
+          Consultá la asistencia de empleados y supervisores.
+        </p>
+      </div>
+    </section>
+
+    <!-- PESTAÑAS -->
+    <nav
+      class="report-tabs"
+      aria-label="Secciones de asistencia">
+
+      <button
+        type="button"
+        class="tab-button"
+        [class.active-daily]="activeTab === 'diario'"
+        (click)="changeTab('diario')">
+
+        <i class="bi bi-bar-chart-line"></i>
+        Reporte diario
+      </button>
+
+      <button
+        type="button"
+        class="tab-button"
+        [class.active-history]="activeTab === 'historial'"
+        (click)="changeTab('historial')">
+
+        <i class="bi bi-clock-history"></i>
+        Historial
+      </button>
+    </nav>
+
+    <!-- =================================================
+         REPORTE DIARIO
+         ================================================= -->
+
+    <ng-container *ngIf="activeTab === 'diario'">
+
+      <!-- CONTROLES -->
+      <section class="filters-card daily-filters">
+        <div class="filter-group">
+          <label for="dailyDate">
+            <i class="bi bi-calendar3"></i>
+            Fecha del reporte
+          </label>
+
+          <input
+            id="dailyDate"
+            type="date"
+            [(ngModel)]="selectedDailyDate"
+            [max]="today"
+            [disabled]="loadingDaily"
+            (change)="onDailyDateChange()">
+        </div>
+
+        <div class="filter-actions">
+          <button
+            type="button"
+            class="secondary-button"
+            [disabled]="loadingDaily"
+            (click)="loadDailyReport()">
+
+            <i class="bi bi-arrow-clockwise"></i>
+            Actualizar
+          </button>
+
+          <button
+            type="button"
+            class="primary-button"
+            [disabled]="
+              loadingDaily ||
+              !dailyReport ||
+              dailyReport.registros.length === 0
+            "
+            (click)="exportDailyReport()">
+
+            <i class="bi bi-file-earmark-pdf"></i>
+            Exportar PDF
+          </button>
+        </div>
+      </section>
+
+      <!-- ERROR -->
+      <section
+        class="message-card error-message"
+        *ngIf="dailyError">
+
+        <i class="bi bi-exclamation-circle"></i>
+        <span>{{ dailyError }}</span>
+      </section>
+
+      <!-- CARGANDO -->
+      <section
+        class="loading-card"
+        *ngIf="loadingDaily">
+
+        <div
+          class="spinner-border"
+          role="status">
+          <span class="visually-hidden">
+            Cargando reporte diario...
+          </span>
+        </div>
+
+        <p>Cargando reporte diario...</p>
+      </section>
+
+      <ng-container
+        *ngIf="!loadingDaily && dailyReport">
+
+        <!-- FECHA -->
+        <section class="report-information">
+          <div>
+            <span>Reporte correspondiente a</span>
+
+            <strong>
+              {{ formatDate(dailyReport.fecha) }}
+            </strong>
+          </div>
+
+          <span class="record-counter">
+            {{ dailyReport.registros.length }}
+            {{
+              dailyReport.registros.length === 1
+                ? 'persona'
+                : 'personas'
+            }}
+          </span>
+        </section>
+
+        <!-- RESUMEN PRINCIPAL -->
+        <section class="stats-grid">
+          <article class="stat-card present-card">
+            <div class="stat-icon">
+              <i class="bi bi-check-circle"></i>
+            </div>
+
+            <span>Presentes</span>
+
+            <strong>
+              {{ dailyReport.resumen.registros_presentes }}
+            </strong>
+          </article>
+
+          <article class="stat-card absent-card">
+            <div class="stat-icon">
+              <i class="bi bi-x-circle"></i>
+            </div>
+
+            <span>Ausencias</span>
+
+            <strong>
+              {{ dailyReport.resumen.ausencias }}
+            </strong>
+          </article>
+
+          <article class="stat-card late-card">
+            <div class="stat-icon">
+              <i class="bi bi-alarm"></i>
+            </div>
+
+            <span>Tardanzas</span>
+
+            <strong>
+              {{ dailyReport.resumen.tardanzas }}
+            </strong>
+          </article>
+
+          <article class="stat-card percentage-card">
+            <div class="stat-icon">
+              <i class="bi bi-graph-up-arrow"></i>
+            </div>
+
+            <span>Asistencia</span>
+
+            <strong>
+              {{ dailyReport.resumen.porcentaje_asistencia }}%
+            </strong>
+          </article>
+        </section>
+
+        <!-- RESUMEN SECUNDARIO -->
+        <section class="secondary-summary">
+          <div>
+            <span>Personal activo</span>
+
+            <strong>
+              {{ dailyReport.resumen.total_usuarios }}
+            </strong>
+          </div>
+
+          <div>
+            <span>Programados</span>
+
+            <strong>
+              {{ dailyReport.resumen.registros_programados }}
+            </strong>
+          </div>
+
+          <div>
+            <span>Pendientes</span>
+
+            <strong>
+              {{ dailyReport.resumen.pendientes }}
+            </strong>
+          </div>
+
+          <div>
+            <span>Sin horario</span>
+
+            <strong>
+              {{ dailyReport.resumen.sin_horario }}
+            </strong>
+          </div>
+
+          <div>
+            <span>Jornadas incompletas</span>
+
+            <strong>
+              {{ dailyReport.resumen.jornadas_incompletas }}
+            </strong>
+          </div>
+
+          <div>
+            <span>Horas trabajadas</span>
+
+            <strong>
+              {{ dailyReport.resumen.horas_totales }} h
+            </strong>
+          </div>
+        </section>
+
+        <!-- LISTADO DIARIO -->
+        <section class="records-section">
+          <div class="section-heading">
+            <div>
+              <h2>Detalle de asistencia</h2>
+
+              <p>
+                Empleados y supervisores activos.
+              </p>
+            </div>
+          </div>
+
+          <div
+            class="empty-state"
+            *ngIf="dailyReport.registros.length === 0">
+
+            <i class="bi bi-calendar-x"></i>
+
+            <h3>No hay personal para mostrar</h3>
+
+            <p>
+              No se encontraron usuarios reportables.
+            </p>
+          </div>
+
+          <div
+            class="records-list"
+            *ngIf="dailyReport.registros.length > 0">
+
+            <ng-container
+              *ngFor="let record of dailyReport.registros">
+
+              <ng-container
+                *ngTemplateOutlet="
+                  recordCard;
+                  context: {$implicit: record}
+                ">
+              </ng-container>
+
+            </ng-container>
+          </div>
+        </section>
+      </ng-container>
+    </ng-container>
+
+    <!-- =================================================
+         HISTORIAL GLOBAL
+         ================================================= -->
+
+    <ng-container *ngIf="activeTab === 'historial'">
+
+      <!-- FILTROS -->
+      <section class="filters-card history-filters">
+        <div class="filter-group">
+          <label for="historyDateFrom">
+            <i class="bi bi-calendar-event"></i>
+            Desde
+          </label>
+
+          <input
+            id="historyDateFrom"
+            type="date"
+            [(ngModel)]="historyDateFrom"
+            [max]="historyDateTo || today"
+            [disabled]="loadingHistory">
+        </div>
+
+        <div class="filter-group">
+          <label for="historyDateTo">
+            <i class="bi bi-calendar-check"></i>
+            Hasta
+          </label>
+
+          <input
+            id="historyDateTo"
+            type="date"
+            [(ngModel)]="historyDateTo"
+            [min]="historyDateFrom"
+            [max]="today"
+            [disabled]="loadingHistory">
+        </div>
+
+        <div class="filter-group">
+          <label for="historyUser">
+            <i class="bi bi-person"></i>
+            Usuario
+          </label>
+
+          <select
+            id="historyUser"
+            [(ngModel)]="selectedUserId"
+            [disabled]="loadingUsers || loadingHistory">
+
+            <option [ngValue]="null">
+              Todos los usuarios
+            </option>
+
+            <option
+              *ngFor="let user of reportableUsers"
+              [ngValue]="user.id">
+
+              {{ user.apellido }}, {{ user.nombre }}
+              — {{ getRoleLabel(user.role) }}
+              {{ user.estado ? '' : '(inactivo)' }}
+            </option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="historyRole">
+            <i class="bi bi-people"></i>
+            Rol
+          </label>
+
+          <select
+            id="historyRole"
+            [(ngModel)]="selectedRole"
+            [disabled]="loadingHistory">
+
+            <option [ngValue]="null">
+              Empleados y supervisores
+            </option>
+
+            <option value="empleado">
+              Empleados
+            </option>
+
+            <option value="supervisor">
+              Supervisores
+            </option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="historyStatus">
+            <i class="bi bi-funnel"></i>
+            Estado
+          </label>
+
+          <select
+            id="historyStatus"
+            [(ngModel)]="selectedStatus"
+            [disabled]="loadingHistory">
+
+            <option [ngValue]="null">
+              Todos los estados
+            </option>
+
+            <option value="PRESENTE">
+              Presente
+            </option>
+
+            <option value="TARDE">
+              Tarde
+            </option>
+
+            <option value="AUSENTE">
+              Ausente
+            </option>
+
+            <option value="PENDIENTE">
+              Pendiente
+            </option>
+
+            <option value="SIN_HORARIO">
+              Sin horario
+            </option>
+          </select>
+        </div>
+
+        <div class="history-actions">
+          <button
+            type="button"
+            class="secondary-button"
+            [disabled]="loadingHistory"
+            (click)="clearHistoryFilters()">
+
+            <i class="bi bi-x-circle"></i>
+            Limpiar
+          </button>
+
+          <button
+            type="button"
+            class="primary-button"
+            [disabled]="loadingHistory"
+            (click)="applyHistoryFilters()">
+
+            <i class="bi bi-search"></i>
+            Consultar
+          </button>
+
+          <button
+            type="button"
+            class="export-button"
+            [disabled]="
+              loadingHistory ||
+              !globalHistory ||
+              globalHistory.registros.length === 0
+            "
+            (click)="exportGlobalHistory()">
+
+            <i class="bi bi-file-earmark-pdf"></i>
+            Exportar PDF
+          </button>
+        </div>
+      </section>
+
+      <!-- ERROR -->
+      <section
+        class="message-card error-message"
+        *ngIf="historyError">
+
+        <i class="bi bi-exclamation-circle"></i>
+        <span>{{ historyError }}</span>
+      </section>
+
+      <!-- CARGANDO -->
+      <section
+        class="loading-card"
+        *ngIf="loadingHistory">
+
+        <div
+          class="spinner-border"
+          role="status">
+          <span class="visually-hidden">
+            Cargando historial...
+          </span>
+        </div>
+
+        <p>Cargando historial global...</p>
+      </section>
+
+      <ng-container
+        *ngIf="!loadingHistory && globalHistory">
+
+        <!-- INFORMACIÓN DEL PERÍODO -->
+        <section class="report-information">
+          <div>
+            <span>Período consultado</span>
+
+            <strong>
+              {{
+                formatDate(
+                  globalHistory.periodo.fecha_desde
+                )
+              }}
+              –
+              {{
+                formatDate(
+                  globalHistory.periodo.fecha_hasta
+                )
+              }}
+            </strong>
+          </div>
+
+          <span class="record-counter">
+            {{ globalHistory.total_registros }}
+            {{
+              globalHistory.total_registros === 1
+                ? 'registro'
+                : 'registros'
+            }}
+          </span>
+        </section>
+
+        <!-- RESUMEN HISTÓRICO -->
+        <section class="stats-grid">
+          <article class="stat-card present-card">
+            <div class="stat-icon">
+              <i class="bi bi-check-circle"></i>
+            </div>
+
+            <span>Presentes</span>
+
+            <strong>
+              {{ globalHistory.resumen.registros_presentes }}
+            </strong>
+          </article>
+
+          <article class="stat-card absent-card">
+            <div class="stat-icon">
+              <i class="bi bi-x-circle"></i>
+            </div>
+
+            <span>Ausencias</span>
+
+            <strong>
+              {{ globalHistory.resumen.ausencias }}
+            </strong>
+          </article>
+
+          <article class="stat-card late-card">
+            <div class="stat-icon">
+              <i class="bi bi-alarm"></i>
+            </div>
+
+            <span>Tardanzas</span>
+
+            <strong>
+              {{ globalHistory.resumen.tardanzas }}
+            </strong>
+          </article>
+
+          <article class="stat-card percentage-card">
+            <div class="stat-icon">
+              <i class="bi bi-graph-up-arrow"></i>
+            </div>
+
+            <span>Asistencia</span>
+
+            <strong>
+              {{ globalHistory.resumen.porcentaje_asistencia }}%
+            </strong>
+          </article>
+        </section>
+
+        <!-- RESUMEN SECUNDARIO -->
+        <section class="secondary-summary">
+          <div>
+            <span>Personas incluidas</span>
+
+            <strong>
+              {{ globalHistory.resumen.total_usuarios }}
+            </strong>
+          </div>
+
+          <div>
+            <span>Días programados</span>
+
+            <strong>
+              {{ globalHistory.resumen.registros_programados }}
+            </strong>
+          </div>
+
+          <div>
+            <span>Jornadas incompletas</span>
+
+            <strong>
+              {{ globalHistory.resumen.jornadas_incompletas }}
+            </strong>
+          </div>
+
+          <div>
+            <span>Horas totales</span>
+
+            <strong>
+              {{ globalHistory.resumen.horas_totales }} h
+            </strong>
+          </div>
+
+          <div>
+            <span>Promedio diario</span>
+
+            <strong>
+              {{ globalHistory.resumen.promedio_horas_dia }} h
+            </strong>
+          </div>
+
+          <div>
+            <span>Pendientes</span>
+
+            <strong>
+              {{ globalHistory.resumen.pendientes }}
+            </strong>
+          </div>
+        </section>
+
+        <!-- LISTADO HISTÓRICO -->
+        <section class="records-section">
+          <div class="section-heading">
+            <div>
+              <h2>Registros históricos</h2>
+
+              <p>
+                Resultado de los filtros seleccionados.
+              </p>
+            </div>
+          </div>
+
+          <div
+            class="empty-state"
+            *ngIf="globalHistory.registros.length === 0">
+
+            <i class="bi bi-search"></i>
+
+            <h3>No se encontraron registros</h3>
+
+            <p>
+              Probá con otro período o modificá los filtros.
+            </p>
+          </div>
+
+          <div
+            class="records-list"
+            *ngIf="globalHistory.registros.length > 0">
+
+            <ng-container
+              *ngFor="let record of globalHistory.registros">
+
+              <ng-container
+                *ngTemplateOutlet="
+                  recordCard;
+                  context: {$implicit: record}
+                ">
+              </ng-container>
+
+            </ng-container>
+          </div>
+        </section>
+      </ng-container>
+    </ng-container>
+  </main>
+
+  <!-- TOAST -->
+  <app-toast
+    [visible]="toastVisible"
+    [mensaje]="toastMessage"
+    [tipo]="toastType"
+    (cerrar)="closeToast()">
+  </app-toast>
+</div>
+
+<!-- ===================================================
+     TARJETA REUTILIZABLE DE REGISTRO
+     =================================================== -->
+
+<ng-template
+  #recordCard
+  let-record>
+
+  <article
+    class="record-card"
+    [ngClass]="getStatusClass(record.estado)">
+
+    <div class="user-column">
+      <div class="user-avatar">
+        {{ getInitials(record.usuario) }}
+      </div>
+
+      <div class="user-information">
+        <h3>
+          {{ record.usuario.nombre }}
+          {{ record.usuario.apellido }}
+        </h3>
+
+        <div class="user-meta">
+          <span class="role-badge">
+            {{ getRoleLabel(record.usuario.role) }}
+          </span>
+
+          <span
+            class="inactive-badge"
+            *ngIf="!record.usuario.estado">
+            Inactivo
+          </span>
+
+          <span
+            class="change-badge"
+            *ngIf="record.cambio_horario">
+            <i class="bi bi-arrow-left-right"></i>
+            Cambio aprobado
+          </span>
+        </div>
+
+        <span class="record-date">
+          <i class="bi bi-calendar3"></i>
+          {{ formatDate(record.fecha) }}
+        </span>
+      </div>
+    </div>
+
+    <div class="schedule-column">
+      <span class="column-label">
+        Horario esperado
+      </span>
+
+      <ng-container
+        *ngIf="record.horario_esperado; else noSchedule">
+
+        <strong>
+          {{
+            formatTime(
+              record.horario_esperado.hora_entrada
+            )
+          }}
+          –
+          {{
+            formatTime(
+              record.horario_esperado.hora_salida
+            )
+          }}
+        </strong>
+
+        <small>
+          {{
+            getModalityLabel(
+              record.horario_esperado.modalidad
+            )
+          }}
+          ·
+          {{ record.horario_esperado.tolerancia_minutos }}
+          min de tolerancia
+        </small>
+      </ng-container>
+
+      <ng-template #noSchedule>
+        <strong>Sin horario asignado</strong>
+      </ng-template>
+    </div>
+
+    <div class="attendance-column">
+      <div>
+        <span>Entrada</span>
+
+        <strong>
+          {{ formatTime(record.hora_entrada) }}
+        </strong>
+      </div>
+
+      <div>
+        <span>Salida</span>
+
+        <strong>
+          {{ formatTime(record.hora_salida) }}
+        </strong>
+      </div>
+
+      <div>
+        <span>Horas</span>
+
+        <strong>
+          {{ formatWorkedHours(record.horas_trabajadas) }}
+        </strong>
+      </div>
+    </div>
+
+    <div class="status-column">
+      <span
+        class="status-badge"
+        [ngClass]="getStatusClass(record.estado)">
+
+        {{ getStatusLabel(record.estado) }}
+      </span>
+
+      <span
+        class="journey-badge"
+        [class.incomplete]="
+          record.estado_jornada === 'INCOMPLETA'
+        "
+        [class.in-progress]="
+          record.estado_jornada === 'EN_CURSO'
+        ">
+
+        {{ getJourneyLabel(record.estado_jornada) }}
+      </span>
+
+      <small>
+        {{ getModalityLabel(record.modalidad) }}
+      </small>
+    </div>
+  </article>
+</ng-template>

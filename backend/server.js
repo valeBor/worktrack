@@ -36,43 +36,34 @@ const solicitudRoutes = require('./routes/solicitud.router');
 const horarioRoutes = require('./routes/horario.router');
 const authRoutes = require('./routes/auth.router');
 const userRoutes = require('./routes/users.router');
+const reporteAsistenciaRoutes = require('./routes/reporte-asistencia.router');
 
 
 // Inicializa la configuración de la base de datos.
 require('./config/db');
-
-
 // ======================================================
 // CREAR APLICACIÓN EXPRESS
 // ======================================================
 
 const app = express();
-
-
 // ======================================================
 // MIDDLEWARES GENERALES
 // ======================================================
 
 app.use(cors());
-
 app.use(express.json());
-
 
 // ======================================================
 // RUTAS
 // ======================================================
 
 app.use('/qr', qrRoutes);
-
 app.use('/api/auth', authRoutes);
-
 app.use('/api/users', userRoutes);
-
 app.use('/api/asistencias', asistenciaRoutes);
-
 app.use('/api/horarios', horarioRoutes);
-
 app.use('/api/solicitudes',solicitudRoutes);
+app.use('/api/reportes-asistencia', reporteAsistenciaRoutes);
 
 
 // ======================================================

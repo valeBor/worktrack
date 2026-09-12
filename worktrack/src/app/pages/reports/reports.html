@@ -1,0 +1,635 @@
+<div class="reports-page">
+  <app-header
+    titulo="Reportes de asistencia"
+    [mostrarVolver]="true">
+  </app-header>
+
+  <main class="reports-content">
+
+    <!-- ENCABEZADO -->
+    <section class="page-heading">
+      <div class="heading-icon">
+        <i class="bi bi-bar-chart-line"></i>
+      </div>
+
+      <div>
+        <h1>Reportes y estadísticas</h1>
+
+        <p>
+          Analizá la asistencia de empleados y supervisores.
+        </p>
+      </div>
+    </section>
+
+    <!-- FILTROS -->
+    <section class="filters-card">
+      <div class="filter-group">
+        <label for="reportDateFrom">
+          <i class="bi bi-calendar-event"></i>
+          Desde
+        </label>
+
+        <input
+          id="reportDateFrom"
+          type="date"
+          [(ngModel)]="dateFrom"
+          [max]="dateTo || today"
+          [disabled]="loading">
+      </div>
+
+      <div class="filter-group">
+        <label for="reportDateTo">
+          <i class="bi bi-calendar-check"></i>
+          Hasta
+        </label>
+
+        <input
+          id="reportDateTo"
+          type="date"
+          [(ngModel)]="dateTo"
+          [min]="dateFrom"
+          [max]="today"
+          [disabled]="loading">
+      </div>
+
+      <div class="filter-group">
+        <label for="reportUser">
+          <i class="bi bi-person"></i>
+          Usuario
+        </label>
+
+        <select
+          id="reportUser"
+          [(ngModel)]="selectedUserId"
+          [disabled]="loadingUsers || loading">
+
+          <option [ngValue]="null">
+            Todos los usuarios
+          </option>
+
+          <option
+            *ngFor="let user of reportableUsers"
+            [ngValue]="user.id">
+
+            {{ user.apellido }}, {{ user.nombre }}
+            — {{ getRoleLabel(user.role) }}
+            {{ user.estado ? '' : '(inactivo)' }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="reportRole">
+          <i class="bi bi-people"></i>
+          Rol
+        </label>
+
+        <select
+          id="reportRole"
+          [(ngModel)]="selectedRole"
+          [disabled]="loading">
+
+          <option [ngValue]="null">
+            Empleados y supervisores
+          </option>
+
+          <option value="empleado">
+            Empleados
+          </option>
+
+          <option value="supervisor">
+            Supervisores
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-actions">
+        <button
+          type="button"
+          class="secondary-button"
+          [disabled]="loading"
+          (click)="clearFilters()">
+
+          <i class="bi bi-x-circle"></i>
+          Limpiar
+        </button>
+
+        <button
+          type="button"
+          class="primary-button"
+          [disabled]="loading"
+          (click)="applyFilters()">
+
+          <i class="bi bi-search"></i>
+          Consultar
+        </button>
+      </div>
+    </section>
+
+    <!-- ERROR -->
+    <section
+      class="message-card error-message"
+      *ngIf="error">
+
+      <i class="bi bi-exclamation-circle"></i>
+      <span>{{ error }}</span>
+    </section>
+
+    <!-- CARGANDO -->
+    <section
+      class="loading-card"
+      *ngIf="loading">
+
+      <div
+        class="spinner-border"
+        role="status">
+
+        <span class="visually-hidden">
+          Cargando estadísticas...
+        </span>
+      </div>
+
+      <p>Cargando estadísticas de asistencia...</p>
+    </section>
+
+    <ng-container
+      *ngIf="!loading && statistics">
+
+      <!-- PERÍODO -->
+      <section class="period-card">
+        <div>
+          <span>Período analizado</span>
+
+          <strong>
+            {{ formatDate(statistics.periodo.fecha_desde) }}
+            –
+            {{ formatDate(statistics.periodo.fecha_hasta) }}
+          </strong>
+        </div>
+
+        <div class="active-filter">
+          <i class="bi bi-funnel"></i>
+
+          <span *ngIf="!selectedRole && !selectedUserId">
+            Todo el personal
+          </span>
+
+          <span *ngIf="selectedRole && !selectedUserId">
+            {{ getRoleLabel(selectedRole) }}
+          </span>
+
+          <span *ngIf="selectedUserId">
+            Usuario seleccionado
+          </span>
+        </div>
+      </section>
+
+      <!-- RESUMEN PRINCIPAL -->
+      <section class="stats-grid">
+        <article class="stat-card attendance-card">
+          <div class="stat-icon">
+            <i class="bi bi-graph-up-arrow"></i>
+          </div>
+
+          <span>Asistencia</span>
+
+          <strong>
+            {{ statistics.resumen.porcentaje_asistencia }}%
+          </strong>
+        </article>
+
+        <article class="stat-card present-card">
+          <div class="stat-icon">
+            <i class="bi bi-check-circle"></i>
+          </div>
+
+          <span>Presentes</span>
+
+          <strong>
+            {{ statistics.resumen.registros_presentes }}
+          </strong>
+        </article>
+
+        <article class="stat-card absent-card">
+          <div class="stat-icon">
+            <i class="bi bi-x-circle"></i>
+          </div>
+
+          <span>Ausencias</span>
+
+          <strong>
+            {{ statistics.resumen.ausencias }}
+          </strong>
+        </article>
+
+        <article class="stat-card late-card">
+          <div class="stat-icon">
+            <i class="bi bi-alarm"></i>
+          </div>
+
+          <span>Tardanzas</span>
+
+          <strong>
+            {{ statistics.resumen.tardanzas }}
+          </strong>
+        </article>
+      </section>
+
+      <!-- RESUMEN SECUNDARIO -->
+      <section class="secondary-summary">
+        <div>
+          <span>Personas analizadas</span>
+
+          <strong>
+            {{ statistics.resumen.total_usuarios }}
+          </strong>
+        </div>
+
+        <div>
+          <span>Días programados</span>
+
+          <strong>
+            {{ statistics.resumen.registros_programados }}
+          </strong>
+        </div>
+
+        <div>
+          <span>Horas totales</span>
+
+          <strong>
+            {{ formatHours(statistics.resumen.horas_totales) }}
+          </strong>
+        </div>
+
+        <div>
+          <span>Promedio por jornada</span>
+
+          <strong>
+            {{ formatHours(statistics.resumen.promedio_horas_dia) }}
+          </strong>
+        </div>
+
+        <div>
+          <span>Jornadas incompletas</span>
+
+          <strong>
+            {{ statistics.resumen.jornadas_incompletas }}
+          </strong>
+        </div>
+
+        <div>
+          <span>Pendientes</span>
+
+          <strong>
+            {{ statistics.resumen.pendientes }}
+          </strong>
+        </div>
+      </section>
+
+      <!-- SIN DATOS -->
+      <section
+        class="empty-state main-empty"
+        *ngIf="
+          statistics.resumen.registros_programados === 0 &&
+          statistics.resumen.registros_presentes === 0
+        ">
+
+        <i class="bi bi-bar-chart"></i>
+
+        <h2>No hay información para analizar</h2>
+
+        <p>
+          Modificá las fechas o los filtros seleccionados.
+        </p>
+      </section>
+
+      <ng-container
+        *ngIf="
+          statistics.resumen.registros_programados > 0 ||
+          statistics.resumen.registros_presentes > 0
+        ">
+
+        <!-- COMPARACIÓN POR ROL -->
+        <section class="report-section">
+          <div class="section-heading">
+            <div>
+              <h2>Comparación por rol</h2>
+
+              <p>
+                Empleados y supervisores, sin agrupación por departamentos.
+              </p>
+            </div>
+          </div>
+
+          <div
+            class="role-grid"
+            *ngIf="statistics.por_rol.length > 0">
+
+            <article
+              class="role-card"
+              *ngFor="let item of statistics.por_rol"
+              [ngClass]="getRoleClass(item.role)">
+
+              <div class="role-heading">
+                <div class="role-icon">
+                  <i
+                    class="bi"
+                    [ngClass]="getRoleIcon(item.role)">
+                  </i>
+                </div>
+
+                <div>
+                  <span>Rol</span>
+
+                  <h3>
+                    {{ getRoleLabel(item.role) }}
+                  </h3>
+                </div>
+              </div>
+
+              <div class="role-percentage">
+                <strong>
+                  {{ item.resumen.porcentaje_asistencia }}%
+                </strong>
+
+                <span>de asistencia</span>
+              </div>
+
+              <div class="progress-track">
+                <div
+                  class="progress-value"
+                  [style.width]="
+                    getPercentageWidth(
+                      item.resumen.porcentaje_asistencia
+                    )
+                  ">
+                </div>
+              </div>
+
+              <div class="role-details">
+                <div>
+                  <span>Presentes</span>
+                  <strong>{{ item.resumen.registros_presentes }}</strong>
+                </div>
+
+                <div>
+                  <span>Ausencias</span>
+                  <strong>{{ item.resumen.ausencias }}</strong>
+                </div>
+
+                <div>
+                  <span>Tardanzas</span>
+                  <strong>{{ item.resumen.tardanzas }}</strong>
+                </div>
+
+                <div>
+                  <span>Horas</span>
+                  <strong>{{ formatHours(item.resumen.horas_totales) }}</strong>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- EVOLUCIÓN Y MODALIDAD -->
+        <section class="charts-grid">
+
+          <!-- EVOLUCIÓN DIARIA -->
+          <article class="chart-card evolution-card">
+            <div class="section-heading">
+              <div>
+                <h2>Evolución diaria</h2>
+
+                <p>
+                  Porcentaje de asistencia por fecha.
+                </p>
+              </div>
+
+              <i class="bi bi-graph-up chart-heading-icon"></i>
+            </div>
+
+            <div
+              class="daily-chart"
+              *ngIf="statistics.evolucion_diaria.length > 0">
+
+              <div
+                class="daily-row"
+                *ngFor="let item of statistics.evolucion_diaria">
+
+                <div class="daily-date">
+                  <strong>{{ formatDate(item.fecha) }}</strong>
+                  <span>{{ item.dia_semana }}</span>
+                </div>
+
+                <div class="daily-progress">
+                  <div class="daily-track">
+                    <div
+                      class="daily-value"
+                      [style.width]="
+                        getPercentageWidth(
+                          getDailyPercentage(item)
+                        )
+                      ">
+                    </div>
+                  </div>
+
+                  <strong>
+                    {{ item.resumen.porcentaje_asistencia }}%
+                  </strong>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="empty-state"
+              *ngIf="statistics.evolucion_diaria.length === 0">
+
+              <i class="bi bi-calendar-x"></i>
+              <p>No hay evolución diaria disponible.</p>
+            </div>
+          </article>
+
+          <!-- MODALIDAD -->
+          <article class="chart-card modality-card">
+            <div class="section-heading">
+              <div>
+                <h2>Modalidad programada</h2>
+
+                <p>
+                  Distribución presencial y Home.
+                </p>
+              </div>
+
+              <i class="bi bi-pie-chart chart-heading-icon"></i>
+            </div>
+
+            <ng-container
+              *ngIf="statistics.por_modalidad.length > 0; else noModality">
+
+              <div class="modality-content">
+                <div
+                  class="donut-chart"
+                  [style.background]="getModalityChartBackground()">
+
+                  <div class="donut-center">
+                    <strong>
+                      {{ statistics.resumen.registros_programados }}
+                    </strong>
+
+                    <span>jornadas</span>
+                  </div>
+                </div>
+
+                <div class="modality-legend">
+                  <div
+                    class="legend-item"
+                    *ngFor="let item of statistics.por_modalidad">
+
+                    <span
+                      class="legend-color"
+                      [style.background]="
+                        getModalityColor(item.modalidad)
+                      ">
+                    </span>
+
+                    <div>
+                      <span>
+                        {{ getModalityLabel(item.modalidad) }}
+                      </span>
+
+                      <strong>
+                        {{ getModalityPercentage(item.modalidad) }}%
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-template #noModality>
+              <div class="empty-state">
+                <i class="bi bi-house-x"></i>
+                <p>No hay modalidades programadas.</p>
+              </div>
+            </ng-template>
+          </article>
+        </section>
+
+        <!-- ESTADÍSTICAS POR PERSONA -->
+        <section class="report-section">
+          <div class="section-heading">
+            <div>
+              <h2>Estadísticas por persona</h2>
+
+              <p>
+                Rendimiento individual de empleados y supervisores.
+              </p>
+            </div>
+
+            <span class="result-count">
+              {{ sortedUsers.length }}
+              {{
+                sortedUsers.length === 1
+                  ? 'persona'
+                  : 'personas'
+              }}
+            </span>
+          </div>
+
+          <div
+            class="users-list"
+            *ngIf="sortedUsers.length > 0">
+
+            <article
+              class="user-stat-card"
+              *ngFor="let item of sortedUsers">
+
+              <div class="user-column">
+                <div class="user-avatar">
+                  {{ getInitials(item.usuario) }}
+                </div>
+
+                <div class="user-information">
+                  <h3>
+                    {{ item.usuario.nombre }}
+                    {{ item.usuario.apellido }}
+                  </h3>
+
+                  <div>
+                    <span class="role-badge">
+                      {{ getRoleLabel(item.usuario.role) }}
+                    </span>
+
+                    <span
+                      class="inactive-badge"
+                      *ngIf="!item.usuario.estado">
+                      Inactivo
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="user-attendance">
+                <div class="user-percentage">
+                  <span>Asistencia</span>
+
+                  <strong>
+                    {{ item.resumen.porcentaje_asistencia }}%
+                  </strong>
+                </div>
+
+                <div class="progress-track">
+                  <div
+                    class="progress-value"
+                    [style.width]="
+                      getPercentageWidth(
+                        item.resumen.porcentaje_asistencia
+                      )
+                    ">
+                  </div>
+                </div>
+              </div>
+
+              <div class="user-metrics">
+                <div>
+                  <span>Presentes</span>
+                  <strong>{{ item.resumen.registros_presentes }}</strong>
+                </div>
+
+                <div>
+                  <span>Ausencias</span>
+                  <strong>{{ item.resumen.ausencias }}</strong>
+                </div>
+
+                <div>
+                  <span>Tardanzas</span>
+                  <strong>{{ item.resumen.tardanzas }}</strong>
+                </div>
+
+                <div>
+                  <span>Horas</span>
+                  <strong>{{ formatHours(item.resumen.horas_totales) }}</strong>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <div
+            class="empty-state"
+            *ngIf="sortedUsers.length === 0">
+
+            <i class="bi bi-person-x"></i>
+            <p>No hay estadísticas individuales disponibles.</p>
+          </div>
+        </section>
+      </ng-container>
+    </ng-container>
+  </main>
+
+  <app-toast
+    [visible]="toastVisible"
+    [mensaje]="toastMessage"
+    [tipo]="toastType"
+    (cerrar)="closeToast()">
+  </app-toast>
+</div>

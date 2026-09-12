@@ -486,3 +486,97 @@ button:disabled {
     font-size: 21px;
   }
 }
+
+.card-badges {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.role-badge,
+.status-badge {
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.role-badge {
+  background: #e0e7ff;
+  color: #2947b8;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff7ed;
+  color: #e7660a;
+}
+
+.status-badge.approved {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.status-badge.rejected {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.solicitud-card.approved-card {
+  border-left-color: #20c565;
+}
+
+.solicitud-card.rejected-card {
+  border-left-color: #dc2626;
+}
+
+.resolution-box {
+  margin-top: 18px;
+  padding: 15px;
+  border: 1px solid #e2e8f0;
+  border-radius: 13px;
+  background: #f8fafc;
+  color: #475569;
+}
+
+.resolution-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.resolution-header strong {
+  color: #1f2937;
+}
+
+.resolution-header span {
+  color: #7b8798;
+  font-size: 12px;
+}
+
+.resolution-box p {
+  margin: 8px 0 0;
+  line-height: 1.5;
+}
+
+@media (max-width: 700px) {
+  .card-header {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .card-badges {
+    width: 100%;
+    margin-left: 62px;
+    flex-wrap: wrap;
+  }
+
+  .resolution-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

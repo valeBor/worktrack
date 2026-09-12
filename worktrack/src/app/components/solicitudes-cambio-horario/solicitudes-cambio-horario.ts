@@ -45,7 +45,10 @@ export class SolicitudesCambioHorario implements OnInit {
 
   ngOnInit(): void {
     const usuario = this.authService.getUser();
-    this.rolActual = (usuario?.role as Role) || null;
+
+    this.rolActual =
+      (usuario?.role as Role) || null;
+
     this.cargarSolicitudes();
   }
 
@@ -54,7 +57,10 @@ export class SolicitudesCambioHorario implements OnInit {
   // =====================================================
 
   get puedeResolver(): boolean {
-    return this.rolActual === 'supervisor' || this.rolActual === 'rrhh';
+    return (
+      this.rolActual === 'supervisor' ||
+      this.rolActual === 'rrhh'
+    );
   }
 
   // =====================================================
@@ -68,25 +74,39 @@ export class SolicitudesCambioHorario implements OnInit {
   }
 
   get mensajeModal(): string {
-    const solicitud = this.solicitudSeleccionada;
+    const solicitud =
+      this.solicitudSeleccionada;
 
     if (!solicitud) {
       return '';
     }
 
-    const empleado = `${solicitud.usuario_nombre || ''} ${solicitud.usuario_apellido || ''}`.trim();
-    const accion = this.accionSeleccionada === 'APROBADA' ? 'aprobar' : 'rechazar';
+    const usuario =
+      `${solicitud.usuario_nombre || ''} ` +
+      `${solicitud.usuario_apellido || ''}`;
 
-    return `¿Querés ${accion} la solicitud de ${empleado}?`;
+    const accion =
+      this.accionSeleccionada === 'APROBADA'
+        ? 'aprobar'
+        : 'rechazar';
+
+    return (
+      `¿Querés ${accion} la solicitud de ` +
+      `${usuario.trim()}?`
+    );
   }
 
   get tipoModal(): TipoModal {
-    return this.accionSeleccionada === 'APROBADA' ? 'success' : 'danger';
+    return this.accionSeleccionada === 'APROBADA'
+      ? 'success'
+      : 'danger';
   }
 
   get textoConfirmarModal(): string {
     if (this.procesando) {
-      return this.accionSeleccionada === 'APROBADA' ? 'Aprobando...' : 'Rechazando...';
+      return this.accionSeleccionada === 'APROBADA'
+        ? 'Aprobando...'
+        : 'Rechazando...';
     }
 
     return this.accionSeleccionada === 'APROBADA'
@@ -95,14 +115,15 @@ export class SolicitudesCambioHorario implements OnInit {
   }
 
   // =====================================================
-  // CARGAR PENDIENTES
+  // CARGAR SOLICITUDES GESTIONABLES
   // =====================================================
 
   cargarSolicitudes(): void {
     this.cargando = true;
     this.errorCarga = false;
 
-    this.solicitudService.getSolicitudesPendientes()
+    this.solicitudService
+      .getSolicitudesGestionables()
       .pipe(
         finalize(() => {
           this.cargando = false;
@@ -111,17 +132,27 @@ export class SolicitudesCambioHorario implements OnInit {
       )
       .subscribe({
         next: (solicitudes) => {
-          this.solicitudes = [...solicitudes];
+          this.solicitudes = [
+            ...solicitudes
+          ];
+
           this.cdr.detectChanges();
         },
         error: (error) => {
-          console.error('Error cargando solicitudes:', error);
+          console.error(
+            'Error cargando solicitudes:',
+            error
+          );
+
           this.solicitudes = [];
           this.errorCarga = true;
+
           this.mostrarToast(
-            error.error?.mensaje || 'No fue posible cargar las solicitudes pendientes.',
+            error.error?.mensaje ||
+            'No fue posible cargar las solicitudes.',
             'error'
           );
+
           this.cdr.detectChanges();
         }
       });
@@ -144,6 +175,7 @@ export class SolicitudesCambioHorario implements OnInit {
     this.respuesta = '';
     this.errorRespuesta = '';
     this.mostrarModal = true;
+
     this.cdr.detectChanges();
   }
 
@@ -161,6 +193,7 @@ export class SolicitudesCambioHorario implements OnInit {
     this.accionSeleccionada = null;
     this.respuesta = '';
     this.errorRespuesta = '';
+
     this.cdr.detectChanges();
   }
 
@@ -169,15 +202,23 @@ export class SolicitudesCambioHorario implements OnInit {
   // =====================================================
 
   validarRespuesta(): boolean {
-    const respuesta = this.respuesta.trim();
+    const respuesta =
+      this.respuesta.trim();
 
-    if (this.accionSeleccionada === 'RECHAZADA' && respuesta.length < 5) {
-      this.errorRespuesta = 'El motivo del rechazo debe contener al menos 5 caracteres.';
+    if (
+      this.accionSeleccionada === 'RECHAZADA' &&
+      respuesta.length < 5
+    ) {
+      this.errorRespuesta =
+        'El motivo del rechazo debe contener al menos 5 caracteres.';
+
       return false;
     }
 
     if (respuesta.length > 500) {
-      this.errorRespuesta = 'La respuesta no puede superar los 500 caracteres.';
+      this.errorRespuesta =
+        'La respuesta no puede superar los 500 caracteres.';
+
       return false;
     }
 
@@ -190,23 +231,34 @@ export class SolicitudesCambioHorario implements OnInit {
   // =====================================================
 
   confirmarResolucion(): void {
-    const solicitud = this.solicitudSeleccionada;
-    const estado = this.accionSeleccionada;
+    const solicitud =
+      this.solicitudSeleccionada;
 
-    if (!solicitud || !estado || !this.puedeResolver || !this.validarRespuesta()) {
+    const estado =
+      this.accionSeleccionada;
+
+    if (
+      !solicitud ||
+      !estado ||
+      !this.puedeResolver ||
+      !this.validarRespuesta()
+    ) {
       this.cdr.detectChanges();
       return;
     }
 
     this.procesando = true;
 
-    this.solicitudService.resolveSolicitud(
-      solicitud.id,
-      {
-        estado,
-        respuesta: this.respuesta.trim() || undefined
-      }
-    )
+    this.solicitudService
+      .resolveSolicitud(
+        solicitud.id,
+        {
+          estado,
+          respuesta:
+            this.respuesta.trim() ||
+            undefined
+        }
+      )
       .pipe(
         finalize(() => {
           this.procesando = false;
@@ -215,56 +267,121 @@ export class SolicitudesCambioHorario implements OnInit {
       )
       .subscribe({
         next: (resultado) => {
-          this.solicitudes = this.solicitudes.filter(
-            (item) => item.id !== solicitud.id
-          );
-
           this.mostrarModal = false;
           this.solicitudSeleccionada = null;
           this.accionSeleccionada = null;
           this.respuesta = '';
           this.errorRespuesta = '';
 
-          this.mostrarToast(resultado.mensaje, 'success');
-          this.cdr.detectChanges();
+          this.mostrarToast(
+            resultado.mensaje,
+            'success'
+          );
+
+          // Recarga para que una solicitud aprobada
+          // continúe visible con su nuevo estado.
+          this.cargarSolicitudes();
         },
         error: (error) => {
-          console.error('Error resolviendo solicitud:', error);
+          console.error(
+            'Error resolviendo solicitud:',
+            error
+          );
+
           this.mostrarToast(
-            error.error?.mensaje || 'No fue posible resolver la solicitud.',
+            error.error?.mensaje ||
+            'No fue posible resolver la solicitud.',
             'error'
           );
+
           this.cdr.detectChanges();
         }
       });
   }
 
   // =====================================================
+  // ETIQUETAS
+  // =====================================================
+
+  obtenerEtiquetaRol(
+    role?: Role
+  ): string {
+    switch (role) {
+      case 'supervisor':
+        return 'Supervisor';
+      case 'empleado':
+        return 'Empleado';
+      case 'rrhh':
+        return 'Recursos Humanos';
+      case 'admin':
+        return 'Administrador';
+      default:
+        return 'Sin rol';
+    }
+  }
+
+  obtenerEtiquetaEstado(
+    estado: SolicitudCambioHorario['estado']
+  ): string {
+    switch (estado) {
+      case 'APROBADA':
+        return 'Aprobada';
+      case 'RECHAZADA':
+        return 'Rechazada';
+      default:
+        return 'Pendiente';
+    }
+  }
+
+  obtenerIconoEstado(
+    estado: SolicitudCambioHorario['estado']
+  ): string {
+    switch (estado) {
+      case 'APROBADA':
+        return 'bi-check-circle';
+      case 'RECHAZADA':
+        return 'bi-x-circle';
+      default:
+        return 'bi-clock';
+    }
+  }
+
+  // =====================================================
   // FORMATOS
   // =====================================================
 
-  formatearFecha(fecha: string): string {
+  formatearFecha(
+    fecha: string
+  ): string {
     if (!fecha) {
       return '-';
     }
 
-    const partes = fecha.substring(0, 10).split('-');
+    const partes =
+      fecha.substring(0, 10).split('-');
 
     if (partes.length !== 3) {
       return fecha;
     }
 
-    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    return (
+      `${partes[2]}/` +
+      `${partes[1]}/` +
+      `${partes[0]}`
+    );
   }
 
-  formatearFechaHora(fechaHora: string): string {
+  formatearFechaHora(
+    fechaHora: string | null | undefined
+  ): string {
     if (!fechaHora) {
       return '-';
     }
 
-    const valor = fechaHora.includes('T')
-      ? fechaHora
-      : fechaHora.replace(' ', 'T');
+    const valor =
+      fechaHora.includes('T')
+        ? fechaHora
+        : fechaHora.replace(' ', 'T');
 
     const fecha = new Date(valor);
 
@@ -272,23 +389,35 @@ export class SolicitudesCambioHorario implements OnInit {
       return fechaHora;
     }
 
-    return new Intl.DateTimeFormat('es-AR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hourCycle: 'h23'
-    }).format(fecha);
+    return new Intl.DateTimeFormat(
+      'es-AR',
+      {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23'
+      }
+    ).format(fecha);
   }
 
-  formatearHora(hora: string): string {
-    return hora ? hora.substring(0, 5) : '--:--';
+  formatearHora(
+    hora: string
+  ): string {
+    return hora
+      ? hora.substring(0, 5)
+      : '--:--';
   }
 
-  obtenerIniciales(solicitud: SolicitudCambioHorario): string {
-    const nombre = solicitud.usuario_nombre || '';
-    const apellido = solicitud.usuario_apellido || '';
+  obtenerIniciales(
+    solicitud: SolicitudCambioHorario
+  ): string {
+    const nombre =
+      solicitud.usuario_nombre || '';
+
+    const apellido =
+      solicitud.usuario_apellido || '';
 
     return (
       nombre.charAt(0).toUpperCase() +
@@ -300,7 +429,10 @@ export class SolicitudesCambioHorario implements OnInit {
   // TOAST
   // =====================================================
 
-  mostrarToast(mensaje: string, tipo: TipoToast): void {
+  mostrarToast(
+    mensaje: string,
+    tipo: TipoToast
+  ): void {
     this.toastMensaje = mensaje;
     this.toastTipo = tipo;
     this.toastVisible = true;

@@ -49,6 +49,17 @@ router.get(
 );
 
 // ======================================================
+// PENDIENTES Y RESUELTAS DURANTE EL DÍA
+// ======================================================
+
+router.get(
+  '/gestionables',
+  verifyToken,
+  verifyPermission('VER_SOLICITUDES_PENDIENTES'),
+  solicitudController.getSolicitudesGestionables
+);
+
+// ======================================================
 // APROBAR O RECHAZAR SOLICITUD
 // ======================================================
 

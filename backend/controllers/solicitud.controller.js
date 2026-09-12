@@ -143,6 +143,29 @@ exports.getSolicitudesPendientes = async (
   }
 };
 
+// ======================================================
+// SOLICITUDES PENDIENTES Y RESUELTAS HOY
+// ======================================================
+
+exports.getSolicitudesGestionables = async (
+  req,
+  res
+) => {
+  try {
+    const solicitudes =
+      await solicitudService
+        .getSolicitudesGestionables(req.user);
+
+    return res.status(200).json(solicitudes);
+  } catch (error) {
+    return responderError(
+      res,
+      error,
+      'Error al obtener las solicitudes gestionables.'
+    );
+  }
+};
+
 
 // ======================================================
 // APROBAR O RECHAZAR SOLICITUD

@@ -129,6 +129,53 @@ exports.getPendientes = async () => {
   return rows;
 };
 
+// ======================================================
+// SOLICITUDES GESTIONABLES
+// Pendientes y resueltas durante el día actual.
+// ======================================================
+
+// ======================================================
+// SOLICITUDES GESTIONABLES SEGÚN EL ROL
+// ======================================================
+
+exports.getGestionables = async () => {
+  const sql = `
+    SELECT
+      ${CAMPOS_SOLICITUD},
+      u.nombre AS usuario_nombre,
+      u.apellido AS usuario_apellido,
+      u.email AS usuario_email,
+      r.nombre AS usuario_role,
+      responsable.nombre AS responsable_nombre,
+      responsable.apellido AS responsable_apellido,
+      responsable_rol.nombre AS responsable_role
+    FROM solicitudes s
+    JOIN usuarios u
+      ON s.usuario_id = u.id
+    JOIN roles r
+      ON u.rol_id = r.id
+    LEFT JOIN usuarios responsable
+      ON s.resuelto_por = responsable.id
+    LEFT JOIN roles responsable_rol
+      ON responsable.rol_id = responsable_rol.id
+    WHERE s.estado IN (
+      'PENDIENTE',
+      'APROBADA',
+      'RECHAZADA'
+    )
+    ORDER BY
+      CASE
+        WHEN s.estado = 'PENDIENTE' THEN 0
+        WHEN s.estado = 'APROBADA' THEN 1
+        ELSE 2
+      END,
+      s.creada_en DESC,
+      s.id DESC
+  `;
+
+  const [rows] = await db.query(sql);
+  return rows;
+};
 
 // ======================================================
 // BUSCAR SOLICITUD ACTIVA PARA UNA FECHA

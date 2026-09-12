@@ -1,18 +1,19 @@
-import {Component, OnInit,Inject, PLATFORM_ID,ChangeDetectorRef} from '@angular/core';
-import {CommonModule,isPlatformBrowser} from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
 import { Header } from '../../components/header/header';
 import { Modal } from '../../components/modal/modal';
-import {Toast, TipoToast} from '../../components/toast/toast';
+import { Toast, TipoToast } from '../../components/toast/toast';
 import { User, Role } from '../../models/user.models';
-import {Horario, HorarioNuevo, CronogramaAgrupado} from '../../models/horario.model';
-import {HorarioService} from '../../services/horario.service';
-import {AuthService} from '../../services/auth.service';
-import {SolicitudesCambioHorario} from '../../components/solicitudes-cambio-horario/solicitudes-cambio-horario';
+import { Horario, HorarioNuevo, CronogramaAgrupado } from '../../models/horario.model';
+import { HorarioService } from '../../services/horario.service';
+import { AuthService } from '../../services/auth.service';
+import { SolicitudesCambioHorario } from '../../components/solicitudes-cambio-horario/solicitudes-cambio-horario';
+import { ActivatedRoute } from '@angular/router';
 
-
-@Component({selector: 'app-gestion-cronogramas',
+@Component({
+  selector: 'app-gestion-cronogramas',
   standalone: true,
   imports: [CommonModule, FormsModule, Header, Modal, Toast, SolicitudesCambioHorario],
   templateUrl: './gestion-cronogramas.html',
@@ -65,6 +66,7 @@ export class GestionCronogramas
   constructor(
     private horarioService: HorarioService,
     private authService: AuthService,
+    private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID)
     private platformId: Object
@@ -80,6 +82,17 @@ export class GestionCronogramas
   ngOnInit(): void {
     if (!this.isBrowser) {
       return;
+    }
+
+    const tab =
+      this.route.snapshot.queryParamMap.get('tab');
+
+    if (
+      tab === 'cronogramas' ||
+      tab === 'solicitudes' ||
+      tab === 'manual'
+    ) {
+      this.tabActiva = tab;
     }
 
     const usuario =
@@ -522,16 +535,16 @@ export class GestionCronogramas
 
     const peticion =
       this.modoEdicion &&
-      this.usuarioEditandoId
+        this.usuarioEditandoId
         ? this.horarioService
-            .updateCronogramaUsuario(
-              this.usuarioEditandoId,
-              this.nuevoHorario
-            )
+          .updateCronogramaUsuario(
+            this.usuarioEditandoId,
+            this.nuevoHorario
+          )
         : this.horarioService
-            .createHorario(
-              this.nuevoHorario
-            );
+          .createHorario(
+            this.nuevoHorario
+          );
 
     peticion
       .pipe(
@@ -692,14 +705,14 @@ export class GestionCronogramas
   ordenDia(dia: string): number {
     const orden:
       Record<string, number> = {
-        lunes: 1,
-        martes: 2,
-        miercoles: 3,
-        jueves: 4,
-        viernes: 5,
-        sabado: 6,
-        domingo: 7
-      };
+      lunes: 1,
+      martes: 2,
+      miercoles: 3,
+      jueves: 4,
+      viernes: 5,
+      sabado: 6,
+      domingo: 7
+    };
 
     return orden[
       dia.toLowerCase()
@@ -709,14 +722,14 @@ export class GestionCronogramas
   mostrarDia(dia: string): string {
     const nombres:
       Record<string, string> = {
-        lunes: 'Lunes',
-        martes: 'Martes',
-        miercoles: 'Miércoles',
-        jueves: 'Jueves',
-        viernes: 'Viernes',
-        sabado: 'Sábado',
-        domingo: 'Domingo'
-      };
+      lunes: 'Lunes',
+      martes: 'Martes',
+      miercoles: 'Miércoles',
+      jueves: 'Jueves',
+      viernes: 'Viernes',
+      sabado: 'Sábado',
+      domingo: 'Domingo'
+    };
 
     return nombres[
       dia.toLowerCase()

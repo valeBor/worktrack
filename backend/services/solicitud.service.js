@@ -609,6 +609,39 @@ exports.getSolicitudesPendientes = async actorToken => {
 };
 
 // ======================================================
+// SOLICITUDES PENDIENTES Y RESUELTAS HOY
+// ======================================================
+
+exports.getSolicitudesGestionables = async actorToken => {
+  const actor = await obtenerActor(actorToken);
+  const solicitudes = await solicitudModel.getGestionables();
+
+  if (actor.role === ROL_SUPERVISOR) {
+    return solicitudes.filter(
+      solicitud =>
+        normalizarRol(solicitud.usuario_role) ===
+        ROL_EMPLEADO
+    );
+  }
+
+  if (
+    actor.role === ROL_RRHH ||
+    actor.role === ROL_ADMIN
+  ) {
+    return solicitudes.filter(solicitud =>
+      [ROL_EMPLEADO, ROL_SUPERVISOR].includes(
+        normalizarRol(solicitud.usuario_role)
+      )
+    );
+  }
+
+  throw crearError(
+    'No tiene autorización para consultar estas solicitudes.',
+    403
+  );
+};
+
+// ======================================================
 // APROBAR O RECHAZAR SOLICITUD
 // ======================================================
 

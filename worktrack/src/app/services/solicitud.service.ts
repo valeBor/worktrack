@@ -113,4 +113,12 @@ export class SolicitudService {
 
   }
 
+  getSolicitudesGestionables():
+  Observable<SolicitudCambioHorario[]> {
+
+  return this.http.get<SolicitudCambioHorario[]>(
+    `${this.apiUrl}/gestionables`
+  );
+}
+
 }

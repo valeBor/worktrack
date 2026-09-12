@@ -1,22 +1,17 @@
 <div class="page-wrapper">
-  <app-header
-    [cantidadNotificaciones]="alertas.length">
+  <app-header [cantidadNotificaciones]="alertas.length">
   </app-header>
 
   <main class="content">
 
     <!-- MENSAJE EXITOSO -->
-    <div
-      class="mensaje-exito"
-      *ngIf="mensaje">
+    <div class="mensaje-exito" *ngIf="mensaje">
       <i class="bi bi-check-circle"></i>
       <span>{{ mensaje }}</span>
     </div>
 
     <!-- ERROR DE ASISTENCIA U HORARIO -->
-    <div
-      class="mensaje-error"
-      *ngIf="error">
+    <div class="mensaje-error" *ngIf="error">
       <i class="bi bi-exclamation-circle"></i>
       <span>{{ error }}</span>
     </div>
@@ -25,34 +20,26 @@
     <div class="acciones-grid">
 
       <!-- REGISTRAR ASISTENCIA -->
-      <button
-        type="button"
-        class="accion-btn green"
-        [disabled]="
+      <button type="button" class="accion-btn green" [disabled]="
           cargandoHorario ||
           cargandoAsistencia ||
           registrando ||
           !horarioHoy ||
           !asistenciaHoy ||
           asistenciaHoy.jornadaCompletada
-        "
-        (click)="accionAsistencia()">
+        " (click)="accionAsistencia()">
 
         <div class="accion-content">
           <span class="accion-icon">
 
-            <span
-              class="spinner-border spinner-border-sm"
-              *ngIf="
+            <span class="spinner-border spinner-border-sm" *ngIf="
                 cargandoHorario ||
                 cargandoAsistencia ||
                 registrando
               ">
             </span>
 
-            <i
-              class="bi bi-qr-code"
-              *ngIf="
+            <i class="bi bi-qr-code" *ngIf="
                 !cargandoHorario &&
                 !cargandoAsistencia &&
                 !registrando &&
@@ -60,9 +47,7 @@
               ">
             </i>
 
-            <i
-              class="bi bi-house-door"
-              *ngIf="
+            <i class="bi bi-house-door" *ngIf="
                 !cargandoHorario &&
                 !cargandoAsistencia &&
                 !registrando &&
@@ -70,9 +55,7 @@
               ">
             </i>
 
-            <i
-              class="bi bi-calendar-x"
-              *ngIf="
+            <i class="bi bi-calendar-x" *ngIf="
                 !cargandoHorario &&
                 !cargandoAsistencia &&
                 !registrando &&
@@ -97,10 +80,7 @@
       </button>
 
       <!-- HISTORIAL -->
-      <button
-        type="button"
-        class="accion-btn blue"
-        (click)="verHistorial()">
+      <button type="button" class="accion-btn blue" (click)="verHistorial()">
 
         <div class="accion-content">
           <span class="accion-icon">
@@ -123,10 +103,7 @@
     </div>
 
     <!-- CAMBIO DE HORARIO -->
-    <button
-      type="button"
-      class="accion-btn purple full-width"
-      (click)="gestionCambioDeHorario()">
+    <button type="button" class="accion-btn purple full-width" (click)="gestionCambioDeHorario()">
 
       <div class="accion-content">
         <span class="accion-icon">
@@ -161,24 +138,20 @@
         <span class="alert-count">
           {{ alertas.length }}
           {{
-            alertas.length === 1
-              ? 'nueva'
-              : 'nuevas'
+          alertas.length === 1
+          ? 'nueva'
+          : 'nuevas'
           }}
         </span>
       </div>
 
-      <ul
-        class="alert-list"
-        *ngIf="alertas.length > 0">
+      <ul class="alert-list" *ngIf="alertas.length > 0">
         <li *ngFor="let alerta of alertas">
           {{ alerta }}
         </li>
       </ul>
 
-      <div
-        class="alert-empty-message"
-        *ngIf="alertas.length === 0">
+      <div class="alert-empty-message" *ngIf="alertas.length === 0">
         <i class="bi bi-check-circle"></i>
 
         <span>
@@ -212,9 +185,7 @@
     </section>
 
     <!-- CARGANDO ESTADO DE HOY -->
-    <section
-      class="card loading-state"
-      *ngIf="
+    <section class="card loading-state" *ngIf="
         cargandoHorario ||
         cargandoAsistencia
       ">
@@ -223,9 +194,7 @@
     </section>
 
     <!-- SIN HORARIO HOY -->
-    <section
-      class="card no-schedule-card"
-      *ngIf="
+    <section class="card no-schedule-card" *ngIf="
         !cargandoHorario &&
         !cargandoAsistencia &&
         !horarioHoy
@@ -243,9 +212,7 @@
     </section>
 
     <!-- ESTADO DE HOY -->
-    <section
-      class="card estado-card"
-      *ngIf="
+    <section class="card estado-card" *ngIf="
         !cargandoHorario &&
         !cargandoAsistencia &&
         horarioHoy
@@ -315,8 +282,8 @@
 
           <span class="estado-valor estado-asistencia">
             {{
-              asistenciaHoy?.asistencia?.estado ||
-              'Sin registro'
+            asistenciaHoy?.asistencia?.estado ||
+            'Sin registro'
             }}
           </span>
         </div>
@@ -324,6 +291,7 @@
       </div>
     </section>
 
+    <!-- ESTADÍSTICAS -->
     <!-- ESTADÍSTICAS -->
     <section class="card stats-card">
       <div class="stats-header">
@@ -337,9 +305,8 @@
         </span>
       </div>
 
-      <div
-        class="stats-error"
-        *ngIf="errorEstadisticas">
+      <div class="stats-error" *ngIf="errorEstadisticas">
+
         <i class="bi bi-exclamation-circle"></i>
         {{ errorEstadisticas }}
       </div>
@@ -348,45 +315,92 @@
         <div class="stat-item">
           <span class="stat-valor green-text">
             {{
-              cargandoEstadisticas
-                ? '—'
-                : estadisticas.diasTrabajados
+            cargandoEstadisticas
+            ? '—'
+            : estadisticas.diasTrabajados
             }}
           </span>
 
           <span class="stat-label">
-            Días trabajados
+            Días presentes
           </span>
         </div>
 
         <div class="stat-item">
-          <span class="stat-valor green-text">
+          <span class="stat-valor hours-text">
             {{
-              cargandoEstadisticas
-                ? '—'
-                : estadisticas.horasTotales
+            cargandoEstadisticas
+            ? '—'
+            : estadisticas.horasTotales
             }}
+
             <small *ngIf="!cargandoEstadisticas">
               h
             </small>
           </span>
 
           <span class="stat-label">
-            Horas totales
+            Horas trabajadas
           </span>
         </div>
 
         <div class="stat-item">
           <span class="stat-valor absent-text">
             {{
-              cargandoEstadisticas
-                ? '—'
-                : estadisticas.ausencias
+            cargandoEstadisticas
+            ? '—'
+            : estadisticas.ausencias
             }}
           </span>
 
           <span class="stat-label">
             Ausencias
+          </span>
+        </div>
+
+        <div class="stat-item">
+          <span class="stat-valor late-text">
+            {{
+            cargandoEstadisticas
+            ? '—'
+            : estadisticas.tardanzas
+            }}
+          </span>
+
+          <span class="stat-label">
+            Tardanzas
+          </span>
+        </div>
+
+        <div class="stat-item">
+          <span class="stat-valor percentage-text">
+            {{
+            cargandoEstadisticas
+            ? '—'
+            : estadisticas.porcentajeAsistencia
+            }}
+
+            <small *ngIf="!cargandoEstadisticas">
+              %
+            </small>
+          </span>
+
+          <span class="stat-label">
+            Asistencia
+          </span>
+        </div>
+
+        <div class="stat-item">
+          <span class="stat-valor incomplete-text">
+            {{
+            cargandoEstadisticas
+            ? '—'
+            : estadisticas.jornadasIncompletas
+            }}
+          </span>
+
+          <span class="stat-label">
+            Jornadas incompletas
           </span>
         </div>
       </div>

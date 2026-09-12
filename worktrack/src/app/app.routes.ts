@@ -123,6 +123,42 @@ export const routes: Routes = [
   }
 },
 {
+  path: 'reporte-asistencia',
+  loadComponent: () =>
+    import(
+      './pages/attendance-report/attendance-report'
+    ).then(
+      module =>
+        module.AttendanceReport
+    ),
+  canActivate: [roleGuard],
+  data: {
+    roles: [
+      'rrhh',
+      'admin'
+    ]
+  }
+},
+
+{
+  path: 'reportes',
+  loadComponent: () =>
+    import(
+      './pages/reports/reports'
+    ).then(
+      module =>
+        module.Reports
+    ),
+  canActivate: [roleGuard],
+  data: {
+    roles: [
+      'rrhh',
+      'admin'
+    ]
+  }
+},
+
+{
   path: '**',
   component: NotFound
 }

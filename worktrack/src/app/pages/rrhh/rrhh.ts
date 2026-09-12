@@ -1,26 +1,13 @@
-import {
-  Component,
-  OnInit
-} from '@angular/core';
-
+import {Component,OnInit} from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-import {
-  Router,
-  RouterModule
-} from '@angular/router';
-
+import {Router, RouterModule} from '@angular/router';
 import { Header } from '../../components/header/header';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-rrhh',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    Header
-  ],
+  imports: [CommonModule,RouterModule, Header ],
   templateUrl: './rrhh.html',
   styleUrl: './rrhh.css'
 })

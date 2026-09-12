@@ -1,19 +1,19 @@
-import {ChangeDetectorRef,Component,Inject,OnInit,PLATFORM_ID} from '@angular/core';
-import {CommonModule,isPlatformBrowser} from '@angular/common';
-import {HttpErrorResponse} from '@angular/common/http';
+import { ChangeDetectorRef, Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Header } from '../../components/header/header';
 import { AuthService } from '../../services/auth.service';
 import { HorarioService } from '../../services/horario.service';
 import { AsistenciaService } from '../../services/asistecia.service';
-import {AttendanceHistoryService} from '../../services/attendance-history.service';
+import { AttendanceHistoryService } from '../../services/attendance-history.service';
 import { Horario } from '../../models/horario.model';
 import { AsistenciaHoy } from '../../models/asistencia.model';
 
 @Component({
   selector: 'app-employee',
   standalone: true,
-  imports: [Header,CommonModule],
+  imports: [Header, CommonModule],
   templateUrl: './employee.html',
   styleUrl: './employee.css'
 })
@@ -44,7 +44,10 @@ export class Employee implements OnInit {
   estadisticas = {
     diasTrabajados: 0,
     horasTotales: 0,
-    ausencias: 0
+    ausencias: 0,
+    tardanzas: 0,
+    porcentajeAsistencia: 0,
+    jornadasIncompletas: 0
   };
 
   // Se completará cuando desarrollemos
@@ -182,10 +185,21 @@ export class Employee implements OnInit {
           this.estadisticas = {
             diasTrabajados:
               history.resumen.dias_presentes,
+
             horasTotales:
               history.resumen.horas_totales,
+
             ausencias:
-              history.resumen.ausencias
+              history.resumen.ausencias,
+
+            tardanzas:
+              history.resumen.llegadas_tarde,
+
+            porcentajeAsistencia:
+              history.resumen.porcentaje_asistencia,
+
+            jornadasIncompletas:
+              history.resumen.registros_incompletos
           };
 
           this.cargandoEstadisticas = false;
@@ -195,10 +209,14 @@ export class Employee implements OnInit {
           this.estadisticas = {
             diasTrabajados: 0,
             horasTotales: 0,
-            ausencias: 0
+            ausencias: 0,
+            tardanzas: 0,
+            porcentajeAsistencia: 0,
+            jornadasIncompletas: 0
           };
 
           this.cargandoEstadisticas = false;
+
           this.errorEstadisticas =
             this.obtenerMensajeError(
               err,
@@ -259,7 +277,7 @@ export class Employee implements OnInit {
     this.errorAsistencia = '';
 
     this.asistenciaService
-      .registrarAsistencia({tipo})
+      .registrarAsistencia({ tipo })
       .subscribe({
         next: respuesta => {
           this.registrando = false;

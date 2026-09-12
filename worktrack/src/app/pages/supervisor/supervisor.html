@@ -116,23 +116,116 @@
 
 
     <!-- ESTADÍSTICAS -->
-    <div class="card stats-card">
-      <h3>Este mes</h3>
+    <!-- ESTADÍSTICAS -->
+    <section class="card stats-card">
+      <div class="stats-header">
+        <h3>
+          <i class="bi bi-bar-chart"></i>
+          Resumen del mes
+        </h3>
+
+        <span *ngIf="cargandoEstadisticas">
+          Actualizando...
+        </span>
+      </div>
+
+      <div class="stats-error" *ngIf="errorEstadisticas">
+
+        <i class="bi bi-exclamation-circle"></i>
+        {{ errorEstadisticas }}
+      </div>
+
       <div class="stats-grid">
         <div class="stat-item">
-          <span class="stat-valor green-text">{{ estadisticas.diasTrabajados }}</span>
-          <span class="stat-label">Días trabajados</span>
+          <span class="stat-valor green-text">
+            {{
+            cargandoEstadisticas
+            ? '—'
+            : estadisticas.diasTrabajados
+            }}
+          </span>
+
+          <span class="stat-label">
+            Días presentes
+          </span>
         </div>
+
         <div class="stat-item">
-          <span class="stat-valor green-text">{{ estadisticas.horasTotales }}h</span>
-          <span class="stat-label">Horas totales</span>
+          <span class="stat-valor hours-text">
+            {{
+            cargandoEstadisticas
+            ? '—'
+            : estadisticas.horasTotales
+            }}
+
+            <small *ngIf="!cargandoEstadisticas">
+              h
+            </small>
+          </span>
+
+          <span class="stat-label">
+            Horas trabajadas
+          </span>
         </div>
+
         <div class="stat-item">
-          <span class="stat-valor green-text">{{ estadisticas.ausencias }}</span>
-          <span class="stat-label">Ausencias</span>
+          <span class="stat-valor absent-text">
+            {{
+            cargandoEstadisticas
+            ? '—'
+            : estadisticas.ausencias
+            }}
+          </span>
+
+          <span class="stat-label">
+            Ausencias
+          </span>
+        </div>
+
+        <div class="stat-item">
+          <span class="stat-valor late-text">
+            {{
+            cargandoEstadisticas
+            ? '—'
+            : estadisticas.tardanzas
+            }}
+          </span>
+
+          <span class="stat-label">
+            Tardanzas
+          </span>
+        </div>
+
+        <div class="stat-item">
+          <span class="stat-valor percentage-text">
+            {{
+            cargandoEstadisticas
+            ? '—'
+            : estadisticas.porcentajeAsistencia
+            }}
+
+            <small *ngIf="!cargandoEstadisticas">
+              %
+            </small>
+          </span>
+
+          <span class="stat-label">
+            Asistencia
+          </span>
+        </div>
+
+        <div class="stat-item">
+          <span class="stat-valor incomplete-text">
+            {{
+            cargandoEstadisticas
+            ? '—'
+            : estadisticas.jornadasIncompletas
+            }}
+          </span>
+
+          <span class="stat-label">
+            Jornadas incompletas
+          </span>
         </div>
       </div>
-    </div>
-
-  </main>
-</div>
+    </section>
