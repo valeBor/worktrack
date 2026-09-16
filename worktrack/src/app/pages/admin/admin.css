@@ -1,5 +1,3 @@
-/* administracion.css */
-
 * {
   margin: 0;
   padding: 0;
@@ -12,82 +10,25 @@
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* CONTENIDO */
-
 .dashboard-content {
   max-width: 600px;
   margin: 0 auto;
   padding: 16px;
-
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-/* CARD GENERAL */
-
 .card {
-  background: white;
-  border-radius: 24px;
   padding: 30px;
-  box-shadow: 0 5px 18px rgba(0,0,0,0.08);
   border: 1px solid var(--color-border);
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.08);
 }
 
-/* NOTIFICACIONES */
-
-.notification-card {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  color: white;
-}
-
-.card-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
-.card-header h2 {
-  font-size: 16px;
-  font-weight: 700;
-  flex: 1;
-}
-
-.pending-badge {
-  background-color: rgba(255,255,255,0.25);
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.notification-card ul {
-  list-style: none;
-  margin-bottom: 14px;
-}
-
-.notification-card li {
-  font-size: 13px;
-  margin-bottom: 5px;
-  opacity: 0.95;
-}
-
-.primary-btn {
-  background: white;
-  color: var(--color-primary);
-  border: none;
-  padding: 8px 18px;
-  border-radius: 20px;
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-/* PERFIL */
-
-.profile-card {
+.profile-card,
+.perfil-card {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -97,45 +38,45 @@
 .avatar {
   width: 75px;
   height: 75px;
+  flex-shrink: 0;
   border-radius: 18px;
-
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  color: white;
-
+  color: #fff;
   display: flex;
-  justify-content: center;
   align-items: center;
-
+  justify-content: center;
   font-size: 24px;
   font-weight: bold;
-  flex-shrink: 0;
 }
 
-.profile-info h2 {
-  font-size: 16px;
-  color: #1a1a2e;
+.profile-info,
+.perfil-info {
+  min-width: 0;
+}
+
+.profile-info h2,
+.perfil-info h2 {
   margin-bottom: 8px;
+  color: #1a1a2e;
+  font-size: 16px;
 }
 
-.profile-info p {
-  font-size: 13px;
-  color: #64748b;
+.profile-info p,
+.perfil-info p {
   margin-bottom: 4px;
+  color: #64748b;
+  font-size: 13px;
+  overflow-wrap: anywhere;
 }
-
-/* BOTONES ADMIN */
 
 .admin-panel {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  color: white;
-
-  border-radius: 24px;
   padding: 18px 16px;
-
+  border-radius: 24px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: #fff;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-
+  justify-content: space-between;
   cursor: pointer;
   transition: transform 0.3s, opacity 0.2s;
 }
@@ -150,9 +91,9 @@
 }
 
 .admin-panel p {
-  font-size: 12px;
   margin-top: 4px;
-  color: rgba(255,255,255,0.85);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 12px;
 }
 
 .arrow {
@@ -160,47 +101,7 @@
   opacity: 0.75;
 }
 
-/* RESUMEN */
-
-.summary-card h3 {
-  font-size: 14px;
-  color: #333;
-  margin-bottom: 16px;
-}
-
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  text-align: center;
-  gap: 8px;
-}
-
-.summary-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.summary-number {
-  font-size: 42px;
-  font-weight: 800;
-  display: block;
-  margin-bottom: 10px;
-}
-
-.summary-label {
-  font-size: 13px;
-  color: #64748b;
-}
-
-.purple-text {
-  color: var(--color-primary);
-}
-
-/* RESPONSIVE */
-
 @media (max-width: 480px) {
-
   .dashboard-content {
     padding: 14px;
   }
@@ -209,7 +110,9 @@
     padding: 22px;
   }
 
-  .profile-card {
+  .profile-card,
+  .perfil-card {
+    gap: 18px;
     align-items: flex-start;
   }
 
@@ -217,14 +120,6 @@
     width: 62px;
     height: 62px;
     font-size: 20px;
-  }
-
-  .summary-number {
-    font-size: 34px;
-  }
-
-  .summary-label {
-    font-size: 11px;
   }
 
   .admin-panel {

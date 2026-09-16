@@ -1,24 +1,24 @@
 <div class="page-wrapper">
-
-  <app-header [mostrarVolver]="true">
-  </app-header>
+  <app-header [mostrarVolver]="true"></app-header>
 
   <main class="content">
-
-    <!-- ACCIONES -->
     <div class="acciones-grid">
-      <button class="accion-btn green" (click)="escanearQR()">
+      <button
+        type="button"
+        class="accion-btn green"
+        [disabled]="cargandoHorario || cargandoAsistencia || !horarioHoy || !asistenciaHoy || asistenciaHoy.jornadaCompletada"
+        (click)="escanearQR()">
         <div class="accion-content">
           <span class="accion-icon"><i class="bi bi-qr-code"></i></span>
           <div>
             <div class="accion-title">Escanear QR</div>
-            <div class="accion-sub">Marcar entrada</div>
+            <div class="accion-sub">{{ subtituloQR }}</div>
           </div>
         </div>
         <span class="accion-arrow">›</span>
       </button>
 
-      <button class="accion-btn blue" (click)="verHistorial()">
+      <button type="button" class="accion-btn blue" (click)="verHistorial()">
         <div class="accion-content">
           <span class="accion-icon"><i class="bi bi-clock-history"></i></span>
           <div>
@@ -30,7 +30,7 @@
       </button>
     </div>
 
-    <button class="accion-btn purple full-width" (click)="gestionCronogramas()">
+    <button type="button" class="accion-btn purple full-width" (click)="gestionCronogramas()">
       <div class="accion-content">
         <span class="accion-icon"><i class="bi bi-people"></i></span>
         <div>
@@ -43,189 +43,120 @@
 
     <button type="button" class="accion-btn blue full-width" (click)="solicitarCambioHorario()">
       <div class="accion-content">
-        <span class="accion-icon">
-          <i class="bi bi-calendar2-week"></i>
-        </span>
-
+        <span class="accion-icon"><i class="bi bi-calendar2-week"></i></span>
         <div>
-          <div class="accion-title">
-            Cambio de horario
-          </div>
-
-          <div class="accion-sub">
-            Solicitar una modificación para un día
-          </div>
+          <div class="accion-title">Cambio de horario</div>
+          <div class="accion-sub">Solicitar una modificación para un día</div>
         </div>
       </div>
-
       <span class="accion-arrow">›</span>
     </button>
 
+    <app-alert-panel title="Mis alertas y del equipo"></app-alert-panel>
 
-
-    <!-- ALERTA -->
-    <div class="alert-card">
-      <div class="alert-header">
-        <span class="alert-icon">⚠</span>
-        <span class="alert-title">Alertas del equipo</span>
-        <span class="alert-count">{{ alertas.length }} nuevas</span>
-      </div>
-      <ul class="alert-list">
-        <li *ngFor="let alerta of alertas">• {{ alerta }}</li>
-      </ul>
-      <button class="btn-alertas" (click)="verAlertas()">Ver todas las alertas</button>
-    </div>
-
-    <!-- PERFIL -->
-    <div class="card perfil-card">
-      <div class="avatar">
-        {{ supervisor.iniciales }}
-      </div>
-
+    <section class="card perfil-card">
+      <div class="avatar">{{ supervisor.iniciales }}</div>
       <div class="perfil-info">
-
-        <h2>
-          {{ supervisor.nombre }} {{ supervisor.apellido }}
-        </h2>
-
-        <p>
-          ✉ {{ supervisor.email }}
-        </p>
-
-        <p>
-          👤 {{ supervisor.role }}
-        </p>
-
+        <h2>{{ supervisor.nombre }} {{ supervisor.apellido }}</h2>
+        <p><i class="bi bi-envelope"></i> {{ supervisor.email }}</p>
+        <p><i class="bi bi-person"></i> {{ supervisor.role | titlecase }}</p>
       </div>
-    </div>
+    </section>
 
-    <!-- ESTADO HOY -->
-    <div class="card estado-card">
-      <h3>📅 Estado de hoy</h3>
+    <section class="card estado-card" *ngIf="cargandoHorario || cargandoAsistencia">
+      <h3><i class="bi bi-calendar3"></i> Estado de hoy</h3>
+      <p>Consultando la jornada de hoy...</p>
+    </section>
+
+    <section class="card estado-card" *ngIf="!cargandoHorario && !cargandoAsistencia && (errorHorario || errorAsistencia)">
+      <h3><i class="bi bi-exclamation-circle"></i> Estado de hoy</h3>
+      <p *ngIf="errorHorario">{{ errorHorario }}</p>
+      <p *ngIf="errorAsistencia">{{ errorAsistencia }}</p>
+    </section>
+
+    <section
+      class="card estado-card"
+      *ngIf="!cargandoHorario && !cargandoAsistencia && !errorHorario && !errorAsistencia && !horarioHoy">
+      <h3><i class="bi bi-calendar-x"></i> Sin jornada programada</h3>
+      <p>No tenés un horario asignado para el día de hoy.</p>
+    </section>
+
+    <section
+      class="card estado-card"
+      *ngIf="!cargandoHorario && !cargandoAsistencia && !errorHorario && !errorAsistencia && horarioHoy">
+      <h3><i class="bi bi-calendar3"></i> Estado de hoy</h3>
+
       <div class="estado-grid">
         <div class="estado-item">
-          <span class="estado-label">⊗ Entrada</span>
-          <span class="estado-valor">{{ estadoHoy.entrada }}</span>
+          <span class="estado-label">Horario de entrada</span>
+          <span class="estado-valor">{{ horarioEntrada }}</span>
         </div>
         <div class="estado-item">
-          <span class="estado-label">⊗ Salida</span>
-          <span class="estado-valor">{{ estadoHoy.salida }}</span>
+          <span class="estado-label">Horario de salida</span>
+          <span class="estado-valor">{{ horarioSalida }}</span>
+        </div>
+        <div class="estado-item">
+          <span class="estado-label">Entrada registrada</span>
+          <span class="estado-valor">{{ entradaRegistrada }}</span>
+        </div>
+        <div class="estado-item">
+          <span class="estado-label">Salida registrada</span>
+          <span class="estado-valor">{{ salidaRegistrada }}</span>
+        </div>
+        <div class="estado-item">
+          <span class="estado-label">Modalidad</span>
+          <span class="estado-valor">{{ horarioHoy.modalidad }}</span>
+        </div>
+        <div class="estado-item">
+          <span class="estado-label">Estado</span>
+          <span class="estado-valor">{{ asistenciaHoy?.asistencia?.estado || 'Sin registro' }}</span>
         </div>
       </div>
-    </div>
+    </section>
 
-
-    <!-- ESTADÍSTICAS -->
-    <!-- ESTADÍSTICAS -->
     <section class="card stats-card">
       <div class="stats-header">
-        <h3>
-          <i class="bi bi-bar-chart"></i>
-          Resumen del mes
-        </h3>
-
-        <span *ngIf="cargandoEstadisticas">
-          Actualizando...
-        </span>
+        <h3><i class="bi bi-bar-chart"></i> Resumen del mes</h3>
+        <span *ngIf="cargandoEstadisticas">Actualizando...</span>
       </div>
 
       <div class="stats-error" *ngIf="errorEstadisticas">
-
         <i class="bi bi-exclamation-circle"></i>
         {{ errorEstadisticas }}
       </div>
 
-      <div class="stats-grid">
+      <div class="stats-grid" *ngIf="!errorEstadisticas">
         <div class="stat-item">
-          <span class="stat-valor green-text">
-            {{
-            cargandoEstadisticas
-            ? '—'
-            : estadisticas.diasTrabajados
-            }}
-          </span>
-
-          <span class="stat-label">
-            Días presentes
-          </span>
+          <span class="stat-valor green-text">{{ cargandoEstadisticas ? '—' : estadisticas.diasTrabajados }}</span>
+          <span class="stat-label">Días presentes</span>
         </div>
-
         <div class="stat-item">
           <span class="stat-valor hours-text">
-            {{
-            cargandoEstadisticas
-            ? '—'
-            : estadisticas.horasTotales
-            }}
-
-            <small *ngIf="!cargandoEstadisticas">
-              h
-            </small>
+            {{ cargandoEstadisticas ? '—' : estadisticas.horasTotales }}
+            <small *ngIf="!cargandoEstadisticas">h</small>
           </span>
-
-          <span class="stat-label">
-            Horas trabajadas
-          </span>
+          <span class="stat-label">Horas trabajadas</span>
         </div>
-
         <div class="stat-item">
-          <span class="stat-valor absent-text">
-            {{
-            cargandoEstadisticas
-            ? '—'
-            : estadisticas.ausencias
-            }}
-          </span>
-
-          <span class="stat-label">
-            Ausencias
-          </span>
+          <span class="stat-valor absent-text">{{ cargandoEstadisticas ? '—' : estadisticas.ausencias }}</span>
+          <span class="stat-label">Ausencias</span>
         </div>
-
         <div class="stat-item">
-          <span class="stat-valor late-text">
-            {{
-            cargandoEstadisticas
-            ? '—'
-            : estadisticas.tardanzas
-            }}
-          </span>
-
-          <span class="stat-label">
-            Tardanzas
-          </span>
+          <span class="stat-valor late-text">{{ cargandoEstadisticas ? '—' : estadisticas.tardanzas }}</span>
+          <span class="stat-label">Tardanzas</span>
         </div>
-
         <div class="stat-item">
           <span class="stat-valor percentage-text">
-            {{
-            cargandoEstadisticas
-            ? '—'
-            : estadisticas.porcentajeAsistencia
-            }}
-
-            <small *ngIf="!cargandoEstadisticas">
-              %
-            </small>
+            {{ cargandoEstadisticas ? '—' : estadisticas.porcentajeAsistencia }}
+            <small *ngIf="!cargandoEstadisticas">%</small>
           </span>
-
-          <span class="stat-label">
-            Asistencia
-          </span>
+          <span class="stat-label">Asistencia</span>
         </div>
-
         <div class="stat-item">
-          <span class="stat-valor incomplete-text">
-            {{
-            cargandoEstadisticas
-            ? '—'
-            : estadisticas.jornadasIncompletas
-            }}
-          </span>
-
-          <span class="stat-label">
-            Jornadas incompletas
-          </span>
+          <span class="stat-valor incomplete-text">{{ cargandoEstadisticas ? '—' : estadisticas.jornadasIncompletas }}</span>
+          <span class="stat-label">Jornadas incompletas</span>
         </div>
       </div>
     </section>
+  </main>
+</div>

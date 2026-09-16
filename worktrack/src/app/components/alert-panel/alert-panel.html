@@ -1,0 +1,103 @@
+<section class="alert-card" aria-label="Alertas de asistencia">
+  <div class="alert-header">
+    <i class="bi bi-exclamation-triangle alert-icon" aria-hidden="true"></i>
+    <h2 class="alert-title">{{ title }}</h2>
+    @if (!loading() && !error()) {
+      <span class="alert-count">
+        {{ total() }} {{ total() === 1 ? 'activa' : 'activas' }}
+      </span>
+    }
+  </div>
+
+  @if (loading()) {
+    <p class="alert-state">Consultando alertas...</p>
+  } @else if (error()) {
+    <div class="alert-state">
+      <p>{{ error() }}</p>
+      <button type="button" class="alert-button" (click)="loadPreview()">
+        Reintentar
+      </button>
+    </div>
+  } @else if (total() === 0) {
+    <p class="alert-state">
+      <i class="bi bi-check-circle" aria-hidden="true"></i>
+      No hay alertas activas.
+    </p>
+  } @else {
+    <ul class="alert-list">
+      @for (alert of preview(); track alert.id) {
+        <li>
+          <strong>{{ alert.titulo }}</strong>
+          <span>{{ alert.mensaje }}</span>
+          <small>{{ formatDate(alert.fecha) }}</small>
+        </li>
+      }
+    </ul>
+
+    <div class="alert-actions">
+      <button type="button" class="alert-button" (click)="openAll()">
+        Ver todas las alertas
+      </button>
+      <button type="button" class="refresh-button" (click)="loadPreview()">
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+        Actualizar
+      </button>
+    </div>
+  }
+</section>
+
+<app-modal
+  [visible]="modalOpen()"
+  [titulo]="title"
+  [tipo]="'warning'"
+  [textoConfirmar]="'Cerrar'"
+  [mostrarCancelar]="false"
+  (confirmar)="closeAll()"
+  (cancelar)="closeAll()"
+>
+  @if (modalLoading()) {
+    <p class="modal-state">Consultando alertas...</p>
+  } @else if (modalError()) {
+    <div class="modal-state">
+      <p>{{ modalError() }}</p>
+      <button type="button" class="retry-button" (click)="loadPage(currentPage())">
+        Reintentar
+      </button>
+    </div>
+  } @else {
+    <ul class="modal-alert-list">
+      @for (alert of modalAlerts(); track alert.id) {
+        <li>
+          <div class="modal-alert-heading">
+            <strong>{{ alert.titulo }}</strong>
+            <span [class.high]="alert.severidad === 'ALTA'">
+              {{ alert.severidad }}
+            </span>
+          </div>
+          <p>{{ alert.mensaje }}</p>
+          <small>{{ formatDate(alert.fecha) }}</small>
+        </li>
+      }
+    </ul>
+
+    @if (totalPages() > 1) {
+      <div class="pagination">
+        <button
+          type="button"
+          [disabled]="currentPage() === 1"
+          (click)="loadPage(currentPage() - 1)"
+        >
+          Anterior
+        </button>
+        <span>Página {{ currentPage() }} de {{ totalPages() }}</span>
+        <button
+          type="button"
+          [disabled]="currentPage() === totalPages()"
+          (click)="loadPage(currentPage() + 1)"
+        >
+          Siguiente
+        </button>
+      </div>
+    }
+  }
+</app-modal>

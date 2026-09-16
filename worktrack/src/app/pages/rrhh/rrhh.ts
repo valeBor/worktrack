@@ -1,13 +1,14 @@
-import {Component,OnInit} from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {Component, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
 import {Router, RouterModule} from '@angular/router';
-import { Header } from '../../components/header/header';
-import { AuthService } from '../../services/auth.service';
+import {Header} from '../../components/header/header';
+import {AlertPanel} from '../../components/alert-panel/alert-panel';
+import {AuthService} from '../../services/auth.service';
 
 @Component({
   selector: 'app-rrhh',
   standalone: true,
-  imports: [CommonModule,RouterModule, Header ],
+  imports: [CommonModule, RouterModule, Header, AlertPanel],
   templateUrl: './rrhh.html',
   styleUrl: './rrhh.css'
 })
@@ -27,7 +28,6 @@ export class Rrhh implements OnInit {
 
   ngOnInit(): void {
     const user = this.auth.getUser();
-
     if (!user) {
       this.router.navigate(['/login']);
       return;
@@ -38,8 +38,7 @@ export class Rrhh implements OnInit {
       apellido: user.apellido,
       email: user.email,
       role: user.role,
-      iniciales:
-        user.nombre.charAt(0).toUpperCase() +
+      iniciales: user.nombre.charAt(0).toUpperCase() +
         user.apellido.charAt(0).toUpperCase()
     };
   }

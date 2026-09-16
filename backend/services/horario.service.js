@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const horarioModel = require('../models/horario.model');
+const notificacionService = require('./notificacion.service');
 const {obtenerFechaHoraActual, sumarDiasAFecha} = require('../utils/fecha.util');
 
 // ======================================================
@@ -448,6 +449,15 @@ exports.createHorario = async (
         fecha
       );
 
+    await notificacionService.notificarCronogramaAsignado(
+      connection,
+      {
+        usuario,
+        actor,
+        fechaVigencia: fecha
+      }
+    );
+
     await connection.commit();
 
     return {
@@ -512,6 +522,15 @@ exports.updateCronogramaUsuario = async (
         fecha
       );
 
+    await notificacionService.notificarCronogramaModificado(
+      connection,
+      {
+        usuario,
+        actor,
+        fechaVigencia: fecha
+      }
+    );
+
     await connection.commit();
 
     return {
@@ -556,6 +575,7 @@ exports.deleteCronogramaUsuario = async (
   }
 
   const {fecha} = obtenerFechaHoraActual();
+  const fechaFin = sumarDiasAFecha(fecha, -1);
   const connection = await db.getConnection();
 
   try {
@@ -567,6 +587,15 @@ exports.deleteCronogramaUsuario = async (
       fecha
     );
 
+    await notificacionService.notificarCronogramaFinalizado(
+      connection,
+      {
+        usuario,
+        actor,
+        fechaVigencia: fechaFin
+      }
+    );
+
     await connection.commit();
 
     return {
@@ -574,8 +603,7 @@ exports.deleteCronogramaUsuario = async (
       cantidad:
         cierre.cerrados +
         cierre.eliminados,
-      vigente_hasta:
-        sumarDiasAFecha(fecha, -1)
+      vigente_hasta: fechaFin
     };
   } catch (error) {
     await connection.rollback();
