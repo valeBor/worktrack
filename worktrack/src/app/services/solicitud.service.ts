@@ -1,150 +1,120 @@
-import {Injectable, inject} from '@angular/core';
-import {HttpClient,HttpParams} from '@angular/common/http';
-import { Observable} from 'rxjs';
-import {SolicitudCambioHorario, NuevaSolicitudCambioHorario, HorarioActualFecha,
-  CrearSolicitudResponse, ResolverSolicitudRequest, ResolverSolicitudResponse,
-  NuevaSolicitudJustificativo, CrearJustificativoResponse} from '../models/solicitud.model';
+import {inject, Injectable} from '@angular/core';
+import {HttpClient, HttpParams, HttpResponse} from '@angular/common/http';
+import {Observable} from 'rxjs';
 import {environment} from '../../environments/environment';
+import {
+  CrearJustificativoResponse,
+  CrearSolicitudResponse,
+  HorarioActualFecha,
+  NuevaSolicitudCambioHorario,
+  NuevaSolicitudJustificativo,
+  ResolverSolicitudRequest,
+  ResolverSolicitudResponse,
+  SolicitudCambioHorario
+} from '../models/solicitud.model';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({providedIn: 'root'})
 export class SolicitudService {
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = `${environment.apiUrl}/solicitudes`;
 
-  private http =
-    inject(HttpClient);
-
-
-  private apiUrl =
-  `${environment.apiUrl}/solicitudes`;
-
-  // ====================================================
-  // OBTENER MIS SOLICITUDES
-  // ====================================================
-
-  getMisSolicitudes():
-    Observable<SolicitudCambioHorario[]> {
-
-    return this.http.get<
-      SolicitudCambioHorario[]
-    >(
+  getMisSolicitudes(): Observable<SolicitudCambioHorario[]> {
+    return this.http.get<SolicitudCambioHorario[]>(
       `${this.apiUrl}/mias`
     );
-
   }
 
+  getMiHorarioParaFecha(fecha: string): Observable<HorarioActualFecha> {
+    const params = new HttpParams().set('fecha', fecha);
 
-  // ====================================================
-  // OBTENER MI HORARIO PARA UNA FECHA
-  // ====================================================
-
-  getMiHorarioParaFecha(
-    fecha: string
-  ): Observable<HorarioActualFecha> {
-
-    const params =
-      new HttpParams().set(
-        'fecha',
-        fecha
-      );
-
-
-    return this.http.get<
-      HorarioActualFecha
-    >(
+    return this.http.get<HorarioActualFecha>(
       `${this.apiUrl}/horario-fecha`,
-      {
-        params
-      }
+      {params}
     );
-
   }
-
-
-  // ====================================================
-  // CREAR SOLICITUD
-  // ====================================================
 
   createSolicitud(
-    solicitud:
-      NuevaSolicitudCambioHorario
+    solicitud: NuevaSolicitudCambioHorario
   ): Observable<CrearSolicitudResponse> {
-
-    return this.http.post<
-      CrearSolicitudResponse
-    >(
+    return this.http.post<CrearSolicitudResponse>(
       this.apiUrl,
       solicitud
     );
-
   }
 
-
-  // ====================================================
-  // OBTENER SOLICITUDES PENDIENTES
-  // ====================================================
-
-  getSolicitudesPendientes():
-    Observable<SolicitudCambioHorario[]> {
-
-    return this.http.get<
-      SolicitudCambioHorario[]
-    >(
+  getSolicitudesPendientes(): Observable<SolicitudCambioHorario[]> {
+    return this.http.get<SolicitudCambioHorario[]>(
       `${this.apiUrl}/pendientes`
     );
-
   }
 
-
-  // ====================================================
-  // APROBAR O RECHAZAR SOLICITUD
-  // ====================================================
+  getSolicitudesGestionables(): Observable<SolicitudCambioHorario[]> {
+    return this.http.get<SolicitudCambioHorario[]>(
+      `${this.apiUrl}/gestionables`
+    );
+  }
 
   resolveSolicitud(
     solicitudId: number,
     datos: ResolverSolicitudRequest
   ): Observable<ResolverSolicitudResponse> {
-
-    return this.http.patch<
-      ResolverSolicitudResponse
-    >(
+    return this.http.patch<ResolverSolicitudResponse>(
       `${this.apiUrl}/${solicitudId}/resolver`,
       datos
     );
-
   }
-
-  getSolicitudesGestionables():
-  Observable<SolicitudCambioHorario[]> {
-
-  return this.http.get<SolicitudCambioHorario[]>(
-    `${this.apiUrl}/gestionables`
-  );
-}
-
- 
-  // CREAR JUSTIFICATIVO DE FALTA
-  
 
   createJustificativo(
     datos: NuevaSolicitudJustificativo,
     archivo: File | null
   ): Observable<CrearJustificativoResponse> {
-
     const formData = new FormData();
-    formData.append('fecha_inasistencia', datos.fecha_inasistencia);
-    formData.append('tipo_justificativo', datos.tipo_justificativo);
-    formData.append('descripcion', datos.descripcion);
+
+    formData.append(
+      'fecha_inasistencia',
+      datos.fecha_inasistencia
+    );
+
+    formData.append(
+      'tipo_justificativo',
+      datos.tipo_justificativo
+    );
+
+    formData.append(
+      'motivo',
+      datos.motivo
+    );
 
     if (archivo) {
-      formData.append('archivo', archivo);
+      formData.append(
+        'archivo',
+        archivo,
+        archivo.name
+      );
     }
 
     return this.http.post<CrearJustificativoResponse>(
       `${this.apiUrl}/justificativos`,
       formData
     );
-
   }
 
+  getArchivoJustificativo(
+    archivoId: number,
+    descargar = false
+  ): Observable<HttpResponse<Blob>> {
+    const params = new HttpParams().set(
+      'descargar',
+      String(descargar)
+    );
+
+    return this.http.get(
+      `${this.apiUrl}/archivos/${archivoId}`,
+      {
+        params,
+        observe: 'response',
+        responseType: 'blob'
+      }
+    );
+  }
 }

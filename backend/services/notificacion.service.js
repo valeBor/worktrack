@@ -1,16 +1,12 @@
-const notificacionModel = require(
-  '../models/notificacion.model'
-);
-const {
-  obtenerFechaHoraActual
-} = require('../utils/fecha.util');
+const notificacionModel = require('../models/notificacion.model');
+const { obtenerFechaHoraActual } = require('../utils/fecha.util');
 
 // ======================================================
 // CONSTANTES
 // ======================================================
 
 const MAXIMO_NOTIFICACIONES_USUARIO = 10;
-
+const TIPO_JUSTIFICACION_INASISTENCIA = 'JUSTIFICACION_INASISTENCIA';
 const ROLES_VALIDOS = [
   'admin',
   'rrhh',
@@ -67,7 +63,7 @@ function obtenerNombreCompleto(usuario) {
 }
 
 function obtenerFechaHoraTexto() {
-  const {fecha, hora} =
+  const { fecha, hora } =
     obtenerFechaHoraActual();
 
   return `${fecha} ${hora}`;
@@ -145,7 +141,7 @@ function validarBooleano(
     valor === 1 ||
     valor === '1' ||
     String(valor).toLowerCase() ===
-      'true'
+    'true'
   ) {
     return true;
   }
@@ -155,7 +151,7 @@ function validarBooleano(
     valor === 0 ||
     valor === '0' ||
     String(valor).toLowerCase() ===
-      'false'
+    'false'
   ) {
     return false;
   }
@@ -255,19 +251,19 @@ function validarDatosNotificacion(datos) {
   const entidadTipo =
     datos.entidad_tipo
       ? String(
-          datos.entidad_tipo
-        ).trim()
+        datos.entidad_tipo
+      ).trim()
       : null;
 
   const entidadId =
     datos.entidad_id === null ||
-    datos.entidad_id === undefined
+      datos.entidad_id === undefined
       ? null
       : validarId(
-          datos.entidad_id,
-          'entidad',
-          500
-        );
+        datos.entidad_id,
+        'entidad',
+        500
+      );
 
   if (
     Boolean(entidadTipo) !==
@@ -386,7 +382,7 @@ async function crearNotificaciones(
 exports.notificarSolicitudCreada =
   async (
     connection,
-       {
+    {
       solicitudId,
       solicitante,
       fechaSolicitada,
@@ -460,13 +456,15 @@ exports.notificarSolicitudCreada =
         tipo:
           TIPOS_NOTIFICACION
             .SOLICITUD_CREADA,
-               titulo:
-          tipo === 'JUSTIFICATIVO_FALTA'
-            ? 'Nuevo justificativo de falta'
+        titulo:
+          tipo ===
+            TIPO_JUSTIFICACION_INASISTENCIA
+            ? 'Nueva justificación de inasistencia'
             : 'Nueva solicitud de cambio',
         mensaje:
-          tipo === 'JUSTIFICATIVO_FALTA'
-            ? `${nombre} justificó una falta para el ${fechaSolicitada}.`
+          tipo ===
+            TIPO_JUSTIFICACION_INASISTENCIA
+            ? `${nombre} presentó una justificación de inasistencia para el ${fechaSolicitada}.`
             : `${nombre} solicitó un cambio de horario para el ${fechaSolicitada}.`,
         entidad_tipo:
           'SOLICITUD',
@@ -477,132 +475,128 @@ exports.notificarSolicitudCreada =
     );
   };
 
+
 // ======================================================
 // NOTIFICAR SOLICITUD RESUELTA
 // ======================================================
 
-exports.notificarSolicitudResuelta =
-  async (
-    connection,
-     {
-      solicitudId,
-      solicitante,
-      responsable,
-      estado,
-      fechaSolicitada,
-      resueltaEn,
-      tipo
-    }
-  ) => {
-    const solicitudIdValidado =
-      validarId(
-        solicitudId,
-        'solicitud',
-        500
-      );
+exports.notificarSolicitudResuelta = async (
+  connection,
+  {
+    solicitudId,
+    solicitante,
+    responsable,
+    estado,
+    fechaSolicitada,
+    resueltaEn,
+    tipo
+  }
+) => {
+  const solicitudIdValidado = validarId(
+    solicitudId,
+    'solicitud',
+    500
+  );
 
-    const solicitanteId =
-      validarId(
-        solicitante?.id,
-        'solicitante',
-        500
-      );
+  const solicitanteId = validarId(
+    solicitante?.id,
+    'solicitante',
+    500
+  );
 
-    const responsableId =
-      validarId(
-        responsable?.id,
-        'responsable',
-        500
-      );
+  const responsableId = validarId(
+    responsable?.id,
+    'responsable',
+    500
+  );
 
-    const estadoNormalizado =
-      String(estado || '')
-        .trim()
-        .toUpperCase();
+  const estadoNormalizado = String(estado || '')
+    .trim()
+    .toUpperCase();
 
-    if (
-      estadoNormalizado !==
-        'APROBADA' &&
-      estadoNormalizado !==
-        'RECHAZADA'
-    ) {
-      throw crearError(
-        'El estado de la solicitud es inválido.',
-        500
-      );
-    }
-
-    const fechaEvento =
-      resueltaEn ||
-      obtenerFechaHoraTexto();
-
-    await notificacionModel
-      .markEventAsRead(
-        connection,
-        {
-          tipo:
-            TIPOS_NOTIFICACION
-              .SOLICITUD_CREADA,
-          entidadTipo:
-            'SOLICITUD',
-          entidadId:
-            solicitudIdValidado,
-          fechaLectura:
-            fechaEvento
-        }
-      );
-
-    const aprobada =
-      estadoNormalizado ===
-      'APROBADA';
-
-    const responsableNombre =
-      obtenerNombreCompleto(
-        responsable
-      );
-
-    const detalleResponsable =
-      responsableNombre
-        ? ` por ${responsableNombre}`
-        : '';
-
-    return crearNotificaciones(
-      connection,
-      [
-        {
-          id: solicitanteId
-        }
-      ],
-      {
-        actor_id: responsableId,
-        tipo: aprobada
-          ? TIPOS_NOTIFICACION
-              .SOLICITUD_APROBADA
-          : TIPOS_NOTIFICACION
-              .SOLICITUD_RECHAZADA,
-            titulo: aprobada
-          ? 'Solicitud aprobada'
-          : 'Solicitud rechazada',
-        mensaje:
-          `Tu ${
-            tipo === 'JUSTIFICATIVO_FALTA'
-              ? 'justificativo de falta'
-              : 'solicitud de cambio'
-          } para el ${fechaSolicitada} fue ${
-            aprobada
-              ? 'aprobada'
-              : 'rechazada'
-          }${detalleResponsable}.`,
-        entidad_tipo:
-          'SOLICITUD',
-        entidad_id:
-          solicitudIdValidado,
-        creada_en:
-          fechaEvento
-      }
+  if (
+    estadoNormalizado !== 'APROBADA' &&
+    estadoNormalizado !== 'RECHAZADA'
+  ) {
+    throw crearError(
+      'El estado de la solicitud es inválido.',
+      500
     );
-  };
+  }
 
+  const tipoNormalizado = String(tipo || '')
+    .trim()
+    .toUpperCase();
+
+  const esJustificacion =
+    tipoNormalizado === TIPO_JUSTIFICACION_INASISTENCIA;
+
+  const aprobada = estadoNormalizado === 'APROBADA';
+  const fechaEvento = resueltaEn || obtenerFechaHoraTexto();
+
+  await notificacionModel.markEventAsRead(
+    connection,
+    {
+      tipo: TIPOS_NOTIFICACION.SOLICITUD_CREADA,
+      entidadTipo: 'SOLICITUD',
+      entidadId: solicitudIdValidado,
+      fechaLectura: fechaEvento
+    }
+  );
+
+  const responsableNombre = obtenerNombreCompleto(
+    responsable
+  );
+
+  const detalleResponsable = responsableNombre
+    ? ` por ${responsableNombre}`
+    : '';
+
+  let titulo;
+  let mensaje;
+
+  if (esJustificacion) {
+    titulo = aprobada
+      ? 'Justificación aprobada'
+      : 'Justificación rechazada';
+
+    mensaje =
+      `Tu justificación de inasistencia del ` +
+      `${fechaSolicitada} fue ` +
+      `${aprobada ? 'aprobada' : 'rechazada'}` +
+      `${detalleResponsable}.`;
+  } else {
+    titulo = aprobada
+      ? 'Solicitud aprobada'
+      : 'Solicitud rechazada';
+
+    mensaje =
+      `Tu solicitud de cambio para el ` +
+      `${fechaSolicitada} fue ` +
+      `${aprobada ? 'aprobada' : 'rechazada'}` +
+      `${detalleResponsable}.`;
+  }
+
+  return crearNotificaciones(
+    connection,
+    [
+      {
+        id: solicitanteId
+      }
+    ],
+    {
+      actor_id: responsableId,
+      tipo: aprobada
+        ? TIPOS_NOTIFICACION.SOLICITUD_APROBADA
+        : TIPOS_NOTIFICACION.SOLICITUD_RECHAZADA,
+      titulo,
+      mensaje,
+      entidad_tipo: 'SOLICITUD',
+      entidad_id: solicitudIdValidado,
+      creada_en: fechaEvento
+    }
+  );
+};
 // ======================================================
 // NOTIFICAR CRONOGRAMA
 // ======================================================
@@ -830,8 +824,8 @@ exports.obtenerNotificaciones =
       total_paginas:
         total > 0
           ? Math.ceil(
-              total / limite
-            )
+            total / limite
+          )
           : 0,
       total_no_leidas:
         totalNoLeidas,

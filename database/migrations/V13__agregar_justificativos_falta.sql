@@ -18,16 +18,27 @@ CREATE TABLE tipos_justificativo (
     creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (id),
-    UNIQUE KEY uq_tipos_justificativo_codigo (codigo),
+
+    UNIQUE KEY uq_tipos_justificativo_codigo (
+        codigo
+    ),
 
     CONSTRAINT chk_tipos_justificativo_requiere_archivo
-        CHECK (requiere_archivo IN (0, 1)),
+        CHECK (
+            requiere_archivo IN (0, 1)
+        ),
 
     CONSTRAINT chk_tipos_justificativo_activo
-        CHECK (activo IN (0, 1))
+        CHECK (
+            activo IN (0, 1)
+        )
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_general_ci;
+
+-- =====================================================
+-- TIPOS INICIALES
+-- =====================================================
 
 INSERT INTO tipos_justificativo (
     codigo,
@@ -100,13 +111,15 @@ ALTER TABLE solicitudes
 
 ALTER TABLE solicitudes
     ADD CONSTRAINT fk_solicitudes_tipo_justificativo
-        FOREIGN KEY (tipo_justificativo_id)
+        FOREIGN KEY (
+            tipo_justificativo_id
+        )
         REFERENCES tipos_justificativo(id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT;
 
 -- =====================================================
--- ÍNDICES PARA BÚSQUEDA Y CONTROL DE DUPLICADOS
+-- ÍNDICES PARA BÚSQUEDA
 -- =====================================================
 
 ALTER TABLE solicitudes
@@ -173,6 +186,7 @@ ALTER TABLE solicitudes
 -- =====================================================
 -- ARCHIVOS PRIVADOS ASOCIADOS A SOLICITUDES
 -- No se guardan URLs públicas
+-- Una solicitud puede tener como máximo un archivo
 -- =====================================================
 
 CREATE TABLE solicitud_archivos (
@@ -190,12 +204,12 @@ CREATE TABLE solicitud_archivos (
 
     PRIMARY KEY (id),
 
-    UNIQUE KEY uq_solicitud_archivos_storage_key (
-        storage_key
+    UNIQUE KEY uq_solicitud_archivos_solicitud (
+        solicitud_id
     ),
 
-    INDEX idx_solicitud_archivos_solicitud (
-        solicitud_id
+    UNIQUE KEY uq_solicitud_archivos_storage_key (
+        storage_key
     ),
 
     INDEX idx_solicitud_archivos_creado_por (
@@ -203,31 +217,65 @@ CREATE TABLE solicitud_archivos (
     ),
 
     CONSTRAINT fk_solicitud_archivos_solicitud
-        FOREIGN KEY (solicitud_id)
+        FOREIGN KEY (
+            solicitud_id
+        )
         REFERENCES solicitudes(id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
 
     CONSTRAINT fk_solicitud_archivos_creado_por
-        FOREIGN KEY (creado_por)
+        FOREIGN KEY (
+            creado_por
+        )
         REFERENCES usuarios(id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
 
+    CONSTRAINT chk_solicitud_archivos_provider
+        CHECK (
+            storage_provider IN (
+                'LOCAL',
+                'VERCEL_BLOB'
+            )
+        ),
+
     CONSTRAINT chk_solicitud_archivos_tamanio
         CHECK (
             tamanio_bytes > 0
-            AND tamanio_bytes <= 5242880
+            AND tamanio_bytes <= 4194304
         ),
 
     CONSTRAINT chk_solicitud_archivos_extension
         CHECK (
             extension IN (
                 'jpg',
-                'jpeg',
                 'png',
                 'pdf'
             )
+        ),
+
+    CONSTRAINT chk_solicitud_archivos_mime_extension
+        CHECK (
+            (
+                extension = 'pdf'
+                AND mime_type = 'application/pdf'
+            )
+            OR
+            (
+                extension = 'jpg'
+                AND mime_type = 'image/jpeg'
+            )
+            OR
+            (
+                extension = 'png'
+                AND mime_type = 'image/png'
+            )
+        ),
+
+    CONSTRAINT chk_solicitud_archivos_sha256
+        CHECK (
+            sha256 REGEXP '^[0-9a-f]{64}$'
         )
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
@@ -261,13 +309,17 @@ CREATE TABLE solicitud_archivo_accesos (
     ),
 
     CONSTRAINT fk_archivo_accesos_archivo
-        FOREIGN KEY (archivo_id)
+        FOREIGN KEY (
+            archivo_id
+        )
         REFERENCES solicitud_archivos(id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
 
     CONSTRAINT fk_archivo_accesos_usuario
-        FOREIGN KEY (usuario_id)
+        FOREIGN KEY (
+            usuario_id
+        )
         REFERENCES usuarios(id)
         ON UPDATE CASCADE
         ON DELETE RESTRICT
@@ -295,7 +347,9 @@ WHERE NOT EXISTS (
     WHERE nombre = 'VER_ARCHIVO_JUSTIFICATIVO'
 );
 
--- Empleado y Supervisor pueden presentar justificativos.
+-- =====================================================
+-- EMPLEADO Y SUPERVISOR PUEDEN PRESENTAR JUSTIFICACIONES
+-- =====================================================
 
 INSERT INTO rol_permiso (
     rol_id,
@@ -318,8 +372,10 @@ AND NOT EXISTS (
       AND rp.permiso_id = p.id
 );
 
--- Todos los roles podrán llegar a solicitar una descarga,
--- pero el backend controlará el alcance sobre cada archivo.
+-- =====================================================
+-- PERMISO GENERAL PARA SOLICITAR ACCESO AL ARCHIVO
+-- El service controla el alcance específico de cada usuario
+-- =====================================================
 
 INSERT INTO rol_permiso (
     rol_id,

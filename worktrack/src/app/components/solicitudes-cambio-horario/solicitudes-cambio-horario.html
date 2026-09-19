@@ -1,21 +1,8 @@
 <section class="solicitudes-panel">
-
-  <!-- ENCABEZADO -->
   <header class="panel-header">
     <div>
-      <h2>Solicitudes </h2>
-
-      <p *ngIf="rolActual === 'rrhh'">
-        Consultá y resolvé solicitudes de empleados y supervisores.
-      </p>
-
-      <p *ngIf="rolActual === 'supervisor'">
-        Consultá y resolvé solicitudes de empleados.
-      </p>
-
-      <p *ngIf="rolActual === 'admin'">
-        Consultá las solicitudes registradas.
-      </p>
+      <h2>Solicitudes y justificaciones</h2>
+      <p>{{ descripcionSeccion }}</p>
     </div>
 
     <button
@@ -23,42 +10,72 @@
       class="reload-btn"
       [disabled]="cargando"
       (click)="cargarSolicitudes()">
-      <i class="bi bi-arrow-clockwise"></i>
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
       Actualizar
     </button>
   </header>
 
-  <!-- ADMINISTRADOR: SOLO CONSULTA -->
-  <div
-    class="read-only-info"
-    *ngIf="rolActual === 'admin'">
-    <i class="bi bi-eye"></i>
+  <nav class="management-tabs" aria-label="Tipo de gestión">
+    <button
+      type="button"
+      class="management-tab"
+      [class.active]="vistaActiva === 'CAMBIO_HORARIO'"
+      (click)="seleccionarVista('CAMBIO_HORARIO')">
+      <i class="bi bi-clock-history" aria-hidden="true"></i>
+      <span>Cambios de horario</span>
+      <small>{{ cantidadCambiosHorario }}</small>
+    </button>
 
+    <button
+      type="button"
+      class="management-tab"
+      [class.active]="vistaActiva === 'JUSTIFICACION_INASISTENCIA'"
+      (click)="seleccionarVista('JUSTIFICACION_INASISTENCIA')">
+      <i class="bi bi-file-earmark-medical" aria-hidden="true"></i>
+      <span>Justificaciones de inasistencia</span>
+      <small>{{ cantidadJustificaciones }}</small>
+    </button>
+  </nav>
+
+  <div class="section-heading">
+    <div>
+      <span class="section-icon">
+        <i
+          class="bi"
+          [ngClass]="
+            vistaActiva === 'CAMBIO_HORARIO'
+              ? 'bi-clock-history'
+              : 'bi-file-earmark-check'
+          ">
+        </i>
+      </span>
+
+      <div>
+        <h3>{{ tituloSeccion }}</h3>
+        <p>{{ descripcionSeccion }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="read-only-info" *ngIf="rolActual === 'admin'">
+    <i class="bi bi-eye" aria-hidden="true"></i>
     <span>
-      El administrador puede consultar las solicitudes,
-      pero no aprobarlas ni rechazarlas.
+      El administrador puede consultar los registros, pero no aprobarlos
+      ni rechazarlos.
     </span>
   </div>
 
-  <!-- CARGANDO -->
-  <div
-    class="state-card"
-    *ngIf="cargando">
+  <div class="state-card" *ngIf="cargando">
     <div class="spinner"></div>
-    <p>Cargando solicitudes...</p>
+    <p>Cargando registros...</p>
   </div>
 
-  <!-- ERROR -->
   <div
     class="state-card error-state"
     *ngIf="!cargando && errorCarga">
-    <i class="bi bi-exclamation-circle"></i>
-
-    <h3>No fue posible cargar las solicitudes</h3>
-
-    <p>
-      Verificá que MariaDB y el backend estén funcionando.
-    </p>
+    <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+    <h3>No fue posible cargar los registros</h3>
+    <p>Verificá que MariaDB y el backend estén funcionando.</p>
 
     <button
       type="button"
@@ -68,45 +85,42 @@
     </button>
   </div>
 
-  <!-- SIN SOLICITUDES -->
   <div
     class="state-card"
     *ngIf="
       !cargando &&
       !errorCarga &&
-      solicitudes.length === 0
+      solicitudesVisibles.length === 0
     ">
-    <i class="bi bi-clipboard2-check"></i>
-
-    <h3>No hay solicitudes registradas</h3>
-
-    <p>
-      Las solicitudes aparecerán en esta sección.
-    </p>
+    <i
+      class="bi"
+      [ngClass]="
+        vistaActiva === 'CAMBIO_HORARIO'
+          ? 'bi-calendar2-check'
+          : 'bi-file-earmark-check'
+      ">
+    </i>
+    <h3>Sin registros</h3>
+    <p>{{ mensajeListaVacia }}</p>
   </div>
 
-  <!-- LISTADO -->
   <div
     class="solicitudes-list"
     *ngIf="
       !cargando &&
       !errorCarga &&
-      solicitudes.length > 0
+      solicitudesVisibles.length > 0
     ">
-
     <article
       class="solicitud-card"
-      [class.approved-card]="
-        solicitud.estado === 'APROBADA'
+      [class.justification-card]="
+        solicitud.tipo === 'JUSTIFICACION_INASISTENCIA'
       "
-      [class.rejected-card]="
-        solicitud.estado === 'RECHAZADA'
-      "
-      *ngFor="let solicitud of solicitudes">
+      [class.approved-card]="solicitud.estado === 'APROBADA'"
+      [class.rejected-card]="solicitud.estado === 'RECHAZADA'"
+      *ngFor="let solicitud of solicitudesVisibles">
 
-      <!-- CABECERA -->
       <div class="card-header">
-
         <div class="employee-avatar">
           {{ obtenerIniciales(solicitud) }}
         </div>
@@ -117,211 +131,215 @@
             {{ solicitud.usuario_apellido }}
           </h3>
 
-          <span>
-            {{ solicitud.usuario_email }}
-          </span>
+          <span>{{ solicitud.usuario_email }}</span>
 
           <small>
-            Enviada el
+            Presentada el
             {{ formatearFechaHora(solicitud.creada_en) }}
           </small>
         </div>
 
         <div class="card-badges">
-
-          <!-- ROL -->
-          <span class="role-badge">
-            {{
-              obtenerEtiquetaRol(
-                solicitud.usuario_role
-              )
-            }}
-          </span>
-
-          <!-- ESTADO -->
           <span
-            class="status-badge"
-            [class.approved]="
-              solicitud.estado === 'APROBADA'
-            "
-            [class.rejected]="
-              solicitud.estado === 'RECHAZADA'
+            class="type-badge"
+            [class.justification]="
+              solicitud.tipo === 'JUSTIFICACION_INASISTENCIA'
             ">
-
             <i
               class="bi"
               [ngClass]="
-                obtenerIconoEstado(
-                  solicitud.estado
-                )
+                solicitud.tipo === 'CAMBIO_HORARIO'
+                  ? 'bi-clock-history'
+                  : 'bi-file-earmark-medical'
               ">
             </i>
 
             {{
-              obtenerEtiquetaEstado(
-                solicitud.estado
-              )
+              solicitud.tipo === 'CAMBIO_HORARIO'
+                ? 'Cambio de horario'
+                : 'Justificación'
             }}
+          </span>
+
+          <span class="role-badge">
+            {{ obtenerEtiquetaRol(solicitud.usuario_role) }}
+          </span>
+
+          <span
+            class="status-badge"
+            [class.approved]="solicitud.estado === 'APROBADA'"
+            [class.rejected]="solicitud.estado === 'RECHAZADA'">
+            <i
+              class="bi"
+              [ngClass]="obtenerIconoEstado(solicitud.estado)">
+            </i>
+            {{ obtenerEtiquetaEstado(solicitud.estado) }}
           </span>
         </div>
       </div>
-<ng-container *ngIf="solicitud.tipo !== 'JUSTIFICATIVO_FALTA'">
-      <!-- FECHA SOLICITADA -->
-      <div class="date-row">
-        <i class="bi bi-calendar3"></i>
 
-        <span>Fecha solicitada:</span>
+      <!-- CAMBIO DE HORARIO -->
 
-        <strong>
-          {{
-            formatearFecha(
-              solicitud.fecha_solicitada
-            )
-          }}
-        </strong>
-      </div>
-
-      <!-- COMPARACIÓN DE HORARIOS -->
-      <div class="schedule-comparison">
-
-        <div class="schedule-box current">
-          <span>Horario actual</span>
-
+      <ng-container *ngIf="solicitud.tipo === 'CAMBIO_HORARIO'">
+        <div class="date-row">
+          <i class="bi bi-calendar3" aria-hidden="true"></i>
+          <span>Fecha solicitada:</span>
           <strong>
-            {{
-              formatearHora(
-                solicitud.hora_entrada_actual
-              )
-            }}
-            -
-            {{
-              formatearHora(
-                solicitud.hora_salida_actual
-              )
-            }}
+            {{ formatearFecha(solicitud.fecha_solicitada) }}
           </strong>
+        </div>
 
-          <small>
+        <div class="schedule-comparison">
+          <div class="schedule-box current">
+            <span>Horario actual</span>
+            <strong>
+              {{ formatearHora(solicitud.hora_entrada_actual) }}
+              –
+              {{ formatearHora(solicitud.hora_salida_actual) }}
+            </strong>
+            <small>{{ solicitud.modalidad_actual }}</small>
+          </div>
+
+          <i
+            class="bi bi-arrow-right comparison-arrow"
+            aria-hidden="true">
+          </i>
+
+          <div class="schedule-box requested">
+            <span>Horario solicitado</span>
+            <strong>
+              {{ formatearHora(solicitud.hora_entrada_solicitada) }}
+              –
+              {{ formatearHora(solicitud.hora_salida_solicitada) }}
+            </strong>
+            <small>{{ solicitud.modalidad_solicitada }}</small>
+          </div>
+        </div>
+
+        <div class="reason-box">
+          <span>Motivo de la solicitud</span>
+          <p>{{ solicitud.motivo }}</p>
+        </div>
+
+        <div class="request-details">
+          <span>
+            <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
             {{ solicitud.modalidad_actual }}
-          </small>
-        </div>
-
-        <div class="comparison-arrow">
-          <i class="bi bi-arrow-right"></i>
-        </div>
-
-        <div class="schedule-box requested">
-          <span>Horario solicitado</span>
-
-          <strong>
-            {{
-              formatearHora(
-                solicitud.hora_entrada_solicitada
-              )
-            }}
-            -
-            {{
-              formatearHora(
-                solicitud.hora_salida_solicitada
-              )
-            }}
-          </strong>
-
-          <small>
+            →
             {{ solicitud.modalidad_solicitada }}
-          </small>
+          </span>
+
+          <span>
+            <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+            Tolerancia:
+            {{ solicitud.tolerancia_actual }} min
+          </span>
         </div>
-      </div>
+      </ng-container>
 
-      <!-- MOTIVO -->
-      <div class="reason-box">
-        <span>Motivo de la solicitud</span>
+      <!-- JUSTIFICACIÓN DE INASISTENCIA -->
 
-        <p>{{ solicitud.motivo }}</p>
-      </div>
+      <ng-container
+        *ngIf="
+          solicitud.tipo === 'JUSTIFICACION_INASISTENCIA'
+        ">
+        <div class="justification-summary">
+          <div>
+            <span>Fecha de la inasistencia</span>
+            <strong>
+              {{ formatearFecha(solicitud.fecha_inasistencia) }}
+            </strong>
+          </div>
 
-      <!-- DETALLES -->
-      <div class="request-details">
+          <div>
+            <span>Tipo de justificación</span>
+            <strong>
+              {{
+                obtenerEtiquetaTipoJustificativo(
+                  solicitud.tipo_justificativo
+                )
+              }}
+            </strong>
+          </div>
+        </div>
 
-        <span>
-          <i class="bi bi-arrow-left-right"></i>
+        <div class="reason-box">
+          <span>Motivo de la justificación</span>
+          <p>{{ solicitud.motivo }}</p>
+        </div>
 
-          {{ solicitud.modalidad_actual }}
-          →
-          {{ solicitud.modalidad_solicitada }}
-        </span>
+        <div
+          class="justification-file"
+          *ngIf="solicitud.archivo_id">
+          <div class="justification-file-info">
+            <i
+              class="bi bi-file-earmark-lock"
+              aria-hidden="true">
+            </i>
 
-        <span>
-          <i class="bi bi-hourglass-split"></i>
+            <div>
+              <strong>
+                {{
+                  solicitud.archivo_nombre_original ||
+                  'Documento adjunto'
+                }}
+              </strong>
 
-          Tolerancia:
-          {{ solicitud.tolerancia_actual }}
-          min
-        </span>
-      </div>
-</ng-container>
+              <small *ngIf="solicitud.archivo_tamanio_bytes">
+                {{
+                  formatearTamanio(
+                    solicitud.archivo_tamanio_bytes
+                  )
+                }}
+              </small>
+            </div>
+          </div>
 
-<ng-container *ngIf="solicitud.tipo === 'JUSTIFICATIVO_FALTA'">
-  <!-- FECHA DE INASISTENCIA -->
-  <div class="date-row">
-    <i class="bi bi-calendar3"></i>
-    <span>Fecha de la inasistencia:</span>
-    <strong>
-      {{
-        formatearFecha(
-          solicitud.fecha_inasistencia || ''
-        )
-      }}
-    </strong>
-  </div>
+          <div class="justification-file-actions">
+            <button
+              type="button"
+              class="view-file-btn"
+              [disabled]="
+                procesandoArchivoId === solicitud.archivo_id
+              "
+              (click)="verArchivo(solicitud)">
+              <i class="bi bi-eye" aria-hidden="true"></i>
+              Ver
+            </button>
 
-  <!-- TIPO DE JUSTIFICATIVO -->
-  <div class="request-details">
-    <span>
-      <i class="bi bi-file-medical"></i>
-      {{
-        obtenerEtiquetaTipoJustificativo(
-          solicitud.tipo_justificativo!
-        )
-      }}
-    </span>
-  </div>
+            <button
+              type="button"
+              class="download-file-btn"
+              [disabled]="
+                procesandoArchivoId === solicitud.archivo_id
+              "
+              (click)="descargarArchivo(solicitud)">
+              <i class="bi bi-download" aria-hidden="true"></i>
+              Descargar
+            </button>
+          </div>
+        </div>
 
-  <!-- DESCRIPCIÓN -->
-  <div class="reason-box">
-    <span>Descripción</span>
-    <p>{{ solicitud.descripcion }}</p>
-  </div>
+        <div
+          class="no-file-notice"
+          *ngIf="!solicitud.archivo_id">
+          <i class="bi bi-paperclip" aria-hidden="true"></i>
+          Sin documento adjunto.
+        </div>
+      </ng-container>
 
-  <!-- ARCHIVO ADJUNTO -->
-  <div class="reason-box" *ngIf="solicitud.archivo_url">
-    <span>Comprobante</span>
-    <p><a [href]="obtenerUrlArchivo(solicitud.archivo_url)" target="_blank" rel="noopener">Ver archivo adjunto</a></p>
-  </div>
-</ng-container>
+      <!-- RESOLUCIÓN -->
 
-      <!-- SOLICITUD YA RESUELTA -->
       <div
         class="resolution-box"
-        *ngIf="
-          solicitud.estado !== 'PENDIENTE'
-        ">
-
+        *ngIf="solicitud.estado !== 'PENDIENTE'">
         <div class="resolution-header">
           <strong>
-            {{
-              obtenerEtiquetaEstado(
-                solicitud.estado
-              )
-            }}
+            {{ obtenerEtiquetaEstado(solicitud.estado) }}
           </strong>
 
           <span>
-            {{
-              formatearFechaHora(
-                solicitud.resuelta_en
-              )
-            }}
+            {{ formatearFechaHora(solicitud.resuelta_en) }}
           </span>
         </div>
 
@@ -338,42 +356,29 @@
         </p>
 
         <p *ngIf="solicitud.respuesta">
-          Respuesta:
-          {{ solicitud.respuesta }}
+          Respuesta: {{ solicitud.respuesta }}
         </p>
       </div>
 
-      <!-- ACCIONES: SOLAMENTE PENDIENTES -->
       <div
         class="card-actions"
         *ngIf="
           puedeResolver &&
           solicitud.estado === 'PENDIENTE'
         ">
-
         <button
           type="button"
           class="reject-btn"
-          (click)="
-            abrirModal(
-              solicitud,
-              'RECHAZADA'
-            )
-          ">
-          <i class="bi bi-x-lg"></i>
+          (click)="abrirModal(solicitud, 'RECHAZADA')">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
           Rechazar
         </button>
 
         <button
           type="button"
           class="approve-btn"
-          (click)="
-            abrirModal(
-              solicitud,
-              'APROBADA'
-            )
-          ">
-          <i class="bi bi-check-lg"></i>
+          (click)="abrirModal(solicitud, 'APROBADA')">
+          <i class="bi bi-check-lg" aria-hidden="true"></i>
           Aprobar
         </button>
       </div>
@@ -381,7 +386,8 @@
   </div>
 </section>
 
-<!-- MODAL REUTILIZABLE -->
+<!-- MODAL DE RESOLUCIÓN -->
+
 <app-modal
   [visible]="mostrarModal"
   [titulo]="tituloModal"
@@ -398,94 +404,115 @@
     class="modal-content"
     *ngIf="solicitudSeleccionada">
 
-    <!-- COMPARACIÓN DENTRO DEL MODAL -->
-     <ng-container *ngIf="solicitudSeleccionada.tipo !== 'JUSTIFICATIVO_FALTA'">
-    <div class="modal-schedule">
-
+    <div
+      class="modal-schedule"
+      *ngIf="
+        solicitudSeleccionada.tipo === 'CAMBIO_HORARIO'
+      ">
       <div>
         <span>Horario actual</span>
-
         <strong>
           {{
             formatearHora(
-              solicitudSeleccionada
-                .hora_entrada_actual
+              solicitudSeleccionada.hora_entrada_actual
             )
           }}
-          -
+          –
           {{
             formatearHora(
-              solicitudSeleccionada
-                .hora_salida_actual
+              solicitudSeleccionada.hora_salida_actual
             )
           }}
         </strong>
-
-        <small>
-          {{
-            solicitudSeleccionada
-              .modalidad_actual
-          }}
-        </small>
+        <small>{{ solicitudSeleccionada.modalidad_actual }}</small>
       </div>
 
-      <i class="bi bi-arrow-right"></i>
+      <i class="bi bi-arrow-right" aria-hidden="true"></i>
 
       <div>
         <span>Horario solicitado</span>
-
         <strong>
           {{
             formatearHora(
-              solicitudSeleccionada
-                .hora_entrada_solicitada
+              solicitudSeleccionada.hora_entrada_solicitada
             )
           }}
-          -
+          –
           {{
             formatearHora(
-              solicitudSeleccionada
-                .hora_salida_solicitada
+              solicitudSeleccionada.hora_salida_solicitada
             )
           }}
         </strong>
-
         <small>
-          {{
-            solicitudSeleccionada
-              .modalidad_solicitada
-          }}
+          {{ solicitudSeleccionada.modalidad_solicitada }}
         </small>
       </div>
     </div>
-    
-</ng-container>
 
-<ng-container *ngIf="solicitudSeleccionada.tipo === 'JUSTIFICATIVO_FALTA'">
-  <div class="modal-schedule">
-    <div>
-      <span>Tipo de justificativo</span>
-      <strong>
-        {{
-          obtenerEtiquetaTipoJustificativo(
-            solicitudSeleccionada.tipo_justificativo!
-          )
-        }}
-      </strong>
-      <small>
-        {{
-          formatearFecha(
-            solicitudSeleccionada.fecha_inasistencia || ''
-          )
-        }}
-      </small>
+    <div
+      class="modal-justification"
+      *ngIf="
+        solicitudSeleccionada.tipo ===
+        'JUSTIFICACION_INASISTENCIA'
+      ">
+      <div>
+        <span>Tipo de justificación</span>
+        <strong>
+          {{
+            obtenerEtiquetaTipoJustificativo(
+              solicitudSeleccionada.tipo_justificativo
+            )
+          }}
+        </strong>
+      </div>
+
+      <div>
+        <span>Fecha de inasistencia</span>
+        <strong>
+          {{
+            formatearFecha(
+              solicitudSeleccionada.fecha_inasistencia
+            )
+          }}
+        </strong>
+      </div>
+
+      <div>
+        <span>Motivo</span>
+        <p>{{ solicitudSeleccionada.motivo }}</p>
+      </div>
+
+      <div
+        class="modal-file-actions"
+        *ngIf="solicitudSeleccionada.archivo_id">
+        <button
+          type="button"
+          class="view-file-btn"
+          [disabled]="
+            procesandoArchivoId ===
+            solicitudSeleccionada.archivo_id
+          "
+          (click)="verArchivo(solicitudSeleccionada)">
+          <i class="bi bi-eye" aria-hidden="true"></i>
+          Ver comprobante
+        </button>
+
+        <button
+          type="button"
+          class="download-file-btn"
+          [disabled]="
+            procesandoArchivoId ===
+            solicitudSeleccionada.archivo_id
+          "
+          (click)="descargarArchivo(solicitudSeleccionada)">
+          <i class="bi bi-download" aria-hidden="true"></i>
+          Descargar
+        </button>
+      </div>
     </div>
-  </div>
-</ng-container>
 
-    <!-- RESPUESTA -->
     <div class="response-group">
-
       <div class="response-label">
         <label for="respuesta-solicitud">
           {{
@@ -503,19 +530,17 @@
         rows="4"
         maxlength="500"
         [(ngModel)]="respuesta"
-        [class.input-error]="errorRespuesta"
+        [class.input-error]="!!errorRespuesta"
         [placeholder]="
           accionSeleccionada === 'RECHAZADA'
-            ? 'Explicá por qué se rechaza la solicitud...'
+            ? 'Explicá el motivo del rechazo...'
             : 'Podés agregar una observación...'
         ">
       </textarea>
 
       <small
         class="response-help"
-        *ngIf="
-          accionSeleccionada === 'APROBADA'
-        ">
+        *ngIf="accionSeleccionada === 'APROBADA'">
         La observación es opcional para aprobar.
       </small>
 
@@ -528,7 +553,6 @@
   </div>
 </app-modal>
 
-<!-- TOAST REUTILIZABLE -->
 <app-toast
   [visible]="toastVisible"
   [mensaje]="toastMensaje"

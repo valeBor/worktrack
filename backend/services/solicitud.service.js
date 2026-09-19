@@ -2,10 +2,9 @@ const db = require('../config/db');
 const solicitudModel = require('../models/solicitud.model');
 const horarioModel = require('../models/horario.model');
 const notificacionService = require('./notificacion.service');
-const {
-  obtenerFechaHoraActual,
-  obtenerDiaSemanaDeFecha,
-  horaASegundos
+const { validarArchivoJustificativo } = require('./archivo-justificativo.service');
+const archivoStorageService = require('./archivo-storage.service');
+const { obtenerFechaHoraActual, obtenerDiaSemanaDeFecha, horaASegundos
 } = require('../utils/fecha.util');
 
 // ======================================================
@@ -13,7 +12,7 @@ const {
 // ======================================================
 
 const TIPO_CAMBIO_HORARIO = 'CAMBIO_HORARIO';
-
+const TIPO_JUSTIFICACION_INASISTENCIA = 'JUSTIFICACION_INASISTENCIA';
 const ROL_ADMIN = 'admin';
 const ROL_RRHH = 'rrhh';
 const ROL_SUPERVISOR = 'supervisor';
@@ -287,6 +286,117 @@ function validarMotivo(motivo) {
 }
 
 // ======================================================
+// VALIDAR JUSTIFICACIÓN DE INASISTENCIA
+// ======================================================
+
+function validarFechaInasistencia(
+  fechaInasistencia
+) {
+  const fecha = String(
+    fechaInasistencia || ''
+  ).trim();
+
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(fecha) ||
+    !obtenerDiaSemanaDeFecha(fecha)
+  ) {
+    throw crearError(
+      'La fecha de la inasistencia es inválida.',
+      400
+    );
+  }
+
+  const {
+    fecha: fechaActual
+  } = obtenerFechaHoraActual();
+
+  if (fecha > fechaActual) {
+    throw crearError(
+      'No se puede justificar una inasistencia futura.',
+      400
+    );
+  }
+
+  return fecha;
+}
+
+function validarCodigoJustificativo(
+  codigo
+) {
+  const valor = String(
+    codigo || ''
+  )
+    .trim()
+    .toUpperCase();
+
+  if (
+    !valor ||
+    valor.length > 50 ||
+    !/^[A-Z0-9_]+$/.test(valor)
+  ) {
+    throw crearError(
+      'El tipo de justificativo es inválido.',
+      400
+    );
+  }
+
+  return valor;
+}
+
+function validarDatosJustificativo(
+  datos
+) {
+  validarObjeto(
+    datos,
+    'Los datos del justificativo son obligatorios.'
+  );
+
+  const camposControlados = [
+    'usuario_id',
+    'tipo',
+    'estado',
+    'tipo_justificativo_id',
+    'resuelto_por',
+    'resuelta_en'
+  ];
+
+  const campoNoPermitido =
+    camposControlados.find(
+      campo =>
+        Object.prototype
+          .hasOwnProperty.call(
+            datos,
+            campo
+          )
+    );
+
+  if (campoNoPermitido) {
+    throw crearError(
+      `El campo ${campoNoPermitido} es administrado por el servidor.`,
+      400
+    );
+  }
+
+  return {
+    fecha_inasistencia:
+      validarFechaInasistencia(
+        datos.fecha_inasistencia
+      ),
+
+    tipo_justificativo_codigo:
+      validarCodigoJustificativo(
+        datos.tipo_justificativo
+      ),
+
+    motivo:
+      validarMotivo(
+        datos.motivo ??
+        datos.descripcion
+      )
+  };
+}
+
+// ======================================================
 // VALIDAR RESPUESTA
 // ======================================================
 
@@ -547,9 +657,9 @@ function validarJerarquiaResolucion(
   ) {
     const puedeResolver =
       rolResponsable ===
-        ROL_SUPERVISOR ||
+      ROL_SUPERVISOR ||
       rolResponsable ===
-        ROL_RRHH;
+      ROL_RRHH;
 
     if (!puedeResolver) {
       throw crearError(
@@ -627,20 +737,20 @@ exports.createSolicitud = async (
     horaASegundos(
       horarioActual.horaEntrada
     ) ===
-      horaASegundos(
-        solicitudValidada
-          .hora_entrada_solicitada
-      ) &&
+    horaASegundos(
+      solicitudValidada
+        .hora_entrada_solicitada
+    ) &&
     horaASegundos(
       horarioActual.horaSalida
     ) ===
-      horaASegundos(
-        solicitudValidada
-          .hora_salida_solicitada
-      ) &&
-    horarioActual.modalidad ===
+    horaASegundos(
       solicitudValidada
-        .modalidad_solicitada;
+        .hora_salida_solicitada
+    ) &&
+    horarioActual.modalidad ===
+    solicitudValidada
+      .modalidad_solicitada;
 
   if (mismaConfiguracion) {
     throw crearError(
@@ -667,7 +777,7 @@ exports.createSolicitud = async (
     if (solicitudActiva) {
       const mensaje =
         solicitudActiva.estado ===
-        'APROBADA'
+          'APROBADA'
           ? 'Ya existe un cambio de horario aprobado para esa fecha.'
           : 'Ya existe una solicitud pendiente para esa fecha.';
 
@@ -744,7 +854,7 @@ exports.createSolicitud = async (
 };
 
 // ======================================================
-// CREAR JUSTIFICATIVO DE FALTA
+// CREAR JUSTIFICACIÓN DE INASISTENCIA
 // ======================================================
 
 exports.createJustificativo = async (
@@ -757,76 +867,231 @@ exports.createJustificativo = async (
       actorToken
     );
 
-  const fechaInasistencia =
-    String(datos.fecha_inasistencia || '').trim();
-  const tipoJustificativo =
-    String(datos.tipo_justificativo || '').trim();
-  const descripcion =
-    String(datos.descripcion || '').trim();
-
-  if (!fechaInasistencia) {
+  if (
+    actor.role !== ROL_EMPLEADO &&
+    actor.role !== ROL_SUPERVISOR
+  ) {
     throw crearError(
-      'La fecha de la inasistencia es obligatoria.',
-      400
+      'Su rol no puede presentar justificativos de inasistencia.',
+      403
     );
   }
 
-  const tiposValidos = [
-    'CERTIFICADO_MEDICO',
-    'EMERGENCIA_FAMILIAR',
-    'OTRO_MOTIVO'
-  ];
-
-  if (!tiposValidos.includes(tipoJustificativo)) {
-    throw crearError(
-      'El tipo de justificativo es inválido.',
-      400
+  const datosValidados =
+    validarDatosJustificativo(
+      datos
     );
-  }
 
-  if (descripcion.length < 5) {
-    throw crearError(
-      'La descripción es obligatoria.',
-      400
-    );
-  }
+  const connection =
+    await db.getConnection();
 
-  const nuevoJustificativo = {
-    usuario_id: actor.id,
-    tipo: 'JUSTIFICATIVO_FALTA',
-    estado: 'PENDIENTE',
-    fecha_inasistencia: fechaInasistencia,
-    tipo_justificativo: tipoJustificativo,
-    descripcion: descripcion,
-    archivo_url: archivo
-      ? `/uploads/justificativos/${archivo.filename}`
-      : null
-  };
+  let archivoGuardado = null;
+  let transaccionIniciada = false;
 
-  const result =
-    await solicitudModel.createJustificativo(
-      db,
-      nuevoJustificativo
-    );
-    
-  await notificacionService.notificarSolicitudCreada(
-    db,
-    {
-      solicitudId: result.insertId,
-      solicitante: actor,
-      fechaSolicitada: nuevoJustificativo.fecha_inasistencia,
-      tipo: nuevoJustificativo.tipo
+  try {
+    await connection.beginTransaction();
+    transaccionIniciada = true;
+
+    const tipoJustificativo =
+      await solicitudModel
+        .getTipoJustificativoByCodigo(
+          connection,
+          datosValidados
+            .tipo_justificativo_codigo
+        );
+
+    if (!tipoJustificativo) {
+      throw crearError(
+        'El tipo de justificativo no existe o está inactivo.',
+        400
+      );
     }
-  );
 
-  return {
-    mensaje:
-      'Justificativo enviado correctamente.',
-    solicitud: {
-      id: result.insertId,
-      ...nuevoJustificativo
+    const requiereArchivo =
+      Boolean(
+        tipoJustificativo
+          .requiere_archivo
+      );
+
+    if (
+      requiereArchivo &&
+      !archivo
+    ) {
+      throw crearError(
+        'El tipo de justificativo seleccionado requiere adjuntar un certificado.',
+        400
+      );
     }
-  };
+
+    const archivoValidado =
+      archivo
+        ? validarArchivoJustificativo(
+          archivo
+        )
+        : null;
+
+    const solicitudActiva =
+      await solicitudModel
+        .getJustificacionActivaByUsuarioAndFecha(
+          connection,
+          actor.id,
+          datosValidados
+            .fecha_inasistencia
+        );
+
+    if (solicitudActiva) {
+      const mensaje =
+        solicitudActiva.estado ===
+          'APROBADA'
+          ? 'Ya existe una justificación aprobada para esa fecha.'
+          : 'Ya existe una justificación pendiente para esa fecha.';
+
+      throw crearError(
+        mensaje,
+        409
+      );
+    }
+
+    const nuevoJustificativo = {
+      usuario_id: actor.id,
+      motivo:
+        datosValidados.motivo,
+      fecha_inasistencia:
+        datosValidados
+          .fecha_inasistencia,
+      tipo_justificativo_id:
+        tipoJustificativo.id
+    };
+
+    const result =
+      await solicitudModel
+        .createJustificativo(
+          connection,
+          nuevoJustificativo
+        );
+
+    let archivoRespuesta = null;
+
+    if (archivoValidado) {
+      archivoGuardado =
+        await archivoStorageService
+          .saveFile(
+            archivoValidado
+          );
+
+      const archivoResult =
+        await solicitudModel
+          .createArchivo(
+            connection,
+            {
+              solicitud_id:
+                result.insertId,
+              storage_provider:
+                archivoGuardado
+                  .provider,
+              storage_key:
+                archivoGuardado
+                  .storageKey,
+              nombre_original:
+                archivoValidado
+                  .originalName,
+              mime_type:
+                archivoValidado
+                  .mimeType,
+              extension:
+                archivoValidado
+                  .extension,
+              tamanio_bytes:
+                archivoValidado
+                  .size,
+              sha256:
+                archivoValidado
+                  .sha256,
+              creado_por:
+                actor.id
+            }
+          );
+
+      archivoRespuesta = {
+        id: archivoResult.insertId,
+        nombre_original:
+          archivoValidado
+            .originalName,
+        mime_type:
+          archivoValidado
+            .mimeType,
+        tamanio_bytes:
+          archivoValidado
+            .size
+      };
+    }
+
+    await notificacionService
+      .notificarSolicitudCreada(
+        connection,
+        {
+          solicitudId:
+            result.insertId,
+          solicitante: actor,
+          fechaSolicitada:
+            nuevoJustificativo
+              .fecha_inasistencia,
+          tipo:
+            TIPO_JUSTIFICACION_INASISTENCIA
+        }
+      );
+
+    await connection.commit();
+
+    return {
+      mensaje:
+        'Justificación de inasistencia enviada correctamente.',
+      solicitud: {
+        id: result.insertId,
+        tipo:
+          TIPO_JUSTIFICACION_INASISTENCIA,
+        estado: 'PENDIENTE',
+        fecha_inasistencia:
+          nuevoJustificativo
+            .fecha_inasistencia,
+        tipo_justificativo: {
+          id:
+            tipoJustificativo.id,
+          codigo:
+            tipoJustificativo.codigo,
+          nombre:
+            tipoJustificativo.nombre
+        },
+        motivo:
+          nuevoJustificativo.motivo,
+        archivo:
+          archivoRespuesta
+      }
+    };
+  } catch (error) {
+    if (transaccionIniciada) {
+      await connection.rollback();
+    }
+
+    if (archivoGuardado) {
+      try {
+        await archivoStorageService
+          .deleteFile(
+            archivoGuardado.provider,
+            archivoGuardado.storageKey
+          );
+      } catch (deleteError) {
+        console.error(
+          'No se pudo eliminar el archivo luego de revertir la solicitud:',
+          deleteError
+        );
+      }
+    }
+
+    throw error;
+  } finally {
+    connection.release();
+  }
 };
 
 // ======================================================
@@ -1039,11 +1304,11 @@ exports.resolveSolicitud = async (
         404
       );
     }
-
-        if (
+    if (
       solicitud.tipo !== TIPO_CAMBIO_HORARIO &&
-      solicitud.tipo !== 'JUSTIFICATIVO_FALTA'
+      solicitud.tipo !== TIPO_JUSTIFICACION_INASISTENCIA
     ) {
+
       throw crearError(
         'Tipo de solicitud no soportado.',
         409
@@ -1083,13 +1348,13 @@ exports.resolveSolicitud = async (
       solicitud
     );
 
-      const fechaSolicitada =
+    const fechaSolicitada =
       normalizarFechaBaseDatos(
-        solicitud.tipo === 'JUSTIFICATIVO_FALTA'
+        solicitud.tipo ===
+          TIPO_JUSTIFICACION_INASISTENCIA
           ? solicitud.fecha_inasistencia
           : solicitud.fecha_solicitada
       );
-
     const {
       fecha,
       hora
@@ -1107,7 +1372,7 @@ exports.resolveSolicitud = async (
         );
       }
 
-        if (
+      if (
         solicitud.tipo === TIPO_CAMBIO_HORARIO &&
         (!fechaSolicitada || fechaSolicitada <= fecha)
       ) {
@@ -1140,7 +1405,7 @@ exports.resolveSolicitud = async (
       );
     }
 
-       await notificacionService
+    await notificacionService
       .notificarSolicitudResuelta(
         connection,
         {
@@ -1186,4 +1451,124 @@ exports.resolveSolicitud = async (
   } finally {
     connection.release();
   }
+};
+
+// ======================================================
+// OBTENER ARCHIVO PRIVADO DE UNA JUSTIFICACIÓN
+// ======================================================
+
+exports.obtenerArchivoJustificativo = async (
+  actorToken,
+  archivoId,
+  accion,
+  ipActor
+) => {
+  const actor =
+    await obtenerActor(
+      actorToken
+    );
+
+  const id = validarId(
+    archivoId,
+    'archivo'
+  );
+
+  const accionNormalizada =
+    String(accion || '')
+      .trim()
+      .toUpperCase();
+
+  if (
+    accionNormalizada !== 'VISUALIZACION' &&
+    accionNormalizada !== 'DESCARGA'
+  ) {
+    throw crearError(
+      'La acción sobre el archivo es inválida.',
+      400
+    );
+  }
+
+  const archivo =
+    await solicitudModel
+      .getArchivoById(id);
+
+  if (!archivo) {
+    throw crearError(
+      'Archivo no encontrado.',
+      404
+    );
+  }
+
+  if (
+    archivo.solicitud_tipo !==
+    TIPO_JUSTIFICACION_INASISTENCIA
+  ) {
+    throw crearError(
+      'El archivo no corresponde a una justificación de inasistencia.',
+      409
+    );
+  }
+
+  const solicitanteRole =
+    normalizarRol(
+      archivo.solicitante_role
+    );
+
+  const esPropietario =
+    Number(actor.id) ===
+    Number(archivo.solicitante_id);
+
+  const esAdministrador =
+    actor.role === ROL_ADMIN;
+
+  const rrhhPuedeConsultar =
+    actor.role === ROL_RRHH &&
+    [
+      ROL_EMPLEADO,
+      ROL_SUPERVISOR
+    ].includes(solicitanteRole);
+
+  const supervisorPuedeConsultar =
+    actor.role === ROL_SUPERVISOR &&
+    solicitanteRole === ROL_EMPLEADO;
+
+  const autorizado =
+    esPropietario ||
+    esAdministrador ||
+    rrhhPuedeConsultar ||
+    supervisorPuedeConsultar;
+
+  if (!autorizado) {
+    throw crearError(
+      'No tiene autorización para consultar este archivo.',
+      403
+    );
+  }
+
+  const contenido =
+    await archivoStorageService
+      .readFile(
+        archivo.storage_provider,
+        archivo.storage_key
+      );
+
+  await solicitudModel
+    .createArchivoAcceso({
+      archivo_id: id,
+      usuario_id: actor.id,
+      accion:
+        accionNormalizada,
+      ip_actor:
+        ipActor || null
+    });
+
+  return {
+    contenido,
+    nombre_original:
+      archivo.nombre_original,
+    mime_type:
+      archivo.mime_type,
+    tamanio_bytes:
+      archivo.tamanio_bytes
+  };
 };

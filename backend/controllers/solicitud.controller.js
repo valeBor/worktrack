@@ -228,3 +228,76 @@ exports.createJustificativo = async (
     );
   }
 };
+// ======================================================
+// VISUALIZAR O DESCARGAR ARCHIVO DE JUSTIFICACIÓN
+// ======================================================
+
+exports.getArchivoJustificativo = async (
+  req,
+  res
+) => {
+  try {
+    const descargar =
+      req.query?.descargar === '1' ||
+      String(
+        req.query?.descargar || ''
+      ).toLowerCase() === 'true';
+
+    const archivo =
+      await solicitudService
+        .obtenerArchivoJustificativo(
+          req.user,
+          req.params.archivoId,
+          descargar
+            ? 'DESCARGA'
+            : 'VISUALIZACION',
+          req.ip ||
+          req.socket?.remoteAddress
+        );
+
+    const disposition =
+      descargar
+        ? 'attachment'
+        : 'inline';
+
+    const encodedName =
+      encodeURIComponent(
+        archivo.nombre_original
+      );
+
+    res.setHeader(
+      'Content-Type',
+      archivo.mime_type
+    );
+
+    res.setHeader(
+      'Content-Length',
+      archivo.contenido.length
+    );
+
+    res.setHeader(
+      'Content-Disposition',
+      `${disposition}; filename*=UTF-8''${encodedName}`
+    );
+
+    res.setHeader(
+      'Cache-Control',
+      'private, no-store'
+    );
+
+    res.setHeader(
+      'X-Content-Type-Options',
+      'nosniff'
+    );
+
+    return res.status(200).send(
+      archivo.contenido
+    );
+  } catch (error) {
+    return responderError(
+      res,
+      error,
+      'Error al obtener el archivo del justificativo.'
+    );
+  }
+};

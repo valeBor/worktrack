@@ -1,10 +1,5 @@
 const db = require('../config/db');
 
-
-// ======================================================
-// CAMPOS DE UNA SOLICITUD
-// ======================================================
-
 const CAMPOS_SOLICITUD = `
   s.id,
   s.usuario_id,
@@ -20,25 +15,25 @@ const CAMPOS_SOLICITUD = `
   s.modalidad_solicitada,
   s.motivo,
   s.fecha_inasistencia,
-  s.tipo_justificativo,
-  s.descripcion,
-  s.archivo_url,
+  s.tipo_justificativo_id,
   s.creada_en,
   s.respuesta,
   s.resuelto_por,
   s.resuelta_en
 `;
 
+const CAMPOS_TIPO_JUSTIFICATIVO = `
+  tj.codigo AS tipo_justificativo,
+  tj.nombre AS tipo_justificativo_nombre,
+  tj.requiere_archivo AS requiere_archivo
+`;
 
-// ======================================================
-// CREAR SOLICITUD
-// ======================================================
 
 exports.create = async (
   connection,
   solicitud
 ) => {
-  const sql = `
+  const [result] = await connection.query(`
     INSERT INTO solicitudes (
       usuario_id,
       tipo,
@@ -52,116 +47,113 @@ exports.create = async (
       hora_salida_solicitada,
       modalidad_solicitada,
       motivo
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
-  const [result] = await connection.query(
-    sql,
-    [
-      solicitud.usuario_id,
-      solicitud.tipo,
-      solicitud.estado,
-      solicitud.fecha_solicitada,
-      solicitud.hora_entrada_actual,
-      solicitud.hora_salida_actual,
-      solicitud.modalidad_actual,
-      solicitud.tolerancia_actual,
-      solicitud.hora_entrada_solicitada,
-      solicitud.hora_salida_solicitada,
-      solicitud.modalidad_solicitada,
-      solicitud.motivo
-    ]
-  );
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `, [
+    solicitud.usuario_id,
+    solicitud.tipo,
+    solicitud.estado,
+    solicitud.fecha_solicitada,
+    solicitud.hora_entrada_actual,
+    solicitud.hora_salida_actual,
+    solicitud.modalidad_actual,
+    solicitud.tolerancia_actual,
+    solicitud.hora_entrada_solicitada,
+    solicitud.hora_salida_solicitada,
+    solicitud.modalidad_solicitada,
+    solicitud.motivo
+  ]);
 
   return result;
 };
 
-
-// ======================================================
-// OBTENER SOLICITUDES DE UN USUARIO
-// ======================================================
-
-exports.getByUsuario = async (usuarioId) => {
-  const sql = `
+exports.getByUsuario = async usuarioId => {
+  const [rows] = await db.query(`
     SELECT
       ${CAMPOS_SOLICITUD},
+      ${CAMPOS_TIPO_JUSTIFICATIVO},
       responsable.nombre AS responsable_nombre,
-      responsable.apellido AS responsable_apellido
+      responsable.apellido AS responsable_apellido,
+      archivo.id AS archivo_id,
+      archivo.nombre_original AS archivo_nombre_original,
+      archivo.mime_type AS archivo_mime_type,
+      archivo.tamanio_bytes AS archivo_tamanio_bytes
     FROM solicitudes s
+    LEFT JOIN tipos_justificativo tj
+      ON tj.id = s.tipo_justificativo_id
     LEFT JOIN usuarios responsable
-      ON s.resuelto_por = responsable.id
+      ON responsable.id = s.resuelto_por
+    LEFT JOIN solicitud_archivos archivo
+      ON archivo.solicitud_id = s.id
     WHERE s.usuario_id = ?
     ORDER BY
       s.creada_en DESC,
       s.id DESC
-  `;
-
-  const [rows] = await db.query(
-    sql,
-    [usuarioId]
-  );
+  `, [usuarioId]);
 
   return rows;
 };
 
-
-// ======================================================
-// OBTENER TODAS LAS SOLICITUDES PENDIENTES
-// ======================================================
-
 exports.getPendientes = async () => {
-  const sql = `
+  const [rows] = await db.query(`
     SELECT
       ${CAMPOS_SOLICITUD},
+      ${CAMPOS_TIPO_JUSTIFICATIVO},
       u.nombre AS usuario_nombre,
       u.apellido AS usuario_apellido,
       u.email AS usuario_email,
-      r.nombre AS usuario_role
+      r.nombre AS usuario_role,
+      archivo.id AS archivo_id,
+      archivo.nombre_original AS archivo_nombre_original,
+      archivo.mime_type AS archivo_mime_type,
+      archivo.tamanio_bytes AS archivo_tamanio_bytes
     FROM solicitudes s
     JOIN usuarios u
-      ON s.usuario_id = u.id
+      ON u.id = s.usuario_id
     JOIN roles r
-      ON u.rol_id = r.id
+      ON r.id = u.rol_id
+    LEFT JOIN tipos_justificativo tj
+      ON tj.id = s.tipo_justificativo_id
+    LEFT JOIN solicitud_archivos archivo
+      ON archivo.solicitud_id = s.id
     WHERE s.estado = 'PENDIENTE'
     ORDER BY
       s.creada_en ASC,
       s.id ASC
-  `;
-
-  const [rows] = await db.query(sql);
+  `);
 
   return rows;
 };
 
-// ======================================================
-// SOLICITUDES GESTIONABLES
-// Pendientes y resueltas durante el día actual.
-// ======================================================
-
-// ======================================================
-// SOLICITUDES GESTIONABLES SEGÚN EL ROL
-// ======================================================
-
 exports.getGestionables = async () => {
-  const sql = `
+  const [rows] = await db.query(`
     SELECT
       ${CAMPOS_SOLICITUD},
+      ${CAMPOS_TIPO_JUSTIFICATIVO},
       u.nombre AS usuario_nombre,
       u.apellido AS usuario_apellido,
       u.email AS usuario_email,
       r.nombre AS usuario_role,
       responsable.nombre AS responsable_nombre,
       responsable.apellido AS responsable_apellido,
-      responsable_rol.nombre AS responsable_role
+      responsable_rol.nombre AS responsable_role,
+      archivo.id AS archivo_id,
+      archivo.nombre_original AS archivo_nombre_original,
+      archivo.mime_type AS archivo_mime_type,
+      archivo.tamanio_bytes AS archivo_tamanio_bytes
     FROM solicitudes s
     JOIN usuarios u
-      ON s.usuario_id = u.id
+      ON u.id = s.usuario_id
     JOIN roles r
-      ON u.rol_id = r.id
+      ON r.id = u.rol_id
+    LEFT JOIN tipos_justificativo tj
+      ON tj.id = s.tipo_justificativo_id
     LEFT JOIN usuarios responsable
-      ON s.resuelto_por = responsable.id
+      ON responsable.id = s.resuelto_por
     LEFT JOIN roles responsable_rol
-      ON responsable.rol_id = responsable_rol.id
+      ON responsable_rol.id = responsable.rol_id
+    LEFT JOIN solicitud_archivos archivo
+      ON archivo.solicitud_id = s.id
     WHERE s.estado IN (
       'PENDIENTE',
       'APROBADA',
@@ -175,27 +167,23 @@ exports.getGestionables = async () => {
       END,
       s.creada_en DESC,
       s.id DESC
-  `;
+  `);
 
-  const [rows] = await db.query(sql);
   return rows;
 };
-
-// ======================================================
-// BUSCAR SOLICITUD ACTIVA PARA UNA FECHA
-// ======================================================
 
 exports.getActivaByUsuarioAndFecha = async (
   connection,
   usuarioId,
   fechaSolicitada
 ) => {
-  const sql = `
+  const [rows] = await connection.query(`
     SELECT
       id,
       estado
     FROM solicitudes
     WHERE usuario_id = ?
+      AND tipo = 'CAMBIO_HORARIO'
       AND fecha_solicitada = ?
       AND estado IN (
         'PENDIENTE',
@@ -204,49 +192,60 @@ exports.getActivaByUsuarioAndFecha = async (
     ORDER BY id DESC
     LIMIT 1
     FOR UPDATE
-  `;
-
-  const [rows] = await connection.query(
-    sql,
-    [
-      usuarioId,
-      fechaSolicitada
-    ]
-  );
+  `, [
+    usuarioId,
+    fechaSolicitada
+  ]);
 
   return rows[0];
 };
 
+exports.getJustificacionActivaByUsuarioAndFecha = async (
+  connection,
+  usuarioId,
+  fechaInasistencia
+) => {
+  const [rows] = await connection.query(`
+    SELECT
+      id,
+      estado
+    FROM solicitudes
+    WHERE usuario_id = ?
+      AND tipo = 'JUSTIFICACION_INASISTENCIA'
+      AND fecha_inasistencia = ?
+      AND estado IN (
+        'PENDIENTE',
+        'APROBADA'
+      )
+    ORDER BY id DESC
+    LIMIT 1
+    FOR UPDATE
+  `, [
+    usuarioId,
+    fechaInasistencia
+  ]);
 
-// ======================================================
-// BUSCAR SOLICITUD POR ID PARA RESOLVER
-// ======================================================
+  return rows[0] || null;
+};
 
 exports.getByIdForUpdate = async (
   connection,
   solicitudId
 ) => {
-  const sql = `
+  const [rows] = await connection.query(`
     SELECT
-      ${CAMPOS_SOLICITUD}
+      ${CAMPOS_SOLICITUD},
+      ${CAMPOS_TIPO_JUSTIFICATIVO}
     FROM solicitudes s
+    LEFT JOIN tipos_justificativo tj
+      ON tj.id = s.tipo_justificativo_id
     WHERE s.id = ?
     LIMIT 1
     FOR UPDATE
-  `;
-
-  const [rows] = await connection.query(
-    sql,
-    [solicitudId]
-  );
+  `, [solicitudId]);
 
   return rows[0];
 };
-
-
-// ======================================================
-// APROBAR O RECHAZAR SOLICITUD
-// ======================================================
 
 exports.resolve = async (
   connection,
@@ -256,7 +255,7 @@ exports.resolve = async (
   responsableId,
   fechaResolucion
 ) => {
-  const sql = `
+  const [result] = await connection.query(`
     UPDATE solicitudes
     SET
       estado = ?,
@@ -265,32 +264,23 @@ exports.resolve = async (
       resuelta_en = ?
     WHERE id = ?
       AND estado = 'PENDIENTE'
-  `;
-
-  const [result] = await connection.query(
-    sql,
-    [
-      estado,
-      respuesta,
-      responsableId,
-      fechaResolucion,
-      solicitudId
-    ]
-  );
+  `, [
+    estado,
+    respuesta,
+    responsableId,
+    fechaResolucion,
+    solicitudId
+  ]);
 
   return result;
 };
-
-// ======================================================
-// OBTENER CAMBIO APROBADO PARA UNA FECHA
-// ======================================================
 
 exports.getAprobadaByUsuarioAndFecha = async (
   connection,
   usuarioId,
   fechaSolicitada
 ) => {
-  const sql = `
+  const [rows] = await connection.query(`
     SELECT
       ${CAMPOS_SOLICITUD}
     FROM solicitudes s
@@ -302,30 +292,20 @@ exports.getAprobadaByUsuarioAndFecha = async (
       s.resuelta_en DESC,
       s.id DESC
     LIMIT 1
-  `;
-
-  const [rows] =
-    await connection.query(
-      sql,
-      [
-        usuarioId,
-        fechaSolicitada
-      ]
-    );
+  `, [
+    usuarioId,
+    fechaSolicitada
+  ]);
 
   return rows[0];
 };
-
-// ======================================================
-// OBTENER CAMBIOS APROBADOS DE UN PERÍODO
-// ======================================================
 
 exports.getAprobadasByUsuarioAndPeriodo = async (
   usuarioId,
   fechaDesde,
   fechaHasta
 ) => {
-  const sql = `
+  const [rows] = await db.query(`
     SELECT
       id,
       usuario_id,
@@ -348,14 +328,11 @@ exports.getAprobadasByUsuarioAndPeriodo = async (
     WHERE usuario_id = ?
       AND tipo = 'CAMBIO_HORARIO'
       AND estado = 'APROBADA'
-      AND fecha_solicitada
-        BETWEEN ? AND ?
+      AND fecha_solicitada BETWEEN ? AND ?
     ORDER BY
       fecha_solicitada ASC,
       id ASC
-  `;
-
-  const [rows] = await db.query(sql, [
+  `, [
     usuarioId,
     fechaDesde,
     fechaHasta
@@ -364,14 +341,8 @@ exports.getAprobadasByUsuarioAndPeriodo = async (
   return rows;
 };
 
-// ======================================================
-// OBTENER PRIMERA FECHA CON CAMBIO APROBADO
-// ======================================================
-
-exports.getPrimeraAprobadaByUsuario = async (
-  usuarioId
-) => {
-  const sql = `
+exports.getPrimeraAprobadaByUsuario = async usuarioId => {
+  const [rows] = await db.query(`
     SELECT
       DATE_FORMAT(
         MIN(fecha_solicitada),
@@ -381,47 +352,135 @@ exports.getPrimeraAprobadaByUsuario = async (
     WHERE usuario_id = ?
       AND tipo = 'CAMBIO_HORARIO'
       AND estado = 'APROBADA'
-  `;
-
-  const [rows] = await db.query(sql, [
-    usuarioId
-  ]);
+  `, [usuarioId]);
 
   return rows[0]?.primera_fecha || null;
 };
 
-// ======================================================
-// CREAR JUSTIFICATIVO DE FALTA
-// ======================================================
+exports.getTipoJustificativoByCodigo = async (
+  connection,
+  codigo
+) => {
+  const [rows] = await connection.query(`
+    SELECT
+      id,
+      codigo,
+      nombre,
+      requiere_archivo
+    FROM tipos_justificativo
+    WHERE codigo = ?
+      AND activo = 1
+    LIMIT 1
+  `, [codigo]);
+
+  return rows[0] || null;
+};
 
 exports.createJustificativo = async (
   connection,
   justificativo
 ) => {
-  const sql = `
+  const [result] = await connection.query(`
     INSERT INTO solicitudes (
       usuario_id,
       tipo,
       estado,
+      motivo,
       fecha_inasistencia,
-      tipo_justificativo,
-      descripcion,
-      archivo_url
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?)`;
+      tipo_justificativo_id
+    )
+    VALUES (?, ?, ?, ?, ?, ?)
+  `, [
+    justificativo.usuario_id,
+    'JUSTIFICACION_INASISTENCIA',
+    'PENDIENTE',
+    justificativo.motivo,
+    justificativo.fecha_inasistencia,
+    justificativo.tipo_justificativo_id
+  ]);
 
-  const [result] = await connection.query(
-    sql,
-    [
-      justificativo.usuario_id,
-      justificativo.tipo,
-      justificativo.estado,
-      justificativo.fecha_inasistencia,
-      justificativo.tipo_justificativo,
-      justificativo.descripcion,
-      justificativo.archivo_url
-    ]
-  );
+  return result;
+};
+
+exports.createArchivo = async (
+  connection,
+  archivo
+) => {
+  const [result] = await connection.query(`
+    INSERT INTO solicitud_archivos (
+      solicitud_id,
+      storage_provider,
+      storage_key,
+      nombre_original,
+      mime_type,
+      extension,
+      tamanio_bytes,
+      sha256,
+      creado_por
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `, [
+    archivo.solicitud_id,
+    archivo.storage_provider,
+    archivo.storage_key,
+    archivo.nombre_original,
+    archivo.mime_type,
+    archivo.extension,
+    archivo.tamanio_bytes,
+    archivo.sha256,
+    archivo.creado_por
+  ]);
+
+  return result;
+};
+
+exports.getArchivoById = async archivoId => {
+  const [rows] = await db.query(`
+    SELECT
+      archivo.id,
+      archivo.solicitud_id,
+      archivo.storage_provider,
+      archivo.storage_key,
+      archivo.nombre_original,
+      archivo.mime_type,
+      archivo.extension,
+      archivo.tamanio_bytes,
+      archivo.sha256,
+      archivo.creado_por,
+      archivo.creado_en,
+      s.usuario_id AS solicitante_id,
+      s.tipo AS solicitud_tipo,
+      s.estado AS solicitud_estado,
+      r.nombre AS solicitante_role
+    FROM solicitud_archivos archivo
+    JOIN solicitudes s
+      ON s.id = archivo.solicitud_id
+    JOIN usuarios u
+      ON u.id = s.usuario_id
+    JOIN roles r
+      ON r.id = u.rol_id
+    WHERE archivo.id = ?
+    LIMIT 1
+  `, [archivoId]);
+
+  return rows[0] || null;
+};
+
+exports.createArchivoAcceso = async acceso => {
+  const [result] = await db.query(`
+    INSERT INTO solicitud_archivo_accesos (
+      archivo_id,
+      usuario_id,
+      accion,
+      ip_actor
+    )
+    VALUES (?, ?, ?, ?)
+  `, [
+    acceso.archivo_id,
+    acceso.usuario_id,
+    acceso.accion,
+    acceso.ip_actor
+  ]);
 
   return result;
 };

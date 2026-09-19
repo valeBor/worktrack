@@ -3,7 +3,8 @@ const router = express.Router();
 const solicitudController = require('../controllers/solicitud.controller');
 const {verifyToken} = require('../middlewares/authMiddleware');
 const {verifyPermission} = require('../middlewares/permissionMiddleware');
-const upload = require('../middlewares/upload.middleware');
+const {uploadJustificativo} = require('../middlewares/upload.middleware');
+
 // ======================================================
 // MI HORARIO PARA UNA FECHA
 // ======================================================
@@ -11,7 +12,9 @@ const upload = require('../middlewares/upload.middleware');
 router.get(
   '/horario-fecha',
   verifyToken,
-  verifyPermission('CREAR_SOLICITUD_CAMBIO'),
+  verifyPermission(
+    'CREAR_SOLICITUD_CAMBIO'
+  ),
   solicitudController.getMiHorarioParaFecha
 );
 
@@ -22,19 +25,37 @@ router.get(
 router.get(
   '/mias',
   verifyToken,
-  verifyPermission('VER_SOLICITUDES_PROPIAS'),
+  verifyPermission(
+    'VER_SOLICITUDES_PROPIAS'
+  ),
   solicitudController.getMisSolicitudes
 );
 
 // ======================================================
-// CREAR SOLICITUD PROPIA
+// CREAR SOLICITUD DE CAMBIO DE HORARIO
 // ======================================================
 
 router.post(
   '/',
   verifyToken,
-  verifyPermission('CREAR_SOLICITUD_CAMBIO'),
+  verifyPermission(
+    'CREAR_SOLICITUD_CAMBIO'
+  ),
   solicitudController.createSolicitud
+);
+
+// ======================================================
+// CREAR JUSTIFICACIÓN DE INASISTENCIA
+// ======================================================
+
+router.post(
+  '/justificativos',
+  verifyToken,
+  verifyPermission(
+    'CREAR_JUSTIFICATIVO_FALTA'
+  ),
+  uploadJustificativo,
+  solicitudController.createJustificativo
 );
 
 // ======================================================
@@ -44,19 +65,36 @@ router.post(
 router.get(
   '/pendientes',
   verifyToken,
-  verifyPermission('VER_SOLICITUDES_PENDIENTES'),
+  verifyPermission(
+    'VER_SOLICITUDES_PENDIENTES'
+  ),
   solicitudController.getSolicitudesPendientes
 );
 
 // ======================================================
-// PENDIENTES Y RESUELTAS DURANTE EL DÍA
+// OBTENER SOLICITUDES GESTIONABLES
 // ======================================================
 
 router.get(
   '/gestionables',
   verifyToken,
-  verifyPermission('VER_SOLICITUDES_PENDIENTES'),
+  verifyPermission(
+    'VER_SOLICITUDES_PENDIENTES'
+  ),
   solicitudController.getSolicitudesGestionables
+);
+
+// ======================================================
+// VISUALIZAR O DESCARGAR ARCHIVO PRIVADO
+// ======================================================
+
+router.get(
+  '/archivos/:archivoId',
+  verifyToken,
+  verifyPermission(
+    'VER_ARCHIVO_JUSTIFICATIVO'
+  ),
+  solicitudController.getArchivoJustificativo
 );
 
 // ======================================================
@@ -66,18 +104,10 @@ router.get(
 router.patch(
   '/:solicitudId/resolver',
   verifyToken,
-  verifyPermission('RESOLVER_SOLICITUDES'),
+  verifyPermission(
+    'RESOLVER_SOLICITUDES'
+  ),
   solicitudController.resolveSolicitud
 );
-// ======================================================
-// CREAR JUSTIFICATIVO DE FALTA
-// ======================================================
 
-router.post(
-  '/justificativos',
-  verifyToken,
-  verifyPermission('CREAR_JUSTIFICATIVO_FALTA'),
-  upload.single('archivo'),
-  solicitudController.createJustificativo
-);
 module.exports = router;

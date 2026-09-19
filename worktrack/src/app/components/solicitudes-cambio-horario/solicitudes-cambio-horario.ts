@@ -1,15 +1,22 @@
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {FormsModule} from '@angular/forms';
-import {finalize} from 'rxjs/operators';
-import {Modal, TipoModal} from '../modal/modal';
-import {Toast, TipoToast} from '../toast/toast';
-import {SolicitudCambioHorario} from '../../models/solicitud.model';
-import {SolicitudService} from '../../services/solicitud.service';
-import {AuthService} from '../../services/auth.service';
-import {Role} from '../../models/user.models';
-import {environment} from '../../../environments/environment';
-import {TipoJustificativo} from '../../models/solicitud.model';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import { finalize } from 'rxjs/operators';
+import { Modal, TipoModal } from '../modal/modal';
+import { Toast, TipoToast } from '../toast/toast';
+import {
+  SolicitudCambioHorario,
+  TipoJustificativo
+} from '../../models/solicitud.model';
+import { SolicitudService } from '../../services/solicitud.service';
+import { AuthService } from '../../services/auth.service';
+import { Role } from '../../models/user.models';
+
+type VistaGestion =
+  | 'CAMBIO_HORARIO'
+  | 'JUSTIFICACION_INASISTENCIA';
+
 @Component({
   selector: 'app-solicitudes-cambio-horario',
   standalone: true,
@@ -19,9 +26,11 @@ import {TipoJustificativo} from '../../models/solicitud.model';
 })
 export class SolicitudesCambioHorario implements OnInit {
   solicitudes: SolicitudCambioHorario[] = [];
+  rolActual: Role | null = null;
+  vistaActiva: VistaGestion = 'CAMBIO_HORARIO';
+
   cargando = false;
   errorCarga = false;
-  rolActual: Role | null = null;
 
   mostrarModal = false;
   solicitudSeleccionada: SolicitudCambioHorario | null = null;
@@ -30,32 +39,23 @@ export class SolicitudesCambioHorario implements OnInit {
   procesando = false;
   errorRespuesta = '';
 
+  procesandoArchivoId: number | null = null;
+
   toastVisible = false;
   toastMensaje = '';
   toastTipo: TipoToast = 'info';
 
   constructor(
-    private solicitudService: SolicitudService,
-    private authService: AuthService,
-    private cdr: ChangeDetectorRef
-  ) {}
-
-  // =====================================================
-  // INICIALIZACIÓN
-  // =====================================================
+    private readonly solicitudService: SolicitudService,
+    private readonly authService: AuthService,
+    private readonly cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
     const usuario = this.authService.getUser();
-
-    this.rolActual =
-      (usuario?.role as Role) || null;
-
+    this.rolActual = (usuario?.role as Role) || null;
     this.cargarSolicitudes();
   }
-
-  // =====================================================
-  // PERMISOS
-  // =====================================================
 
   get puedeResolver(): boolean {
     return (
@@ -64,19 +64,64 @@ export class SolicitudesCambioHorario implements OnInit {
     );
   }
 
-  // =====================================================
-  // DATOS DEL MODAL
-  // =====================================================
+  get solicitudesVisibles(): SolicitudCambioHorario[] {
+    return this.solicitudes.filter(
+      solicitud => solicitud.tipo === this.vistaActiva
+    );
+  }
 
-   get tituloModal(): string {
-    const esJustificativo =
+  get cantidadCambiosHorario(): number {
+    return this.solicitudes.filter(
+      solicitud => solicitud.tipo === 'CAMBIO_HORARIO'
+    ).length;
+  }
+
+  get cantidadJustificaciones(): number {
+    return this.solicitudes.filter(
+      solicitud =>
+        solicitud.tipo === 'JUSTIFICACION_INASISTENCIA'
+    ).length;
+  }
+
+  get tituloSeccion(): string {
+    return this.vistaActiva === 'CAMBIO_HORARIO'
+      ? 'Cambios de horario'
+      : 'Justificaciones de inasistencia';
+  }
+
+  get descripcionSeccion(): string {
+    if (this.vistaActiva === 'CAMBIO_HORARIO') {
+      return this.puedeResolver
+        ? 'Consultá y resolvé las solicitudes de cambio de horario.'
+        : 'Consultá las solicitudes de cambio de horario registradas.';
+    }
+
+    return this.puedeResolver
+      ? 'Consultá y resolvé las justificaciones de inasistencia.'
+      : 'Consultá las justificaciones de inasistencia registradas.';
+  }
+
+  get mensajeListaVacia(): string {
+    return this.vistaActiva === 'CAMBIO_HORARIO'
+      ? 'No hay solicitudes de cambio de horario registradas.'
+      : 'No hay justificaciones de inasistencia registradas.';
+  }
+
+  seleccionarVista(vista: VistaGestion): void {
+    this.vistaActiva = vista;
+  }
+
+  get esJustificacionSeleccionada(): boolean {
+    return (
       this.solicitudSeleccionada?.tipo ===
-      'JUSTIFICATIVO_FALTA';
+      'JUSTIFICACION_INASISTENCIA'
+    );
+  }
 
-    const sustantivo =
-      esJustificativo
-        ? 'justificativo'
-        : 'cambio de horario';
+  get tituloModal(): string {
+    const sustantivo = this.esJustificacionSeleccionada
+      ? 'justificación de inasistencia'
+      : 'cambio de horario';
 
     return this.accionSeleccionada === 'APROBADA'
       ? `Aprobar ${sustantivo}`
@@ -84,26 +129,24 @@ export class SolicitudesCambioHorario implements OnInit {
   }
 
   get mensajeModal(): string {
-    const solicitud =
-      this.solicitudSeleccionada;
+    const solicitud = this.solicitudSeleccionada;
 
-    if (!solicitud) {
-      return '';
-    }
+    if (!solicitud) return '';
 
-    const usuario =
-      `${solicitud.usuario_nombre || ''} ` +
-      `${solicitud.usuario_apellido || ''}`;
+    const usuario = [
+      solicitud.usuario_nombre,
+      solicitud.usuario_apellido
+    ].filter(Boolean).join(' ');
 
-    const accion =
-      this.accionSeleccionada === 'APROBADA'
-        ? 'aprobar'
-        : 'rechazar';
+    const accion = this.accionSeleccionada === 'APROBADA'
+      ? 'aprobar'
+      : 'rechazar';
 
-    return (
-      `¿Querés ${accion} la solicitud de ` +
-      `${usuario.trim()}?`
-    );
+    const elemento = this.esJustificacionSeleccionada
+      ? 'la justificación de inasistencia'
+      : 'la solicitud de cambio de horario';
+
+    return `¿Querés ${accion} ${elemento} de ${usuario}?`;
   }
 
   get tipoModal(): TipoModal {
@@ -113,27 +156,26 @@ export class SolicitudesCambioHorario implements OnInit {
   }
 
   get textoConfirmarModal(): string {
-    if (this.procesando) {
-      return this.accionSeleccionada === 'APROBADA'
-        ? 'Aprobando...'
-        : 'Rechazando...';
-    }
+  const elemento = this.esJustificacionSeleccionada
+    ? 'justificación'
+    : 'solicitud';
 
+  if (this.procesando) {
     return this.accionSeleccionada === 'APROBADA'
-      ? 'Aprobar solicitud'
-      : 'Rechazar solicitud';
+      ? 'Aprobando...'
+      : 'Rechazando...';
   }
 
-  // =====================================================
-  // CARGAR SOLICITUDES GESTIONABLES
-  // =====================================================
+  return this.accionSeleccionada === 'APROBADA'
+    ? `Aprobar ${elemento}`
+    : `Rechazar ${elemento}`;
+}
 
   cargarSolicitudes(): void {
     this.cargando = true;
     this.errorCarga = false;
 
-    this.solicitudService
-      .getSolicitudesGestionables()
+    this.solicitudService.getSolicitudesGestionables()
       .pipe(
         finalize(() => {
           this.cargando = false;
@@ -141,79 +183,49 @@ export class SolicitudesCambioHorario implements OnInit {
         })
       )
       .subscribe({
-        next: (solicitudes) => {
-          this.solicitudes = [
-            ...solicitudes
-          ];
-
-          this.cdr.detectChanges();
+        next: solicitudes => {
+          this.solicitudes = solicitudes;
         },
-        error: (error) => {
-          console.error(
-            'Error cargando solicitudes:',
-            error
-          );
-
+        error: (error: HttpErrorResponse) => {
           this.solicitudes = [];
           this.errorCarga = true;
 
           this.mostrarToast(
-            error.error?.mensaje ||
-            'No fue posible cargar las solicitudes.',
+            this.obtenerMensajeError(
+              error,
+              'No fue posible cargar las solicitudes.'
+            ),
             'error'
           );
-
-          this.cdr.detectChanges();
         }
       });
   }
-
-  // =====================================================
-  // ABRIR MODAL
-  // =====================================================
 
   abrirModal(
     solicitud: SolicitudCambioHorario,
     accion: 'APROBADA' | 'RECHAZADA'
   ): void {
-    if (!this.puedeResolver) {
-      return;
-    }
+    if (!this.puedeResolver) return;
 
     this.solicitudSeleccionada = solicitud;
     this.accionSeleccionada = accion;
     this.respuesta = '';
     this.errorRespuesta = '';
     this.mostrarModal = true;
-
-    this.cdr.detectChanges();
   }
 
-  // =====================================================
-  // CERRAR MODAL
-  // =====================================================
-
   cerrarModal(): void {
-    if (this.procesando) {
-      return;
-    }
+    if (this.procesando) return;
 
     this.mostrarModal = false;
     this.solicitudSeleccionada = null;
     this.accionSeleccionada = null;
     this.respuesta = '';
     this.errorRespuesta = '';
-
-    this.cdr.detectChanges();
   }
 
-  // =====================================================
-  // VALIDAR RESPUESTA
-  // =====================================================
-
   validarRespuesta(): boolean {
-    const respuesta =
-      this.respuesta.trim();
+    const respuesta = this.respuesta.trim();
 
     if (
       this.accionSeleccionada === 'RECHAZADA' &&
@@ -221,14 +233,12 @@ export class SolicitudesCambioHorario implements OnInit {
     ) {
       this.errorRespuesta =
         'El motivo del rechazo debe contener al menos 5 caracteres.';
-
       return false;
     }
 
     if (respuesta.length > 500) {
       this.errorRespuesta =
         'La respuesta no puede superar los 500 caracteres.';
-
       return false;
     }
 
@@ -236,16 +246,9 @@ export class SolicitudesCambioHorario implements OnInit {
     return true;
   }
 
-  // =====================================================
-  // APROBAR O RECHAZAR
-  // =====================================================
-
   confirmarResolucion(): void {
-    const solicitud =
-      this.solicitudSeleccionada;
-
-    const estado =
-      this.accionSeleccionada;
+    const solicitud = this.solicitudSeleccionada;
+    const estado = this.accionSeleccionada;
 
     if (
       !solicitud ||
@@ -253,22 +256,18 @@ export class SolicitudesCambioHorario implements OnInit {
       !this.puedeResolver ||
       !this.validarRespuesta()
     ) {
-      this.cdr.detectChanges();
       return;
     }
 
     this.procesando = true;
 
-    this.solicitudService
-      .resolveSolicitud(
-        solicitud.id,
-        {
-          estado,
-          respuesta:
-            this.respuesta.trim() ||
-            undefined
-        }
-      )
+    this.solicitudService.resolveSolicitud(
+      solicitud.id,
+      {
+        estado,
+        respuesta: this.respuesta.trim() || undefined
+      }
+    )
       .pipe(
         finalize(() => {
           this.procesando = false;
@@ -276,46 +275,161 @@ export class SolicitudesCambioHorario implements OnInit {
         })
       )
       .subscribe({
-        next: (resultado) => {
+        next: resultado => {
           this.mostrarModal = false;
           this.solicitudSeleccionada = null;
           this.accionSeleccionada = null;
           this.respuesta = '';
           this.errorRespuesta = '';
 
-          this.mostrarToast(
-            resultado.mensaje,
-            'success'
-          );
-
-          // Recarga para que una solicitud aprobada
-          // continúe visible con su nuevo estado.
+          this.mostrarToast(resultado.mensaje, 'success');
           this.cargarSolicitudes();
         },
-        error: (error) => {
-          console.error(
-            'Error resolviendo solicitud:',
-            error
-          );
-
+        error: (error: HttpErrorResponse) => {
           this.mostrarToast(
-            error.error?.mensaje ||
-            'No fue posible resolver la solicitud.',
+            this.obtenerMensajeError(
+              error,
+              'No fue posible resolver la solicitud.'
+            ),
             'error'
           );
-
-          this.cdr.detectChanges();
         }
       });
   }
 
-  // =====================================================
-  // ETIQUETAS
-  // =====================================================
+  verArchivo(solicitud: SolicitudCambioHorario): void {
+    this.obtenerArchivo(solicitud, false);
+  }
 
-  obtenerEtiquetaRol(
-    role?: Role
+  descargarArchivo(solicitud: SolicitudCambioHorario): void {
+    this.obtenerArchivo(solicitud, true);
+  }
+
+  private obtenerArchivo(
+    solicitud: SolicitudCambioHorario,
+    descargar: boolean
+  ): void {
+    const archivoId = solicitud.archivo_id;
+
+    if (!archivoId) {
+      this.mostrarToast(
+        'La solicitud no tiene un archivo adjunto.',
+        'warning'
+      );
+      return;
+    }
+
+    if (typeof window === 'undefined') return;
+
+    const ventana = descargar
+      ? null
+      : window.open('', '_blank');
+
+    this.procesandoArchivoId = archivoId;
+
+    this.solicitudService
+      .getArchivoJustificativo(archivoId, descargar)
+      .pipe(
+        finalize(() => {
+          this.procesandoArchivoId = null;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
+        next: response => {
+          this.procesarArchivo(
+            response,
+            solicitud,
+            descargar,
+            ventana
+          );
+        },
+        error: (error: HttpErrorResponse) => {
+          ventana?.close();
+
+          this.mostrarToast(
+            this.obtenerMensajeErrorBlob(
+              error,
+              'No fue posible obtener el archivo.'
+            ),
+            'error'
+          );
+        }
+      });
+  }
+
+  private procesarArchivo(
+    response: HttpResponse<Blob>,
+    solicitud: SolicitudCambioHorario,
+    descargar: boolean,
+    ventana: Window | null
+  ): void {
+    if (!response.body) {
+      ventana?.close();
+      this.mostrarToast(
+        'El servidor no devolvió el archivo.',
+        'error'
+      );
+      return;
+    }
+
+    const url = URL.createObjectURL(response.body);
+    const nombre = this.obtenerNombreArchivo(
+      response,
+      solicitud.archivo_nombre_original ||
+      `justificativo-${solicitud.id}`
+    );
+
+    if (descargar) {
+      const enlace = document.createElement('a');
+      enlace.href = url;
+      enlace.download = nombre;
+      document.body.appendChild(enlace);
+      enlace.click();
+      enlace.remove();
+      URL.revokeObjectURL(url);
+      return;
+    }
+
+    if (ventana) {
+      ventana.location.href = url;
+    } else {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+
+    window.setTimeout(
+      () => URL.revokeObjectURL(url),
+      60000
+    );
+  }
+
+  private obtenerNombreArchivo(
+    response: HttpResponse<Blob>,
+    nombrePredeterminado: string
   ): string {
+    const disposition =
+      response.headers.get('Content-Disposition') || '';
+
+    const utf8 = disposition.match(
+      /filename\*=UTF-8''([^;]+)/
+    );
+
+    if (utf8?.[1]) {
+      try {
+        return decodeURIComponent(utf8[1]);
+      } catch {
+        return nombrePredeterminado;
+      }
+    }
+
+    const simple = disposition.match(
+      /filename="?([^";]+)"?/
+    );
+
+    return simple?.[1] || nombrePredeterminado;
+  }
+
+  obtenerEtiquetaRol(role?: Role): string {
     switch (role) {
       case 'supervisor':
         return 'Supervisor';
@@ -356,42 +470,43 @@ export class SolicitudesCambioHorario implements OnInit {
     }
   }
 
-  // =====================================================
-  // FORMATOS
-  // =====================================================
+  obtenerEtiquetaTipoJustificativo(
+    tipo: TipoJustificativo | null | undefined
+  ): string {
+    switch (tipo) {
+      case 'CERTIFICADO_MEDICO':
+        return 'Certificado médico';
+      case 'CERTIFICADO_ESTUDIO':
+        return 'Certificado de estudio';
+      case 'EMERGENCIA_FAMILIAR':
+        return 'Emergencia familiar';
+      case 'OTRO':
+        return 'Otro motivo';
+      default:
+        return 'Sin especificar';
+    }
+  }
 
   formatearFecha(
-    fecha: string
+    fecha: string | null | undefined
   ): string {
-    if (!fecha) {
-      return '-';
-    }
+    if (!fecha) return '-';
 
-    const partes =
-      fecha.substring(0, 10).split('-');
+    const partes = fecha.substring(0, 10).split('-');
 
-    if (partes.length !== 3) {
-      return fecha;
-    }
+    if (partes.length !== 3) return fecha;
 
-    return (
-      `${partes[2]}/` +
-      `${partes[1]}/` +
-      `${partes[0]}`
-    );
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
   }
 
   formatearFechaHora(
     fechaHora: string | null | undefined
   ): string {
-    if (!fechaHora) {
-      return '-';
-    }
+    if (!fechaHora) return '-';
 
-    const valor =
-      fechaHora.includes('T')
-        ? fechaHora
-        : fechaHora.replace(' ', 'T');
+    const valor = fechaHora.includes('T')
+      ? fechaHora
+      : fechaHora.replace(' ', 'T');
 
     const fecha = new Date(valor);
 
@@ -399,78 +514,67 @@ export class SolicitudesCambioHorario implements OnInit {
       return fechaHora;
     }
 
-    return new Intl.DateTimeFormat(
-      'es-AR',
-      {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hourCycle: 'h23'
-      }
-    ).format(fecha);
+    return new Intl.DateTimeFormat('es-AR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23'
+    }).format(fecha);
   }
 
   formatearHora(
-    hora: string
+    hora: string | null | undefined
   ): string {
-    return hora
-      ? hora.substring(0, 5)
-      : '--:--';
+    return hora ? hora.substring(0, 5) : '--:--';
+  }
+
+  formatearTamanio(
+    bytes: number | null | undefined
+  ): string {
+    if (!bytes) return '';
+
+    if (bytes < 1024 * 1024) {
+      return `${Math.ceil(bytes / 1024)} KB`;
+    }
+
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   }
 
   obtenerIniciales(
     solicitud: SolicitudCambioHorario
   ): string {
-    const nombre =
-      solicitud.usuario_nombre || '';
-
-    const apellido =
-      solicitud.usuario_apellido || '';
+    const nombre = solicitud.usuario_nombre || '';
+    const apellido = solicitud.usuario_apellido || '';
 
     return (
       nombre.charAt(0).toUpperCase() +
       apellido.charAt(0).toUpperCase()
     ) || '?';
   }
-  
-  // =====================================================
-  // TEXTOS DEL JUSTIFICATIVO
-  // =====================================================
 
-  obtenerEtiquetaTipoJustificativo(
-    tipo: TipoJustificativo
+  private obtenerMensajeError(
+    error: HttpErrorResponse,
+    predeterminado: string
   ): string {
-    switch (tipo) {
-      case 'CERTIFICADO_MEDICO':
-        return 'Certificado médico';
-      case 'EMERGENCIA_FAMILIAR':
-        return 'Emergencia familiar';
-      default:
-        return 'Otro motivo';
-    }
+    return (
+      error.error?.mensaje ||
+      error.error?.message ||
+      predeterminado
+    );
   }
 
-  obtenerUrlArchivo(
-    archivoUrl: string | null | undefined
+  private obtenerMensajeErrorBlob(
+    error: HttpErrorResponse,
+    predeterminado: string
   ): string {
-    if (!archivoUrl) {
-      return '';
+    if (!(error.error instanceof Blob)) {
+      return this.obtenerMensajeError(error, predeterminado);
     }
 
-    const base =
-      environment.apiUrl.replace(
-        '/api',
-        ''
-      );
-
-    return base + archivoUrl;
+    return predeterminado;
   }
-
-  // =====================================================
-  // TOAST
-  // =====================================================
 
   mostrarToast(
     mensaje: string,
@@ -483,6 +587,5 @@ export class SolicitudesCambioHorario implements OnInit {
 
   cerrarToast(): void {
     this.toastVisible = false;
-    this.cdr.detectChanges();
   }
 }

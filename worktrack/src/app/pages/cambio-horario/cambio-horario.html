@@ -1,587 +1,707 @@
 <div class="page-container">
   <app-header
-    titulo="Cambio de Horario"
+    titulo="Solicitudes"
     [mostrarVolver]="true">
   </app-header>
 
   <main class="content">
     <div class="tabs">
-  <button
-    type="button"
-    class="tab-btn"
-    [class.active]="activeTab === 'horario'"
-    (click)="cambiarTab('horario')">
-      <i class="bi bi-clock"></i>
-    Cambio de horario
-  </button>
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab === 'horario'"
+        (click)="cambiarTab('horario')">
+        <i class="bi bi-clock"></i>
+        Cambio de horario
+      </button>
 
-  <button
-    type="button"
-    class="tab-btn"
-    [class.active]="activeTab === 'falta'"
-    (click)="cambiarTab('falta')">
-    <i class="bi bi-file-medical"></i>
-    Justificar falta
-  </button>
-</div>
-<div *ngIf="activeTab === 'horario'">
-    <!-- NUEVA SOLICITUD -->
-    <button
-      type="button"
-      class="btn-new"
-      *ngIf="!mostrarFormulario"
-      (click)="nuevaSolicitud()">
-      <i class="bi bi-calendar-plus"></i>
-      <span>Nueva solicitud de cambio</span>
-    </button>
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab === 'falta'"
+        (click)="cambiarTab('falta')">
+        <i class="bi bi-file-medical"></i>
+        Justificar inasistencia
+      </button>
+    </div>
 
-    <!-- FORMULARIO -->
-    <section class="form-card" *ngIf="mostrarFormulario">
-      <div class="form-header">
-        <div class="form-header-icon">
-          <i class="bi bi-calendar-plus"></i>
+    <!-- ==================================================
+         CAMBIO DE HORARIO
+         ================================================== -->
+
+    <ng-container *ngIf="activeTab === 'horario'">
+      <button
+        type="button"
+        class="btn-new"
+        *ngIf="!mostrarFormulario"
+        (click)="nuevaSolicitud()">
+        <i class="bi bi-calendar-plus"></i>
+        Nueva solicitud de cambio
+      </button>
+
+      <section class="form-card" *ngIf="mostrarFormulario">
+        <div class="form-header">
+          <div class="form-header-icon">
+            <i class="bi bi-calendar-plus"></i>
+          </div>
+
+          <div>
+            <h2>Nueva solicitud de cambio</h2>
+            <p>
+              Seleccioná una fecha y proponé un nuevo horario
+              o modalidad para ese día.
+            </p>
+          </div>
         </div>
 
-        <div>
-          <h2>Nueva solicitud de cambio</h2>
-          <p>
-            Seleccioná una fecha y proponé un nuevo
-            horario o modalidad para ese día.
-          </p>
-        </div>
-      </div>
+        <form
+          class="request-form"
+          [formGroup]="solicitudForm"
+          (ngSubmit)="guardarSolicitud()"
+          novalidate>
 
-      <form
-        class="request-form"
-        [formGroup]="solicitudForm"
-        (ngSubmit)="guardarSolicitud()"
-        novalidate>
+          <div class="form-group">
+            <label for="fecha-solicitada">
+              Fecha del cambio
+              <span class="required">*</span>
+            </label>
 
-        <!-- FECHA -->
-        <div class="form-group">
-          <label for="fecha-solicitada">
-            Fecha del cambio
-            <span class="required">*</span>
-          </label>
+            <div
+              class="input-wrapper"
+              [class.input-error]="campoInvalido('fecha_solicitada')">
+              <i class="bi bi-calendar3"></i>
 
-          <div
-            class="input-wrapper"
-            [class.input-error]="campoInvalido('fecha_solicitada')">
-            <i class="bi bi-calendar3"></i>
+              <input
+                id="fecha-solicitada"
+                type="date"
+                formControlName="fecha_solicitada"
+                [min]="fechaMinima"
+                (change)="consultarHorario()">
+            </div>
 
-            <input
-              id="fecha-solicitada"
-              type="date"
-              formControlName="fecha_solicitada"
-              [min]="fechaMinima"
-              (change)="consultarHorario()">
+            <div
+              class="field-error"
+              *ngIf="campoInvalido('fecha_solicitada')">
+              <span
+                *ngIf="tieneError('fecha_solicitada', 'required')">
+                La fecha es obligatoria.
+              </span>
+
+              <span
+                *ngIf="tieneError('fecha_solicitada', 'fechaNoFutura')">
+                Debés seleccionar una fecha futura.
+              </span>
+            </div>
+
+            <p class="field-help">
+              El cambio afectará únicamente la fecha seleccionada.
+            </p>
           </div>
 
           <div
-            class="field-error"
-            *ngIf="campoInvalido('fecha_solicitada')">
-            <span
-              *ngIf="tieneError('fecha_solicitada', 'required')">
-              La fecha es obligatoria.
-            </span>
-
-            <span
-              *ngIf="tieneError('fecha_solicitada', 'fechaNoFutura')">
-              Debés seleccionar una fecha futura.
-            </span>
+            class="schedule-status loading-schedule"
+            *ngIf="consultandoHorario">
+            <div class="small-spinner"></div>
+            <span>Consultando tu horario actual...</span>
           </div>
 
-          <p class="field-help">
-            El cambio afectará únicamente la fecha seleccionada.
-          </p>
-        </div>
-
-        <!-- CONSULTANDO HORARIO -->
-        <div
-          class="schedule-status loading-schedule"
-          *ngIf="consultandoHorario">
-          <div class="small-spinner"></div>
-          <span>Consultando tu horario actual...</span>
-        </div>
-
-        <!-- ERROR DEL HORARIO -->
-        <div
-          class="schedule-status schedule-error"
-          *ngIf="!consultandoHorario && errorHorario">
-          <i class="bi bi-exclamation-circle"></i>
-          <span>{{ errorHorario }}</span>
-        </div>
-
-        <!-- HORARIO ACTUAL -->
-        <div
-          class="current-schedule"
-          *ngIf="!consultandoHorario && horarioActual">
-          <div class="current-schedule-title">
-            <i class="bi bi-clock-history"></i>
-            <span>Tu horario actual para ese día</span>
+          <div
+            class="schedule-status schedule-error"
+            *ngIf="!consultandoHorario && errorHorario">
+            <i class="bi bi-exclamation-circle"></i>
+            <span>{{ errorHorario }}</span>
           </div>
 
-          <div class="current-schedule-grid">
-            <div class="current-data">
-              <span>Día</span>
-              <strong>
-                {{ horarioActual.dia_semana | titlecase }}
-              </strong>
+          <div
+            class="current-schedule"
+            *ngIf="!consultandoHorario && horarioActual">
+            <div class="current-schedule-title">
+              <i class="bi bi-clock-history"></i>
+              <span>Tu horario actual para ese día</span>
             </div>
 
-            <div class="current-data">
-              <span>Entrada</span>
-              <strong>
-                {{
-                  formatearHora(
-                    horarioActual.horario_actual.hora_entrada
-                  )
-                }}
-              </strong>
-            </div>
+            <div class="current-schedule-grid">
+              <div class="current-data">
+                <span>Día</span>
+                <strong>
+                  {{ horarioActual.dia_semana | titlecase }}
+                </strong>
+              </div>
 
-            <div class="current-data">
-              <span>Salida</span>
-              <strong>
-                {{
-                  formatearHora(
-                    horarioActual.horario_actual.hora_salida
-                  )
-                }}
-              </strong>
-            </div>
+              <div class="current-data">
+                <span>Entrada</span>
+                <strong>
+                  {{
+                    formatearHora(
+                      horarioActual.horario_actual.hora_entrada
+                    )
+                  }}
+                </strong>
+              </div>
 
-            <div class="current-data">
-              <span>Modalidad</span>
-              <strong>
-                {{ horarioActual.horario_actual.modalidad }}
-              </strong>
+              <div class="current-data">
+                <span>Salida</span>
+                <strong>
+                  {{
+                    formatearHora(
+                      horarioActual.horario_actual.hora_salida
+                    )
+                  }}
+                </strong>
+              </div>
+
+              <div class="current-data">
+                <span>Modalidad</span>
+                <strong>
+                  {{ horarioActual.horario_actual.modalidad }}
+                </strong>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- CAMBIO SOLICITADO -->
-        <div class="form-section">
-          <div class="form-section-title">
-            <i class="bi bi-clock"></i>
+          <div class="form-section">
+            <div class="form-section-title">
+              <i class="bi bi-clock"></i>
 
-            <div>
-              <h3>Cambio solicitado</h3>
-              <p>
-                Indicá las horas y la modalidad que necesitás
-                para la fecha seleccionada.
+              <div>
+                <h3>Cambio solicitado</h3>
+                <p>
+                  Indicá las horas y la modalidad que necesitás
+                  para la fecha seleccionada.
+                </p>
+              </div>
+            </div>
+
+            <div class="time-grid">
+              <div class="form-group">
+                <label for="hora-entrada">
+                  Nueva hora de entrada
+                  <span class="required">*</span>
+                </label>
+
+                <div
+                  class="input-wrapper"
+                  [class.input-error]="
+                    campoInvalido('hora_entrada_solicitada')
+                  ">
+                  <i class="bi bi-box-arrow-in-right"></i>
+
+                  <input
+                    id="hora-entrada"
+                    type="time"
+                    formControlName="hora_entrada_solicitada">
+                </div>
+
+                <div
+                  class="field-error"
+                  *ngIf="campoInvalido('hora_entrada_solicitada')">
+                  <span
+                    *ngIf="
+                      tieneError(
+                        'hora_entrada_solicitada',
+                        'required'
+                      )
+                    ">
+                    La hora de entrada es obligatoria.
+                  </span>
+
+                  <span
+                    *ngIf="
+                      tieneError(
+                        'hora_entrada_solicitada',
+                        'pattern'
+                      )
+                    ">
+                    Ingresá una hora válida.
+                  </span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="hora-salida">
+                  Nueva hora de salida
+                  <span class="required">*</span>
+                </label>
+
+                <div
+                  class="input-wrapper"
+                  [class.input-error]="
+                    campoInvalido('hora_salida_solicitada') ||
+                    rangoHorarioInvalido()
+                  ">
+                  <i class="bi bi-box-arrow-right"></i>
+
+                  <input
+                    id="hora-salida"
+                    type="time"
+                    formControlName="hora_salida_solicitada">
+                </div>
+
+                <div
+                  class="field-error"
+                  *ngIf="campoInvalido('hora_salida_solicitada')">
+                  <span
+                    *ngIf="
+                      tieneError(
+                        'hora_salida_solicitada',
+                        'required'
+                      )
+                    ">
+                    La hora de salida es obligatoria.
+                  </span>
+
+                  <span
+                    *ngIf="
+                      tieneError(
+                        'hora_salida_solicitada',
+                        'pattern'
+                      )
+                    ">
+                    Ingresá una hora válida.
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="field-error range-error"
+              *ngIf="rangoHorarioInvalido()">
+              La hora de salida debe ser posterior a la hora de entrada.
+            </div>
+
+            <div class="form-group">
+              <label for="modalidad-solicitada">
+                Modalidad solicitada
+                <span class="required">*</span>
+              </label>
+
+              <div
+                class="input-wrapper"
+                [class.input-error]="
+                  campoInvalido('modalidad_solicitada')
+                ">
+                <i class="bi bi-building"></i>
+
+                <select
+                  id="modalidad-solicitada"
+                  formControlName="modalidad_solicitada">
+                  <option value="" disabled>
+                    Seleccioná una modalidad
+                  </option>
+                  <option value="PRESENCIAL">Presencial</option>
+                  <option value="HOME">Home</option>
+                </select>
+              </div>
+
+              <div
+                class="field-error"
+                *ngIf="campoInvalido('modalidad_solicitada')">
+                La modalidad es obligatoria.
+              </div>
+
+              <p class="field-help">
+                Podés mantener la modalidad actual o solicitar
+                el cambio entre PRESENCIAL y HOME.
               </p>
             </div>
           </div>
 
-          <!-- HORAS -->
-          <div class="time-grid">
-            <div class="form-group">
-              <label for="hora-entrada">
-                Nueva hora de entrada
-                <span class="required">*</span>
-              </label>
-
-              <div
-                class="input-wrapper"
-                [class.input-error]="
-                  campoInvalido('hora_entrada_solicitada')
-                ">
-                <i class="bi bi-box-arrow-in-right"></i>
-
-                <input
-                  id="hora-entrada"
-                  type="time"
-                  formControlName="hora_entrada_solicitada">
-              </div>
-
-              <div
-                class="field-error"
-                *ngIf="campoInvalido('hora_entrada_solicitada')">
-                <span
-                  *ngIf="
-                    tieneError(
-                      'hora_entrada_solicitada',
-                      'required'
-                    )
-                  ">
-                  La hora de entrada es obligatoria.
-                </span>
-
-                <span
-                  *ngIf="
-                    tieneError(
-                      'hora_entrada_solicitada',
-                      'pattern'
-                    )
-                  ">
-                  Ingresá una hora válida.
-                </span>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="hora-salida">
-                Nueva hora de salida
-                <span class="required">*</span>
-              </label>
-
-              <div
-                class="input-wrapper"
-                [class.input-error]="
-                  campoInvalido('hora_salida_solicitada') ||
-                  rangoHorarioInvalido()
-                ">
-                <i class="bi bi-box-arrow-right"></i>
-
-                <input
-                  id="hora-salida"
-                  type="time"
-                  formControlName="hora_salida_solicitada">
-              </div>
-
-              <div
-                class="field-error"
-                *ngIf="campoInvalido('hora_salida_solicitada')">
-                <span
-                  *ngIf="
-                    tieneError(
-                      'hora_salida_solicitada',
-                      'required'
-                    )
-                  ">
-                  La hora de salida es obligatoria.
-                </span>
-
-                <span
-                  *ngIf="
-                    tieneError(
-                      'hora_salida_solicitada',
-                      'pattern'
-                    )
-                  ">
-                  Ingresá una hora válida.
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div
-            class="field-error range-error"
-            *ngIf="rangoHorarioInvalido()">
-            La hora de salida debe ser posterior
-            a la hora de entrada.
-          </div>
-
-          <!-- MODALIDAD -->
           <div class="form-group">
-            <label for="modalidad-solicitada">
-              Modalidad solicitada
+            <div class="label-row">
+              <label for="motivo">
+                Motivo
+                <span class="required">*</span>
+              </label>
+
+              <span class="character-counter">
+                {{ solicitudForm.get('motivo')?.value?.length || 0 }}/500
+              </span>
+            </div>
+
+            <textarea
+              id="motivo"
+              rows="5"
+              minlength="5"
+              maxlength="500"
+              formControlName="motivo"
+              placeholder="Explicá brevemente por qué necesitás realizar el cambio..."
+              [class.input-error]="campoInvalido('motivo')">
+            </textarea>
+
+            <div
+              class="field-error"
+              *ngIf="campoInvalido('motivo')">
+              <span *ngIf="tieneError('motivo', 'required')">
+                El motivo es obligatorio.
+              </span>
+
+              <span *ngIf="tieneError('motivo', 'minlength')">
+                El motivo debe contener al menos 5 caracteres.
+              </span>
+
+              <span *ngIf="tieneError('motivo', 'maxlength')">
+                El motivo no puede superar los 500 caracteres.
+              </span>
+            </div>
+          </div>
+
+          <div class="information-box">
+            <i class="bi bi-info-circle"></i>
+            <p>
+              Enviar esta solicitud no modifica automáticamente
+              tu cronograma. {{ textoAprobacion }}
+            </p>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn-cancel"
+              [disabled]="guardando"
+              (click)="cancelarFormulario()">
+              Cancelar
+            </button>
+
+            <button
+              type="submit"
+              class="btn-submit"
+              [disabled]="guardando">
+              <ng-container *ngIf="!guardando">
+                <i class="bi bi-send"></i>
+                Enviar solicitud
+              </ng-container>
+
+              <ng-container *ngIf="guardando">
+                <div class="button-spinner"></div>
+                Enviando...
+              </ng-container>
+            </button>
+          </div>
+        </form>
+      </section>
+    </ng-container>
+
+    <!-- ==================================================
+         JUSTIFICACIÓN DE INASISTENCIA
+         ================================================== -->
+
+    <ng-container *ngIf="activeTab === 'falta'">
+      <button
+        type="button"
+        class="btn-new"
+        *ngIf="!mostrarFormularioFalta"
+        (click)="nuevaSolicitudFalta()">
+        <i class="bi bi-file-medical"></i>
+        Justificar inasistencia
+      </button>
+
+      <section
+        class="form-card"
+        *ngIf="mostrarFormularioFalta">
+        <div class="form-header">
+          <div class="form-header-icon">
+            <i class="bi bi-file-medical"></i>
+          </div>
+
+          <div>
+            <h2>Justificar inasistencia</h2>
+            <p>
+              Informá el motivo de la inasistencia y adjuntá
+              el certificado cuando corresponda.
+            </p>
+          </div>
+        </div>
+
+        <form
+          class="request-form"
+          [formGroup]="justificativoForm"
+          (ngSubmit)="guardarJustificativo()"
+          novalidate>
+
+          <div class="form-group">
+            <label for="fecha-inasistencia">
+              Fecha de la inasistencia
               <span class="required">*</span>
             </label>
 
             <div
               class="input-wrapper"
               [class.input-error]="
-                campoInvalido('modalidad_solicitada')
+                campoInvalidoFalta('fecha_inasistencia')
               ">
-              <i class="bi bi-building"></i>
+              <i class="bi bi-calendar3"></i>
 
-              <select
-                id="modalidad-solicitada"
-                formControlName="modalidad_solicitada">
-                <option value="" disabled>
-                  Seleccioná una modalidad
-                </option>
-                <option value="PRESENCIAL">
-                  Presencial
-                </option>
-                <option value="HOME">
-                  Home
-                </option>
-              </select>
+              <input
+                id="fecha-inasistencia"
+                type="date"
+                formControlName="fecha_inasistencia"
+                [max]="fechaMaximaInasistencia">
             </div>
 
             <div
               class="field-error"
-              *ngIf="campoInvalido('modalidad_solicitada')">
+              *ngIf="campoInvalidoFalta('fecha_inasistencia')">
               <span
                 *ngIf="
-                  tieneError(
-                    'modalidad_solicitada',
+                  tieneErrorFalta(
+                    'fecha_inasistencia',
                     'required'
                   )
                 ">
-                La modalidad es obligatoria.
+                La fecha es obligatoria.
+              </span>
+
+              <span
+                *ngIf="
+                  tieneErrorFalta(
+                    'fecha_inasistencia',
+                    'fechaFutura'
+                  )
+                ">
+                La inasistencia no puede corresponder a una fecha futura.
               </span>
             </div>
-
-            <p class="field-help">
-              Podés mantener la modalidad actual o solicitar
-              el cambio entre PRESENCIAL y HOME.
-            </p>
           </div>
-        </div>
 
-        <!-- MOTIVO -->
-        <div class="form-group">
-          <div class="label-row">
-            <label for="motivo">
-              Motivo
+          <div class="form-group">
+            <label>
+              Tipo de justificación
               <span class="required">*</span>
             </label>
 
-            <span class="character-counter">
-              {{
-                solicitudForm.get('motivo')?.value?.length || 0
-              }}/500
-            </span>
+            <div class="tipo-justificativo-grid">
+              <button
+                type="button"
+                class="tipo-btn"
+                [class.active]="
+                  justificativoForm.get('tipo_justificativo')?.value ===
+                  'CERTIFICADO_MEDICO'
+                "
+                (click)="
+                  justificativoForm.patchValue({
+                    tipo_justificativo: 'CERTIFICADO_MEDICO'
+                  });
+                  justificativoForm.get('tipo_justificativo')?.markAsTouched();
+                  onTipoJustificativoChange()
+                ">
+                <i class="bi bi-file-earmark-medical"></i>
+                <span>Certificado médico</span>
+              </button>
+
+              <button
+                type="button"
+                class="tipo-btn"
+                [class.active]="
+                  justificativoForm.get('tipo_justificativo')?.value ===
+                  'CERTIFICADO_ESTUDIO'
+                "
+                (click)="
+                  justificativoForm.patchValue({
+                    tipo_justificativo: 'CERTIFICADO_ESTUDIO'
+                  });
+                  justificativoForm.get('tipo_justificativo')?.markAsTouched();
+                  onTipoJustificativoChange()
+                ">
+                <i class="bi bi-mortarboard"></i>
+                <span>Certificado de estudio</span>
+              </button>
+
+              <button
+                type="button"
+                class="tipo-btn"
+                [class.active]="
+                  justificativoForm.get('tipo_justificativo')?.value ===
+                  'EMERGENCIA_FAMILIAR'
+                "
+                (click)="
+                  justificativoForm.patchValue({
+                    tipo_justificativo: 'EMERGENCIA_FAMILIAR'
+                  });
+                  justificativoForm.get('tipo_justificativo')?.markAsTouched();
+                  onTipoJustificativoChange()
+                ">
+                <i class="bi bi-people"></i>
+                <span>Emergencia familiar</span>
+              </button>
+
+              <button
+                type="button"
+                class="tipo-btn"
+                [class.active]="
+                  justificativoForm.get('tipo_justificativo')?.value ===
+                  'OTRO'
+                "
+                (click)="
+                  justificativoForm.patchValue({
+                    tipo_justificativo: 'OTRO'
+                  });
+                  justificativoForm.get('tipo_justificativo')?.markAsTouched();
+                  onTipoJustificativoChange()
+                ">
+                <i class="bi bi-question-circle"></i>
+                <span>Otro motivo</span>
+              </button>
+            </div>
+
+            <div
+              class="field-error"
+              *ngIf="
+                campoInvalidoFalta('tipo_justificativo')
+              ">
+              Seleccioná un tipo de justificación.
+            </div>
           </div>
 
-          <textarea
-            id="motivo"
-            rows="5"
-            maxlength="500"
-            formControlName="motivo"
-            placeholder="Explicá brevemente por qué necesitás realizar el cambio..."
-            [class.input-error]="campoInvalido('motivo')">
-          </textarea>
+          <div class="form-group">
+            <div class="label-row">
+              <label for="motivo-falta">
+                Motivo
+                <span class="required">*</span>
+              </label>
 
-          <div
-            class="field-error"
-            *ngIf="campoInvalido('motivo')">
-            <span *ngIf="tieneError('motivo', 'required')">
-              El motivo es obligatorio.
-            </span>
+              <span class="character-counter">
+                {{
+                  justificativoForm.get('motivo')?.value?.length || 0
+                }}/500
+              </span>
+            </div>
 
-            <span *ngIf="tieneError('motivo', 'minlength')">
-              El motivo debe contener al menos 5 caracteres.
-            </span>
+            <textarea
+              id="motivo-falta"
+              rows="4"
+              minlength="10"
+              maxlength="500"
+              formControlName="motivo"
+              placeholder="Describí el motivo de la inasistencia..."
+              [class.input-error]="
+                campoInvalidoFalta('motivo')
+              ">
+            </textarea>
 
-            <span *ngIf="tieneError('motivo', 'maxlength')">
-              El motivo no puede superar los 500 caracteres.
-            </span>
+            <div
+              class="field-error"
+              *ngIf="campoInvalidoFalta('motivo')">
+              <span
+                *ngIf="tieneErrorFalta('motivo', 'required')">
+                El motivo es obligatorio.
+              </span>
+
+              <span
+                *ngIf="tieneErrorFalta('motivo', 'minlength')">
+                El motivo debe contener al menos 10 caracteres.
+              </span>
+
+              <span
+                *ngIf="tieneErrorFalta('motivo', 'maxlength')">
+                El motivo no puede superar los 500 caracteres.
+              </span>
+            </div>
           </div>
-        </div>
 
-        <!-- INFORMACIÓN -->
-        <div class="information-box">
-          <i class="bi bi-info-circle"></i>
+          <div class="form-group">
+            <label for="archivo-falta">
+              Certificado o comprobante
+              <span
+                class="required"
+                *ngIf="archivoObligatorio">
+                *
+              </span>
+              <span *ngIf="!archivoObligatorio">
+                (opcional)
+              </span>
+            </label>
 
-          <p>
-            Enviar esta solicitud no modifica automáticamente
-            tu cronograma. {{ textoAprobacion }}
-          </p>
-        </div>
+            <div
+              class="file-upload"
+              [class.file-error]="!!errorArchivo">
+              <input
+                #archivoJustificativoInput
+                id="archivo-falta"
+                type="file"
+                accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                [disabled]="guardandoFalta"
+                (change)="onArchivoSeleccionado($event)">
 
-        <!-- ACCIONES -->
-        <div class="form-actions">
-          <button
-            type="button"
-            class="btn-cancel"
-            [disabled]="guardando"
-            (click)="cancelarFormulario()">
-            Cancelar
-          </button>
+              <div
+                class="selected-file"
+                *ngIf="archivoSeleccionado">
+                <i class="bi bi-paperclip"></i>
 
-          <button
-            type="submit"
-            class="btn-submit"
-            [disabled]="guardando">
-            <ng-container *ngIf="!guardando">
-              <i class="bi bi-send"></i>
-              Enviar solicitud
-            </ng-container>
+                <div>
+                  <strong>{{ archivoSeleccionado.name }}</strong>
+                  <small>
+                    {{ formatearTamanio(archivoSeleccionado.size) }}
+                  </small>
+                </div>
 
-            <ng-container *ngIf="guardando">
-              <div class="button-spinner"></div>
-              Enviando...
-            </ng-container>
-          </button>
-        </div>
-      </form>
-        </section>
-      </div>
-<div *ngIf="activeTab === 'falta'">
- <button
-  type="button"
-  class="btn-new"
-  *ngIf="!mostrarFormularioFalta"
-  (click)="nuevaSolicitudFalta()">
-  <i class="bi bi-file-medical"></i>
-  <span>Justificar inasistencia</span>
-</button>
+                <button
+                  type="button"
+                  class="btn-remove-file"
+                  [disabled]="guardandoFalta"
+                  aria-label="Quitar archivo"
+                  (click)="quitarArchivo()">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+            </div>
 
-<section class="form-card" *ngIf="mostrarFormularioFalta">
-  <div class="form-header">
-    <div class="form-header-icon">
-      <i class="bi bi-file-medical"></i>
-    </div>
+            <div class="field-error" *ngIf="errorArchivo">
+              {{ errorArchivo }}
+            </div>
 
-    <div>
-      <h2>Justificar falta</h2>
-      <p>
-        Contanos el motivo de tu inasistencia y adjuntá
-        un comprobante si tenés.
-      </p>
-    </div>
-  </div>
+            <p class="field-help">
+              JPG, PNG o PDF · máximo 4 MB.
+              <ng-container *ngIf="archivoObligatorio">
+                El archivo es obligatorio para este tipo de certificado.
+              </ng-container>
+            </p>
+          </div>
 
-  <form
-    class="request-form"
-    [formGroup]="justificativoForm"
-    (ngSubmit)="guardarJustificativo()"
-    novalidate>
+          <div class="information-box">
+            <i class="bi bi-shield-lock"></i>
+            <p>
+              El documento se almacena de forma privada.
+              Solamente podrá acceder el personal autorizado.
+            </p>
+          </div>
 
-    <!-- FECHA -->
-    <div class="form-group">
-      <label for="fecha-inasistencia">
-        Fecha de la inasistencia
-        <span class="required">*</span>
-      </label>
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn-cancel"
+              [disabled]="guardandoFalta"
+              (click)="cancelarFormularioFalta()">
+              Cancelar
+            </button>
 
-      <div
-        class="input-wrapper"
-        [class.input-error]="campoInvalidoFalta('fecha_inasistencia')">
-        <i class="bi bi-calendar3"></i>
+            <button
+              type="submit"
+              class="btn-submit"
+              [disabled]="guardandoFalta">
+              <ng-container *ngIf="!guardandoFalta">
+                <i class="bi bi-send"></i>
+                Enviar justificación
+              </ng-container>
 
-        <input
-          id="fecha-inasistencia"
-          type="date"
-          formControlName="fecha_inasistencia">
-      </div>
+              <ng-container *ngIf="guardandoFalta">
+                <div class="button-spinner"></div>
+                Enviando...
+              </ng-container>
+            </button>
+          </div>
+        </form>
+      </section>
+    </ng-container>
 
-      <div
-        class="field-error"
-        *ngIf="campoInvalidoFalta('fecha_inasistencia')">
-        <span>La fecha es obligatoria.</span>
-      </div>
-    </div>
-    
-    <!-- TIPO DE JUSTIFICATIVO -->
-    <div class="form-group">
-      <label>
-        Tipo de justificativo
-        <span class="required">*</span>
-      </label>
+    <!-- ==================================================
+         LISTADO
+         ================================================== -->
 
-      <div class="tipo-justificativo-grid">
-        <button
-          type="button"
-          class="tipo-btn"
-          [class.active]="justificativoForm.get('tipo_justificativo')?.value === 'CERTIFICADO_MEDICO'"
-          (click)="justificativoForm.patchValue({ tipo_justificativo: 'CERTIFICADO_MEDICO' })">
-          <i class="bi bi-file-earmark-medical"></i>
-          <span>Certificado médico</span>
-        </button>
-
-        <button
-          type="button"
-          class="tipo-btn"
-          [class.active]="justificativoForm.get('tipo_justificativo')?.value === 'EMERGENCIA_FAMILIAR'"
-          (click)="justificativoForm.patchValue({ tipo_justificativo: 'EMERGENCIA_FAMILIAR' })">
-          <i class="bi bi-people"></i>
-          <span>Emergencia familiar</span>
-        </button>
-
-        <button
-          type="button"
-          class="tipo-btn"
-          [class.active]="justificativoForm.get('tipo_justificativo')?.value === 'OTRO_MOTIVO'"
-          (click)="justificativoForm.patchValue({ tipo_justificativo: 'OTRO_MOTIVO' })">
-          <i class="bi bi-question-circle"></i>
-          <span>Otro motivo</span>
-        </button>
-      </div>
-
-      <div
-        class="field-error"
-        *ngIf="campoInvalidoFalta('tipo_justificativo')">
-        <span>Seleccioná un tipo de justificativo.</span>
-      </div>
-    </div>
-    
-    <!-- DESCRIPCIÓN -->
-    <div class="form-group">
-      <label for="descripcion-falta">
-        Descripción
-        <span class="required">*</span>
-      </label>
-
-        <textarea
-        id="descripcion-falta"
-        rows="3"
-        [class.input-error]="campoInvalidoFalta('descripcion')"
-        formControlName="descripcion"
-        placeholder="Describí brevemente el motivo de la inasistencia...">
-      </textarea>
-
-      <div
-        class="field-error"
-        *ngIf="campoInvalidoFalta('descripcion')">
-        <span *ngIf="tieneErrorFalta('descripcion', 'required')">
-          La descripción es obligatoria.
-        </span>
-        <span *ngIf="tieneErrorFalta('descripcion', 'minlength')">
-          La descripción debe tener al menos 5 caracteres.
-        </span>
-      </div>
-    </div>
-    
-    <!-- ARCHIVO -->
-    <div class="form-group">
-      <label>Certificado o comprobante (imagen o PDF, opcional)</label>
-
-      <div class="file-upload">
-        <input
-          type="file"
-          id="archivo-falta"
-          accept="image/jpeg,image/png,application/pdf"
-          (change)="onArchivoSeleccionado($event)">
-
-        <span *ngIf="archivoSeleccionado">
-          {{ archivoSeleccionado.name }}
-        </span>
-      </div>
-
-      <div class="field-error" *ngIf="errorArchivo">
-        <span>{{ errorArchivo }}</span>
-      </div>
-
-      <p class="field-help">JPG, PNG o PDF · máx 5 MB</p>
-    </div>
-
-    <!-- ACCIONES -->
-    <div class="form-actions">
-      <button
-        type="button"
-        class="btn-cancel"
-        [disabled]="guardandoFalta"
-        (click)="cancelarFormularioFalta()">
-        Cancelar
-      </button>
-
-      <button
-        type="submit"
-        class="btn-submit"
-        [disabled]="guardandoFalta">
-        <ng-container *ngIf="!guardandoFalta">
-          <i class="bi bi-send"></i>
-          Enviar justificativo
-        </ng-container>
-
-        <ng-container *ngIf="guardandoFalta">
-          <div class="button-spinner"></div>
-          Enviando...
-        </ng-container>
-      </button>
-    </div>
-  </form>
-</section>
-</div>
-
-      <!-- LISTADO (compartido por las dos pestañas) -->
-      <ng-container *ngIf="(activeTab === 'horario' && !mostrarFormulario) || (activeTab === 'falta' && !mostrarFormularioFalta)">
+    <ng-container
+      *ngIf="
+        (activeTab === 'horario' && !mostrarFormulario) ||
+        (activeTab === 'falta' && !mostrarFormularioFalta)
+      ">
       <section class="state-card" *ngIf="cargando">
         <div class="spinner"></div>
         <p>Cargando solicitudes...</p>
@@ -612,8 +732,7 @@
         <i class="bi bi-calendar2-check"></i>
         <h3>Todavía no tenés solicitudes</h3>
         <p>
-          Cuando solicites un cambio de horario,
-          podrás consultar su estado desde esta pantalla.
+          Las solicitudes que envíes aparecerán en esta pantalla.
         </p>
       </section>
 
@@ -631,10 +750,7 @@
             [ngClass]="
               'titulo-' + grupo.estado.toLowerCase()
             ">
-            <i
-              class="bi"
-              [ngClass]="grupo.icono">
-            </i>
+            <i class="bi" [ngClass]="grupo.icono"></i>
 
             <h3>
               {{ grupo.titulo }}
@@ -655,7 +771,6 @@
             "
             *ngFor="let solicitud of grupo.solicitudes">
 
-            <!-- CABECERA -->
             <div class="card-header">
               <div
                 class="status-icon"
@@ -689,133 +804,174 @@
                 {{ obtenerEtiquetaEstado(solicitud.estado) }}
               </span>
             </div>
-<ng-container *ngIf="solicitud.tipo !== 'JUSTIFICATIVO_FALTA'">
-            <!-- FECHA -->
-            <div class="date-row">
-              <i class="bi bi-calendar"></i>
 
-              <span>
-                Fecha solicitada:
-                <strong>
-                  {{
-                    formatearFecha(
-                      solicitud.fecha_solicitada
-                    )
-                  }}
-                </strong>
-              </span>
-            </div>
+            <!-- CAMBIO DE HORARIO -->
 
-            <!-- COMPARACIÓN -->
-            <div class="schedule-grid">
-              <div class="schedule-box">
+            <ng-container
+              *ngIf="solicitud.tipo === 'CAMBIO_HORARIO'">
+              <div class="date-row">
+                <i class="bi bi-calendar"></i>
+
                 <span>
-                  Actual · {{ solicitud.modalidad_actual }}
+                  Fecha solicitada:
+                  <strong>
+                    {{ formatearFecha(solicitud.fecha_solicitada) }}
+                  </strong>
                 </span>
-
-                <strong>
-                  {{
-                    formatearHora(
-                      solicitud.hora_entrada_actual
-                    )
-                  }}
-                  -
-                  {{
-                    formatearHora(
-                      solicitud.hora_salida_actual
-                    )
-                  }}
-                </strong>
               </div>
 
-              <div class="schedule-box requested">
-                <span>
-                  Solicitado ·
+              <div class="schedule-grid">
+                <div class="schedule-box">
+                  <span>
+                    Actual · {{ solicitud.modalidad_actual }}
+                  </span>
+
+                  <strong>
+                    {{ formatearHora(solicitud.hora_entrada_actual) }}
+                    -
+                    {{ formatearHora(solicitud.hora_salida_actual) }}
+                  </strong>
+                </div>
+
+                <div class="schedule-box requested">
+                  <span>
+                    Solicitado ·
+                    {{ solicitud.modalidad_solicitada }}
+                  </span>
+
+                  <strong>
+                    {{
+                      formatearHora(
+                        solicitud.hora_entrada_solicitada
+                      )
+                    }}
+                    -
+                    {{
+                      formatearHora(
+                        solicitud.hora_salida_solicitada
+                      )
+                    }}
+                  </strong>
+                </div>
+              </div>
+
+              <div class="request-details">
+                <span class="detail-chip">
+                  <i class="bi bi-arrow-left-right"></i>
+                  {{ solicitud.modalidad_actual }}
+                  →
                   {{ solicitud.modalidad_solicitada }}
                 </span>
 
-                <strong>
-                  {{
-                    formatearHora(
-                      solicitud.hora_entrada_solicitada
-                    )
-                  }}
-                  -
-                  {{
-                    formatearHora(
-                      solicitud.hora_salida_solicitada
-                    )
-                  }}
-                </strong>
+                <span class="detail-chip">
+                  <i class="bi bi-hourglass-split"></i>
+                  Tolerancia:
+                  {{ solicitud.tolerancia_actual }} min
+                </span>
               </div>
-            </div>
 
-            <!-- DETALLES -->
-            <div class="request-details">
-              <span class="detail-chip">
-                <i class="bi bi-arrow-left-right"></i>
-                {{ solicitud.modalidad_actual }}
-                →
-                {{ solicitud.modalidad_solicitada }}
-              </span>
+              <div class="reason">
+                <span>Motivo</span>
+                <p>{{ solicitud.motivo }}</p>
+              </div>
+            </ng-container>
 
-              <span class="detail-chip">
-                <i class="bi bi-hourglass-split"></i>
-                Tolerancia:
-                {{ solicitud.tolerancia_actual }} min
-              </span>
-            </div>
+            <!-- JUSTIFICACIÓN DE INASISTENCIA -->
 
-            <!-- MOTIVO -->
-            <div class="reason">
-              <span>Motivo</span>
-              <p>{{ solicitud.motivo }}</p>
-            </div>
-            
-</ng-container>
+            <ng-container
+              *ngIf="
+                solicitud.tipo ===
+                'JUSTIFICACION_INASISTENCIA'
+              ">
+              <div class="date-row">
+                <i class="bi bi-calendar"></i>
 
-<ng-container *ngIf="solicitud.tipo === 'JUSTIFICATIVO_FALTA'">
-  <!-- FECHA DE INASISTENCIA -->
-  <div class="date-row">
-    <i class="bi bi-calendar"></i>
-    <span>
-      Fecha de la inasistencia:
-      <strong>
-        {{
-          formatearFecha(
-            solicitud.fecha_inasistencia || ''
-          )
-        }}
-      </strong>
-    </span>
-  </div>
+                <span>
+                  Fecha de la inasistencia:
+                  <strong>
+                    {{
+                      formatearFecha(
+                        solicitud.fecha_inasistencia
+                      )
+                    }}
+                  </strong>
+                </span>
+              </div>
 
-  <!-- TIPO DE JUSTIFICATIVO -->
-  <div class="request-details">
-    <span class="detail-chip">
-      <i class="bi bi-file-medical"></i>
-      {{
-        obtenerEtiquetaTipoJustificativo(
-          solicitud.tipo_justificativo!
-        )
-      }}
-    </span>
-  </div>
+              <div class="request-details">
+                <span class="detail-chip">
+                  <i class="bi bi-file-medical"></i>
+                  {{
+                    obtenerEtiquetaTipoJustificativo(
+                      solicitud.tipo_justificativo
+                    )
+                  }}
+                </span>
+              </div>
 
-  <!-- DESCRIPCIÓN -->
-  <div class="reason">
-    <span>Descripción</span>
-    <p>{{ solicitud.descripcion }}</p>
-  </div>
+              <div class="reason">
+                <span>Motivo</span>
+                <p>{{ solicitud.motivo }}</p>
+              </div>
 
-  <!-- ARCHIVO ADJUNTO -->
-  <div class="reason" *ngIf="solicitud.archivo_url">
-    <span>Comprobante</span>
-     <p><a [href]="obtenerUrlArchivo(solicitud.archivo_url)" target="_blank" rel="noopener">Ver archivo adjunto</a></p>
-  </div>
-</ng-container>
+              <div
+                class="attached-file"
+                *ngIf="solicitud.archivo_id">
+                <div class="attached-file-info">
+                  <i class="bi bi-file-earmark-lock"></i>
 
-            <!-- RESPUESTA -->
+                  <div>
+                    <strong>
+                      {{
+                        solicitud.archivo_nombre_original ||
+                        'Documento adjunto'
+                      }}
+                    </strong>
+
+                    <small
+                      *ngIf="solicitud.archivo_tamanio_bytes">
+                      {{
+                        formatearTamanio(
+                          solicitud.archivo_tamanio_bytes
+                        )
+                      }}
+                    </small>
+                  </div>
+                </div>
+
+                <div class="file-actions">
+                  <button
+                    type="button"
+                    class="btn-file"
+                    [disabled]="
+                      procesandoArchivoId === solicitud.archivo_id
+                    "
+                    (click)="verArchivo(solicitud)">
+                    <i class="bi bi-eye"></i>
+                    Ver
+                  </button>
+
+                  <button
+                    type="button"
+                    class="btn-file"
+                    [disabled]="
+                      procesandoArchivoId === solicitud.archivo_id
+                    "
+                    (click)="descargarArchivo(solicitud)">
+                    <i class="bi bi-download"></i>
+                    Descargar
+                  </button>
+                </div>
+              </div>
+
+              <div
+                class="no-file"
+                *ngIf="!solicitud.archivo_id">
+                <i class="bi bi-paperclip"></i>
+                Sin documento adjunto
+              </div>
+            </ng-container>
+
             <div
               class="response-box"
               *ngIf="solicitud.respuesta">
@@ -823,7 +979,6 @@
               <p>{{ solicitud.respuesta }}</p>
             </div>
 
-            <!-- RESOLUCIÓN -->
             <div
               class="resolution-data"
               *ngIf="solicitud.resuelta_en">
@@ -849,13 +1004,11 @@
               </span>
             </div>
           </article>
-        </section> 
+        </section>
       </ng-container>
     </ng-container>
-
   </main>
 
-  <!-- TOAST REUTILIZABLE -->
   <app-toast
     [visible]="toastVisible"
     [mensaje]="toastMensaje"

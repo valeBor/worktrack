@@ -1,18 +1,36 @@
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild
+} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule,
-  ValidationErrors, Validators} from '@angular/forms';
-import {HttpErrorResponse} from '@angular/common/http';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators
+} from '@angular/forms';
+import {HttpErrorResponse, HttpResponse} from '@angular/common/http';
 import {finalize} from 'rxjs/operators';
 import {Header} from '../../components/header/header';
 import {Toast, TipoToast} from '../../components/toast/toast';
 import {SolicitudService} from '../../services/solicitud.service';
 import {AuthService} from '../../services/auth.service';
-import { GrupoSolicitudes, HorarioActualFecha, NuevaSolicitudCambioHorario,
-  SolicitudCambioHorario, SolicitudEstado, TipoJustificativo,
-  NuevaSolicitudJustificativo, SolicitudJustificativo} from '../../models/solicitud.model';
+import {
+  GrupoSolicitudes,
+  HorarioActualFecha,
+  NuevaSolicitudCambioHorario,
+  NuevaSolicitudJustificativo,
+  SolicitudCambioHorario,
+  SolicitudEstado,
+  SolicitudTipo,
+  TipoJustificativo
+} from '../../models/solicitud.model';
 import {Role} from '../../models/user.models';
-import {environment} from '../../../environments/environment';
 
 @Component({
   selector: 'app-cambio-horario',
@@ -22,17 +40,24 @@ import {environment} from '../../../environments/environment';
   styleUrl: './cambio-horario.css'
 })
 export class CambioHorario implements OnInit {
+  @ViewChild('archivoJustificativoInput')
+  archivoInput?: ElementRef<HTMLInputElement>;
+
+  private readonly maximoArchivoBytes = 4 * 1024 * 1024;
+  private readonly tiposArchivoPermitidos = [
+    'image/jpeg',
+    'image/png',
+    'application/pdf'
+  ];
+
   solicitudes: SolicitudCambioHorario[] = [];
   rolActual: Role | null = null;
   cargando = false;
   errorCarga = false;
 
-  // ====================================================
-  // FORMULARIO
-  // ====================================================
+  activeTab: 'horario' | 'falta' = 'horario';
 
   mostrarFormulario = false;
-  activeTab: 'horario' | 'falta' = 'horario'; 
   solicitudForm: FormGroup;
   formularioEnviado = false;
   guardando = false;
@@ -41,33 +66,29 @@ export class CambioHorario implements OnInit {
   errorHorario = '';
   fechaMinima: string;
 
-  
-  // ====================================================
-  // FORMULARIO JUSTIFICATIVO
-  // ====================================================
-
   mostrarFormularioFalta = false;
   justificativoForm: FormGroup;
   formularioFaltaEnviado = false;
   guardandoFalta = false;
   archivoSeleccionado: File | null = null;
   errorArchivo = '';
+  fechaMaximaInasistencia: string;
 
-  // ====================================================
-  // TOAST REUTILIZABLE
-  // ====================================================
+  procesandoArchivoId: number | null = null;
 
   toastVisible = false;
   toastMensaje = '';
   toastTipo: TipoToast = 'info';
 
   constructor(
-    private formBuilder: FormBuilder,
-    private solicitudService: SolicitudService,
-    private authService: AuthService,
-    private changeDetector: ChangeDetectorRef
+    private readonly formBuilder: FormBuilder,
+    private readonly solicitudService: SolicitudService,
+    private readonly authService: AuthService,
+    private readonly changeDetector: ChangeDetectorRef
   ) {
     this.fechaMinima = this.obtenerFechaManana();
+    this.fechaMaximaInasistencia = this.obtenerFechaArgentina();
+
     this.solicitudForm = this.formBuilder.group(
       {
         fecha_solicitada: [
@@ -91,10 +112,7 @@ export class CambioHorario implements OnInit {
             Validators.pattern(/^([01]\d|2[0-3]):[0-5]\d$/)
           ]
         ],
-        modalidad_solicitada: [
-          '',
-          [Validators.required]
-        ],
+        modalidad_solicitada: ['', Validators.required],
         motivo: [
           '',
           [
@@ -104,46 +122,33 @@ export class CambioHorario implements OnInit {
           ]
         ]
       },
-      {
-        validators: this.validarRangoHorario
-      }
+      {validators: this.validarRangoHorario}
     );
 
-    
     this.justificativoForm = this.formBuilder.group({
       fecha_inasistencia: [
         '',
-        [Validators.required]
+        [
+          Validators.required,
+          this.validarFechaInasistencia.bind(this)
+        ]
       ],
-      tipo_justificativo: [
-        '',
-        [Validators.required]
-      ],
-      descripcion: [
+      tipo_justificativo: ['', Validators.required],
+      motivo: [
         '',
         [
           Validators.required,
-          Validators.minLength(5),
+          Validators.minLength(10),
           Validators.maxLength(500)
         ]
       ]
     });
   }
 
-  // ====================================================
-  // INICIALIZACIÓN
-  // ====================================================
-
   ngOnInit(): void {
     this.rolActual = this.authService.getRole() as Role | null;
     this.cargarSolicitudes();
   }
-  cambiarTab(tab: 'horario' | 'falta'): void {
-  this.activeTab = tab;
-  }
-  // ====================================================
-  // TEXTO SEGÚN EL ROL
-  // ====================================================
 
   get textoAprobacion(): string {
     if (this.rolActual === 'supervisor') {
@@ -153,9 +158,14 @@ export class CambioHorario implements OnInit {
     return 'El cambio debe ser aprobado por un supervisor o por Recursos Humanos.';
   }
 
-  // ====================================================
-  // GRUPOS POR ESTADO
-  // ====================================================
+  get archivoObligatorio(): boolean {
+    const tipo = this.justificativoForm.get(
+      'tipo_justificativo'
+    )?.value as TipoJustificativo | '';
+
+    return tipo === 'CERTIFICADO_MEDICO' ||
+      tipo === 'CERTIFICADO_ESTUDIO';
+  }
 
   get gruposSolicitudes(): GrupoSolicitudes[] {
     return [
@@ -180,24 +190,24 @@ export class CambioHorario implements OnInit {
     ];
   }
 
+  cambiarTab(tab: 'horario' | 'falta'): void {
+    this.activeTab = tab;
+    this.cancelarFormulariosAbiertos();
+  }
+
   private filtrarSolicitudes(
     estado: SolicitudEstado
   ): SolicitudCambioHorario[] {
-    const tipoBuscado =
-      this.activeTab === 'falta'
-        ? 'JUSTIFICATIVO_FALTA'
-        : 'CAMBIO_HORARIO';
+    const tipo: SolicitudTipo = this.activeTab === 'falta'
+      ? 'JUSTIFICACION_INASISTENCIA'
+      : 'CAMBIO_HORARIO';
 
     return this.solicitudes.filter(
       solicitud =>
         solicitud.estado === estado &&
-        solicitud.tipo === tipoBuscado
+        solicitud.tipo === tipo
     );
   }
-
-  // ====================================================
-  // CARGAR SOLICITUDES
-  // ====================================================
 
   cargarSolicitudes(): void {
     this.cargando = true;
@@ -229,32 +239,18 @@ export class CambioHorario implements OnInit {
       });
   }
 
-  // ====================================================
-  // ABRIR FORMULARIO
-  // ====================================================
-
   nuevaSolicitud(): void {
     this.limpiarFormulario();
     this.guardando = false;
     this.mostrarFormulario = true;
   }
 
-  // ====================================================
-  // CANCELAR FORMULARIO
-  // ====================================================
-
   cancelarFormulario(): void {
-    if (this.guardando) {
-      return;
-    }
+    if (this.guardando) return;
 
     this.limpiarFormulario();
     this.mostrarFormulario = false;
   }
-  
-  // ====================================================
-  // ABRIR / CANCELAR FORMULARIO DE FALTA
-  // ====================================================
 
   nuevaSolicitudFalta(): void {
     this.limpiarFormularioFalta();
@@ -263,24 +259,23 @@ export class CambioHorario implements OnInit {
   }
 
   cancelarFormularioFalta(): void {
-    if (this.guardandoFalta) {
-      return;
-    }
+    if (this.guardandoFalta) return;
 
     this.limpiarFormularioFalta();
     this.mostrarFormularioFalta = false;
   }
 
-  private limpiarFormularioFalta(): void {
-    this.justificativoForm.reset();
-    this.formularioFaltaEnviado = false;
-    this.archivoSeleccionado = null;
-    this.errorArchivo = '';
-  }
+  private cancelarFormulariosAbiertos(): void {
+    if (!this.guardando) {
+      this.mostrarFormulario = false;
+      this.limpiarFormulario();
+    }
 
-  // ====================================================
-  // LIMPIAR FORMULARIO
-  // ====================================================
+    if (!this.guardandoFalta) {
+      this.mostrarFormularioFalta = false;
+      this.limpiarFormularioFalta();
+    }
+  }
 
   private limpiarFormulario(): void {
     this.solicitudForm.reset();
@@ -290,17 +285,21 @@ export class CambioHorario implements OnInit {
     this.errorHorario = '';
   }
 
-  // ====================================================
-  // CONSULTAR HORARIO DE LA FECHA
-  // ====================================================
+  private limpiarFormularioFalta(): void {
+    this.justificativoForm.reset();
+    this.formularioFaltaEnviado = false;
+    this.archivoSeleccionado = null;
+    this.errorArchivo = '';
+
+    if (this.archivoInput) {
+      this.archivoInput.nativeElement.value = '';
+    }
+  }
 
   consultarHorario(): void {
     this.horarioActual = null;
     this.errorHorario = '';
-
-    this.solicitudForm
-      .get('modalidad_solicitada')
-      ?.reset();
+    this.solicitudForm.get('modalidad_solicitada')?.reset();
 
     const controlFecha = this.solicitudForm.get(
       'fecha_solicitada'
@@ -308,9 +307,7 @@ export class CambioHorario implements OnInit {
 
     controlFecha?.markAsTouched();
 
-    if (!controlFecha || controlFecha.invalid) {
-      return;
-    }
+    if (!controlFecha || controlFecha.invalid) return;
 
     const fecha = String(controlFecha.value || '');
     this.consultandoHorario = true;
@@ -333,7 +330,6 @@ export class CambioHorario implements OnInit {
         },
         error: (error: HttpErrorResponse) => {
           this.horarioActual = null;
-
           this.errorHorario = this.obtenerMensajeError(
             error,
             'No fue posible obtener el horario de la fecha seleccionada.'
@@ -341,10 +337,6 @@ export class CambioHorario implements OnInit {
         }
       });
   }
-
-  // ====================================================
-  // GUARDAR SOLICITUD
-  // ====================================================
 
   guardarSolicitud(): void {
     this.formularioEnviado = true;
@@ -382,16 +374,14 @@ export class CambioHorario implements OnInit {
     }
 
     const solicitud: NuevaSolicitudCambioHorario = {
-      fecha_solicitada:
-        valores.fecha_solicitada,
+      fecha_solicitada: valores.fecha_solicitada,
       hora_entrada_solicitada:
         valores.hora_entrada_solicitada,
       hora_salida_solicitada:
         valores.hora_salida_solicitada,
       modalidad_solicitada:
         valores.modalidad_solicitada,
-      motivo:
-        String(valores.motivo || '').trim()
+      motivo: String(valores.motivo || '').trim()
     };
 
     this.guardando = true;
@@ -407,12 +397,7 @@ export class CambioHorario implements OnInit {
         next: respuesta => {
           this.mostrarFormulario = false;
           this.limpiarFormulario();
-
-          this.mostrarToast(
-            respuesta.mensaje,
-            'success'
-          );
-
+          this.mostrarToast(respuesta.mensaje, 'success');
           this.cargarSolicitudes();
         },
         error: (error: HttpErrorResponse) => {
@@ -425,36 +410,35 @@ export class CambioHorario implements OnInit {
           );
         }
       });
-  }    
+  }
 
-  // ====================================================
-  // ARCHIVO DEL JUSTIFICATIVO
-  // ====================================================
+  onTipoJustificativoChange(): void {
+    this.errorArchivo = '';
+
+    if (
+      !this.archivoObligatorio &&
+      !this.archivoSeleccionado
+    ) {
+      return;
+    }
+
+    if (this.archivoSeleccionado) {
+      this.validarArchivoSeleccionado(
+        this.archivoSeleccionado
+      );
+    }
+  }
 
   onArchivoSeleccionado(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const archivo = input.files?.[0] || null;
+    const archivo = input.files?.[0] ?? null;
 
     this.errorArchivo = '';
+    this.archivoSeleccionado = null;
 
-    if (!archivo) {
-      this.archivoSeleccionado = null;
-      return;
-    }
+    if (!archivo) return;
 
-    const tiposPermitidos = ['image/jpeg', 'image/png', 'application/pdf'];
-    const tamanioMaximo = 5 * 1024 * 1024;
-
-    if (!tiposPermitidos.includes(archivo.type)) {
-      this.errorArchivo = 'Solo se permiten archivos JPG, PNG o PDF.';
-      this.archivoSeleccionado = null;
-      input.value = '';
-      return;
-    }
-
-    if (archivo.size > tamanioMaximo) {
-      this.errorArchivo = 'El archivo no puede superar los 5 MB.';
-      this.archivoSeleccionado = null;
+    if (!this.validarArchivoSeleccionado(archivo)) {
       input.value = '';
       return;
     }
@@ -462,13 +446,45 @@ export class CambioHorario implements OnInit {
     this.archivoSeleccionado = archivo;
   }
 
-  // ====================================================
-  // GUARDAR JUSTIFICATIVO
-  // ====================================================
+  private validarArchivoSeleccionado(
+    archivo: File
+  ): boolean {
+    if (!this.tiposArchivoPermitidos.includes(archivo.type)) {
+      this.errorArchivo =
+        'Solo se permiten archivos JPG, PNG o PDF.';
+      return false;
+    }
+
+    if (archivo.size <= 0) {
+      this.errorArchivo = 'El archivo seleccionado está vacío.';
+      return false;
+    }
+
+    if (archivo.size > this.maximoArchivoBytes) {
+      this.errorArchivo =
+        'El archivo no puede superar los 4 MB.';
+      return false;
+    }
+
+    this.errorArchivo = '';
+    return true;
+  }
+
+  quitarArchivo(): void {
+    if (this.guardandoFalta) return;
+
+    this.archivoSeleccionado = null;
+    this.errorArchivo = '';
+
+    if (this.archivoInput) {
+      this.archivoInput.nativeElement.value = '';
+    }
+  }
 
   guardarJustificativo(): void {
     this.formularioFaltaEnviado = true;
     this.justificativoForm.markAllAsTouched();
+    this.errorArchivo = '';
 
     if (this.justificativoForm.invalid) {
       this.mostrarToast(
@@ -478,12 +494,43 @@ export class CambioHorario implements OnInit {
       return;
     }
 
+    if (this.archivoObligatorio && !this.archivoSeleccionado) {
+      this.errorArchivo =
+        'Debés adjuntar el certificado en formato JPG, PNG o PDF.';
+
+      this.mostrarToast(
+        'Seleccioná el archivo del certificado.',
+        'warning'
+      );
+      return;
+    }
+
+    if (
+      this.archivoSeleccionado &&
+      !this.validarArchivoSeleccionado(
+        this.archivoSeleccionado
+      )
+    ) {
+      return;
+    }
+
     const valores = this.justificativoForm.getRawValue();
+
+    const justificativo: NuevaSolicitudJustificativo = {
+      fecha_inasistencia:
+        String(valores.fecha_inasistencia || ''),
+      tipo_justificativo:
+        valores.tipo_justificativo as TipoJustificativo,
+      motivo: String(valores.motivo || '').trim()
+    };
 
     this.guardandoFalta = true;
 
     this.solicitudService
-      .createJustificativo(valores, this.archivoSeleccionado)
+      .createJustificativo(
+        justificativo,
+        this.archivoSeleccionado
+      )
       .pipe(
         finalize(() => {
           this.guardandoFalta = false;
@@ -494,11 +541,8 @@ export class CambioHorario implements OnInit {
         next: respuesta => {
           this.mostrarFormularioFalta = false;
           this.limpiarFormularioFalta();
-
-          this.mostrarToast(
-            respuesta.mensaje,
-            'success'
-          );
+          this.mostrarToast(respuesta.mensaje, 'success');
+          this.cargarSolicitudes();
         },
         error: (error: HttpErrorResponse) => {
           this.mostrarToast(
@@ -511,102 +555,215 @@ export class CambioHorario implements OnInit {
         }
       });
   }
-  // ====================================================
-  // VALIDAR FECHA FUTURA
-  // ====================================================
+
+  verArchivo(solicitud: SolicitudCambioHorario): void {
+    this.obtenerArchivo(solicitud, false);
+  }
+
+  descargarArchivo(solicitud: SolicitudCambioHorario): void {
+    this.obtenerArchivo(solicitud, true);
+  }
+
+  private obtenerArchivo(
+    solicitud: SolicitudCambioHorario,
+    descargar: boolean
+  ): void {
+    const archivoId = solicitud.archivo_id;
+
+    if (!archivoId) {
+      this.mostrarToast(
+        'La solicitud no tiene un archivo adjunto.',
+        'warning'
+      );
+      return;
+    }
+
+    if (typeof window === 'undefined') return;
+
+    const ventana = descargar
+      ? null
+      : window.open('', '_blank');
+
+    this.procesandoArchivoId = archivoId;
+
+    this.solicitudService
+      .getArchivoJustificativo(archivoId, descargar)
+      .pipe(
+        finalize(() => {
+          this.procesandoArchivoId = null;
+          this.changeDetector.detectChanges();
+        })
+      )
+      .subscribe({
+        next: response => {
+          this.procesarRespuestaArchivo(
+            response,
+            solicitud,
+            descargar,
+            ventana
+          );
+        },
+        error: (error: HttpErrorResponse) => {
+          ventana?.close();
+
+          this.mostrarToast(
+            this.obtenerMensajeErrorBlob(
+              error,
+              'No fue posible obtener el archivo.'
+            ),
+            'error'
+          );
+        }
+      });
+  }
+
+  private procesarRespuestaArchivo(
+    response: HttpResponse<Blob>,
+    solicitud: SolicitudCambioHorario,
+    descargar: boolean,
+    ventana: Window | null
+  ): void {
+    if (!response.body) {
+      ventana?.close();
+
+      this.mostrarToast(
+        'El servidor no devolvió el archivo.',
+        'error'
+      );
+      return;
+    }
+
+    const url = URL.createObjectURL(response.body);
+    const nombre = this.obtenerNombreArchivo(
+      response,
+      solicitud.archivo_nombre_original ||
+        `justificativo-${solicitud.id}`
+    );
+
+    if (descargar) {
+      const enlace = document.createElement('a');
+      enlace.href = url;
+      enlace.download = nombre;
+      document.body.appendChild(enlace);
+      enlace.click();
+      enlace.remove();
+      URL.revokeObjectURL(url);
+      return;
+    }
+
+    if (ventana) {
+      ventana.location.href = url;
+    } else {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+
+    window.setTimeout(
+      () => URL.revokeObjectURL(url),
+      60000
+    );
+  }
+
+  private obtenerNombreArchivo(
+    response: HttpResponse<Blob>,
+    nombrePredeterminado: string
+  ): string {
+    const disposition =
+      response.headers.get('Content-Disposition') || '';
+
+    const utf8 = disposition.match(
+      /filename\*=UTF-8''([^;]+)/
+    );
+
+    if (utf8?.[1]) {
+      try {
+        return decodeURIComponent(utf8[1]);
+      } catch {
+        return nombrePredeterminado;
+      }
+    }
+
+    const simple = disposition.match(
+      /filename="?([^";]+)"?/
+    );
+
+    return simple?.[1] || nombrePredeterminado;
+  }
 
   validarFechaFutura(
     control: AbstractControl
   ): ValidationErrors | null {
     const fecha = String(control.value || '');
 
-    if (!fecha) {
-      return null;
-    }
+    if (!fecha) return null;
 
-    if (fecha < this.fechaMinima) {
-      return {
-        fechaNoFutura: true
-      };
-    }
-
-    return null;
+    return fecha < this.fechaMinima
+      ? {fechaNoFutura: true}
+      : null;
   }
 
-  // ====================================================
-  // VALIDAR ORDEN DE HORAS
-  // ====================================================
+  validarFechaInasistencia(
+    control: AbstractControl
+  ): ValidationErrors | null {
+    const fecha = String(control.value || '');
+
+    if (!fecha) return null;
+
+    return fecha > this.fechaMaximaInasistencia
+      ? {fechaFutura: true}
+      : null;
+  }
 
   validarRangoHorario(
     control: AbstractControl
   ): ValidationErrors | null {
     const entrada = String(
-      control.get(
-        'hora_entrada_solicitada'
-      )?.value || ''
+      control.get('hora_entrada_solicitada')?.value || ''
     );
 
     const salida = String(
-      control.get(
-        'hora_salida_solicitada'
-      )?.value || ''
+      control.get('hora_salida_solicitada')?.value || ''
     );
 
-    if (!entrada || !salida) {
-      return null;
-    }
+    if (!entrada || !salida) return null;
 
-    if (entrada >= salida) {
-      return {
-        rangoHorarioInvalido: true
-      };
-    }
-
-    return null;
+    return entrada >= salida
+      ? {rangoHorarioInvalido: true}
+      : null;
   }
-
-  // ====================================================
-  // FECHA MÍNIMA
-  // ====================================================
 
   obtenerFechaManana(): string {
-    const fecha = new Date();
+    const hoy = this.obtenerFechaArgentina();
+    const [anio, mes, dia] = hoy.split('-').map(Number);
+    const fecha = new Date(Date.UTC(anio, mes - 1, dia + 1));
 
-    fecha.setDate(
-      fecha.getDate() + 1
-    );
-
-    const anio = fecha.getFullYear();
-
-    const mes = String(
-      fecha.getMonth() + 1
-    ).padStart(2, '0');
-
-    const dia = String(
-      fecha.getDate()
-    ).padStart(2, '0');
-
-    return `${anio}-${mes}-${dia}`;
+    return [
+      fecha.getUTCFullYear(),
+      String(fecha.getUTCMonth() + 1).padStart(2, '0'),
+      String(fecha.getUTCDate()).padStart(2, '0')
+    ].join('-');
   }
 
-  // ====================================================
-  // VALIDACIONES VISUALES
-  // ====================================================
+  private obtenerFechaArgentina(): string {
+    const partes = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Argentina/Buenos_Aires',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).formatToParts(new Date());
 
-  campoInvalido(
-    nombreCampo: string
-  ): boolean {
-    const control = this.solicitudForm.get(
-      nombreCampo
-    );
+    const valor = (tipo: string) =>
+      partes.find(parte => parte.type === tipo)?.value || '';
+
+    return `${valor('year')}-${valor('month')}-${valor('day')}`;
+  }
+
+  campoInvalido(nombreCampo: string): boolean {
+    const control = this.solicitudForm.get(nombreCampo);
 
     return Boolean(
       control &&
       control.invalid &&
-      (
-        control.touched ||
-        this.formularioEnviado
-      )
+      (control.touched || this.formularioEnviado)
     );
   }
 
@@ -615,26 +772,17 @@ export class CambioHorario implements OnInit {
     error: string
   ): boolean {
     return Boolean(
-      this.solicitudForm
-        .get(nombreCampo)
-        ?.hasError(error)
+      this.solicitudForm.get(nombreCampo)?.hasError(error)
     );
   }
-  
-  campoInvalidoFalta(
-    nombreCampo: string
-  ): boolean {
-    const control = this.justificativoForm.get(
-      nombreCampo
-    );
+
+  campoInvalidoFalta(nombreCampo: string): boolean {
+    const control = this.justificativoForm.get(nombreCampo);
 
     return Boolean(
       control &&
       control.invalid &&
-      (
-        control.touched ||
-        this.formularioFaltaEnviado
-      )
+      (control.touched || this.formularioFaltaEnviado)
     );
   }
 
@@ -651,9 +799,7 @@ export class CambioHorario implements OnInit {
 
   rangoHorarioInvalido(): boolean {
     return Boolean(
-      this.solicitudForm.hasError(
-        'rangoHorarioInvalido'
-      ) &&
+      this.solicitudForm.hasError('rangoHorarioInvalido') &&
       (
         this.formularioEnviado ||
         this.solicitudForm
@@ -663,71 +809,55 @@ export class CambioHorario implements OnInit {
     );
   }
 
-  // ====================================================
-  // FORMATOS
-  // ====================================================
+  formatearFecha(fecha: string | null): string {
+    if (!fecha) return '-';
 
-  formatearFecha(fecha: string): string {
-    if (!fecha) {
-      return '-';
-    }
+    const partes = fecha.substring(0, 10).split('-');
 
-    const partes = fecha
-      .substring(0, 10)
-      .split('-');
-
-    if (partes.length !== 3) {
-      return fecha;
-    }
+    if (partes.length !== 3) return fecha;
 
     const [anio, mes, dia] = partes;
-
     return `${dia}/${mes}/${anio}`;
   }
 
-  formatearFechaHora(
-    fechaHora: string | null
-  ): string {
-    if (!fechaHora) {
-      return '-';
-    }
+  formatearFechaHora(fechaHora: string | null): string {
+    if (!fechaHora) return '-';
 
-    const valorNormalizado = fechaHora.includes('T')
+    const normalizada = fechaHora.includes('T')
       ? fechaHora
       : fechaHora.replace(' ', 'T');
 
-    const fecha = new Date(valorNormalizado);
+    const fecha = new Date(normalizada);
 
     if (Number.isNaN(fecha.getTime())) {
       return fechaHora;
     }
 
-    return new Intl.DateTimeFormat(
-      'es-AR',
-      {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hourCycle: 'h23'
-      }
-    ).format(fecha);
+    return new Intl.DateTimeFormat('es-AR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23'
+    }).format(fecha);
   }
 
-  formatearHora(hora: string): string {
-    return hora
-      ? hora.substring(0, 5)
-      : '--:--';
+  formatearHora(hora: string | null): string {
+    return hora ? hora.substring(0, 5) : '--:--';
   }
 
-  // ====================================================
-  // TEXTOS DEL ESTADO
-  // ====================================================
+  formatearTamanio(bytes: number | null | undefined): string {
+    if (!bytes) return '';
 
-  obtenerTituloEstado(
-    estado: SolicitudEstado
-  ): string {
+    if (bytes < 1024 * 1024) {
+      return `${Math.ceil(bytes / 1024)} KB`;
+    }
+
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  }
+
+  obtenerTituloEstado(estado: SolicitudEstado): string {
     switch (estado) {
       case 'APROBADA':
         return 'Solicitud aprobada';
@@ -738,9 +868,7 @@ export class CambioHorario implements OnInit {
     }
   }
 
-  obtenerEtiquetaEstado(
-    estado: SolicitudEstado
-  ): string {
+  obtenerEtiquetaEstado(estado: SolicitudEstado): string {
     switch (estado) {
       case 'APROBADA':
         return 'Aprobada';
@@ -751,9 +879,7 @@ export class CambioHorario implements OnInit {
     }
   }
 
-  obtenerIconoEstado(
-    estado: SolicitudEstado
-  ): string {
+  obtenerIconoEstado(estado: SolicitudEstado): string {
     switch (estado) {
       case 'APROBADA':
         return 'bi-check-lg';
@@ -762,43 +888,24 @@ export class CambioHorario implements OnInit {
       default:
         return 'bi-clock';
     }
-}
-
-  // ====================================================
-  // TEXTOS DEL JUSTIFICATIVO
-  // ====================================================
+  }
 
   obtenerEtiquetaTipoJustificativo(
-    tipo: TipoJustificativo
+    tipo: TipoJustificativo | null | undefined
   ): string {
     switch (tipo) {
       case 'CERTIFICADO_MEDICO':
         return 'Certificado médico';
+      case 'CERTIFICADO_ESTUDIO':
+        return 'Certificado de estudio';
       case 'EMERGENCIA_FAMILIAR':
         return 'Emergencia familiar';
-      default:
+      case 'OTRO':
         return 'Otro motivo';
+      default:
+        return 'Sin especificar';
     }
   }
-
-  obtenerUrlArchivo(
-    archivoUrl: string | null
-  ): string {
-    if (!archivoUrl) {
-      return '';
-    }
-
-    const base =
-      environment.apiUrl.replace(
-        '/api',
-        ''
-      );
-
-    return base + archivoUrl;
-  }
-  // ====================================================
-  // MENSAJE DE ERROR
-  // ====================================================
 
   obtenerMensajeError(
     error: HttpErrorResponse,
@@ -811,14 +918,21 @@ export class CambioHorario implements OnInit {
     );
   }
 
-  // ====================================================
-  // TOAST REUTILIZABLE
-  // ====================================================
+  private obtenerMensajeErrorBlob(
+    error: HttpErrorResponse,
+    mensajePredeterminado: string
+  ): string {
+    if (!(error.error instanceof Blob)) {
+      return this.obtenerMensajeError(
+        error,
+        mensajePredeterminado
+      );
+    }
 
-  mostrarToast(
-    mensaje: string,
-    tipo: TipoToast
-  ): void {
+    return mensajePredeterminado;
+  }
+
+  mostrarToast(mensaje: string, tipo: TipoToast): void {
     this.toastMensaje = mensaje;
     this.toastTipo = tipo;
     this.toastVisible = true;
