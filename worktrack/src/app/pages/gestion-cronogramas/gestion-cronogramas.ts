@@ -11,11 +11,13 @@ import { HorarioService } from '../../services/horario.service';
 import { AuthService } from '../../services/auth.service';
 import { SolicitudesCambioHorario } from '../../components/solicitudes-cambio-horario/solicitudes-cambio-horario';
 import { ActivatedRoute } from '@angular/router';
+import { ManualAttendance } from '../../components/manual-attendance/manual-attendance';
+
 
 @Component({
   selector: 'app-gestion-cronogramas',
   standalone: true,
-  imports: [CommonModule, FormsModule, Header, Modal, Toast, SolicitudesCambioHorario],
+  imports: [CommonModule, FormsModule, Header, Modal, Toast, SolicitudesCambioHorario, ManualAttendance],
   templateUrl: './gestion-cronogramas.html',
   styleUrl: './gestion-cronogramas.css'
 })
@@ -100,6 +102,7 @@ export class GestionCronogramas
 
     this.rolActual =
       (usuario?.role as Role) || null;
+
 
     this.cargarUsuariosGestionables();
     this.cargarHorarios();
@@ -690,14 +693,10 @@ export class GestionCronogramas
   // =====================================================
 
   cambiarTab(
-    tab:
-      'cronogramas' |
-      'solicitudes' |
-      'manual'
+    tab: 'cronogramas' | 'solicitudes' | 'manual'
   ): void {
     this.tabActiva = tab;
   }
-
   // =====================================================
   // UTILIDADES
   // =====================================================

@@ -1,0 +1,377 @@
+.manual-attendance {
+  color: #17233a;
+}
+
+.contingency-notice {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  margin-bottom: 28px;
+  border: 1px solid #ffd09a;
+  border-radius: 18px;
+  background: #fff9f2;
+  color: #a43d00;
+}
+
+.contingency-notice>i {
+  flex: none;
+  font-size: 23px;
+}
+
+.contingency-notice p {
+  margin: 5px 0 0;
+  line-height: 1.5;
+}
+
+.register-card,
+.record-card {
+  padding: 30px;
+  border-radius: 25px;
+  background: #fff;
+  box-shadow: 0 7px 20px #15223b12;
+}
+
+.register-card h2 {
+  margin: 0 0 26px;
+  font-size: 22px;
+}
+
+.register-card h2 i {
+  margin-right: 9px;
+  color: #ff6c00;
+}
+
+.form-grid,
+.times {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 19px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.field label {
+  font-weight: 600;
+  color: #34445e;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  min-height: 54px;
+  padding: 13px 16px;
+  border: 1px solid #d8e1f2;
+  border-radius: 16px;
+  background: #f8fbff;
+  color: #17233a;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: 2px solid #ffb777;
+  border-color: #ff6c00;
+}
+
+.field input:disabled,
+.field select:disabled,
+.field textarea:disabled {
+  opacity: .65;
+  cursor: not-allowed;
+}
+
+.field input[readonly] {
+  background: #f1f4f9;
+}
+
+.field small,
+.record-header p,
+.time-box small {
+  color: #66758e;
+}
+
+.entry-icon {
+  color: #13a65c;
+}
+
+.exit-icon {
+  color: #f04452;
+}
+
+.schedule-info,
+.context-message {
+  margin: 18px 0 0;
+  padding: 12px 15px;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #334c73;
+}
+
+.context-message.error {
+  background: #fff1f1;
+  color: #b42330;
+}
+
+.register-button {
+  width: 100%;
+  min-height: 55px;
+  margin-top: 22px;
+  border: 0;
+  border-radius: 15px;
+  background: #ff6c00;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.register-button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.register-button i {
+  margin-right: 7px;
+}
+
+.history-section {
+  margin-top: 30px;
+}
+
+.history-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.history-heading h2 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.history-heading h2 i {
+  margin-right: 9px;
+  color: #8295b4;
+}
+
+.history-heading button {
+  padding: 9px 13px;
+  border: 1px solid #d8e1f2;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.history-heading button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.empty-history {
+  padding: 25px;
+  border-radius: 16px;
+  background: #fff;
+  color: #66758e;
+}
+
+.record-card {
+  margin-bottom: 18px;
+  border-left: 4px solid #ff6c00;
+}
+
+.record-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  background: #ff6c00;
+  color: #fff;
+  font-weight: 700;
+}
+
+.record-header h3 {
+  margin: 0 0 4px;
+}
+
+.record-header p {
+  margin: 0;
+}
+
+.times {
+  gap: 15px;
+  margin-top: 21px;
+}
+
+.time-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 15px;
+  border: 1px solid;
+  border-radius: 17px;
+}
+
+.time-box.entry {
+  background: #f1fff7;
+  border-color: #b6efd0;
+}
+
+.time-box.exit {
+  background: #fff6f6;
+  border-color: #ffc7cd;
+}
+
+.time-box.entry span {
+  color: #00964e;
+}
+
+.time-box.exit span {
+  color: #e54250;
+}
+
+.time-box strong {
+  font-size: 17px;
+}
+
+.audit-event {
+  margin-top: 15px;
+  padding: 15px;
+  border-radius: 16px;
+  background: #fff8ef;
+}
+
+.event-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #a94500;
+}
+
+.audit-event p {
+  margin: 9px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.audit-event small {
+  display: block;
+  margin-top: 11px;
+  color: #66758e;
+}
+
+.read-only-notice {
+  border-color: #bfd4ff;
+  background: #f1f6ff;
+  color: #285195;
+}
+
+.field-error {
+  color: #b42330;
+  font-size: 13px;
+}
+
+.record-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.complete-exit-button {
+  flex: none;
+  padding: 10px 14px;
+  border: 1px solid #ffb777;
+  border-radius: 11px;
+  background: #fff8ef;
+  color: #b84c00;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.complete-exit-button:hover {
+  background: #ffedda;
+}
+
+.complete-exit-button i {
+  margin-right: 6px;
+}
+
+.completion-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 18px;
+  text-align: left;
+}
+
+.completion-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 14px;
+  border-radius: 13px;
+  background: #f1f6ff;
+  color: #334c73;
+}
+
+.completion-summary span {
+  color: #66758e;
+}
+
+@media (max-width: 700px) {
+
+  .form-grid,
+  .times {
+    grid-template-columns: 1fr;
+  }
+
+  .full-width {
+    grid-column: auto;
+  }
+
+  .register-card,
+  .record-card {
+    padding: 19px;
+  }
+
+  .history-heading,
+  .event-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .record-header {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .complete-exit-button {
+    width: 100%;
+  }
+
+
+}
