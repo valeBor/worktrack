@@ -328,20 +328,12 @@
 
 
   <!-- SOLICITUDES -->
-  <app-solicitudes-cambio-horario 
-  *ngIf="tabActiva === 'solicitudes'">
+  <app-solicitudes-cambio-horario *ngIf="tabActiva === 'solicitudes'">
   </app-solicitudes-cambio-horario>
 
   <!-- REGISTRO MANUAL -->
-  <section class="form-card" *ngIf="tabActiva === 'manual'">
-    <h2>Registro manual</h2>
-
-    <p>
-      Esta sección todavía no está conectada
-      al backend.
-    </p>
-  </section>
-
+  <app-manual-attendance *ngIf="tabActiva === 'manual'" [readOnly]="rolActual === 'admin'">
+  </app-manual-attendance>
 </div>
 
 <!-- MODAL REUTILIZABLE -->

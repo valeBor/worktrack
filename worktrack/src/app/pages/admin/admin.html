@@ -17,8 +17,7 @@
       tabindex="0"
       role="button"
       (click)="irAqrDinamico()"
-      (keydown.enter)="irAqrDinamico()"
-    >
+      (keydown.enter)="irAqrDinamico()">
       <div>
         <h2>QR</h2>
         <p>Generar código QR dinámico</p>
@@ -31,8 +30,7 @@
       tabindex="0"
       role="button"
       (click)="irAEmployees()"
-      (keydown.enter)="irAEmployees()"
-    >
+      (keydown.enter)="irAEmployees()">
       <div>
         <h2>Panel de Administración</h2>
         <p>Gestión completa de usuarios, roles y permisos</p>
@@ -45,11 +43,23 @@
       tabindex="0"
       role="button"
       (click)="irAGestionCronogramas()"
-      (keydown.enter)="irAGestionCronogramas()"
-    >
+      (keydown.enter)="irAGestionCronogramas()">
       <div>
         <h2>Gestión de Cronogramas</h2>
         <p>Asignar, modificar y eliminar horarios de los usuarios</p>
+      </div>
+      <span class="arrow">→</span>
+    </section>
+
+    <section
+      class="admin-panel"
+      tabindex="0"
+      role="button"
+      (click)="irARegistroManual()"
+      (keydown.enter)="irARegistroManual()">
+      <div>
+        <h2>Registros manuales</h2>
+        <p>Consultar asistencias registradas por contingencia</p>
       </div>
       <span class="arrow">→</span>
     </section>

@@ -1,0 +1,263 @@
+<app-toast [visible]="!!toastMessage" [mensaje]="toastMessage" [tipo]="toastType" [duracion]="4000"
+  (cerrar)="toastMessage = ''">
+</app-toast>
+
+<div class="manual-attendance">
+  <section class="contingency-notice" *ngIf="!readOnly">
+    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+    <div>
+      <strong>Registro excepcional por contingencia</strong>
+      <p>
+        Usá esta sección solo cuando una situación particular impida registrar
+        la asistencia normalmente. Se permite registrar únicamente el día de hoy.
+        La carga, su motivo y la persona responsable quedan auditados.
+      </p>
+    </div>
+  </section>
+
+  <section class="contingency-notice read-only-notice" *ngIf="readOnly">
+    <i class="bi bi-eye" aria-hidden="true"></i>
+    <div>
+      <strong>Consulta de registros manuales</strong>
+      <p>
+        Podés consultar las asistencias cargadas por contingencia, sus motivos
+        y quién realizó cada registro. La carga manual está disponible únicamente
+        para Supervisores y Recursos Humanos.
+      </p>
+    </div>
+  </section>
+
+  <form class="register-card" *ngIf="!readOnly" (ngSubmit)="register()">
+    <h2><i class="bi bi-plus-lg" aria-hidden="true"></i> Nuevo registro manual</h2>
+
+    <div class="form-grid">
+      <div class="field">
+        <label for="manual-user">Empleado o supervisor *</label>
+        <select id="manual-user" name="manual-user" [ngModel]="userId" (ngModelChange)="selectUser($event)"
+          [disabled]="loadingUsers || saving" required>
+          <option [ngValue]="null">Seleccionar persona...</option>
+          <option *ngFor="let user of users" [ngValue]="user.id">
+            {{ user.nombre }} {{ user.apellido }} ·
+            {{ user.role === 'supervisor' ? 'Supervisor' : 'Empleado' }}
+          </option>
+        </select>
+        <small *ngIf="loadingUsers">Cargando personas gestionables...</small>
+        <small *ngIf="!loadingUsers && !users.length">
+          No hay personas gestionables.
+        </small>
+      </div>
+
+      <div class="field">
+        <label for="manual-date">Fecha *</label>
+        <input id="manual-date" type="text" [value]="displayDate" readonly>
+        <small>Solo se permite registrar la fecha actual de Argentina.</small>
+      </div>
+
+      <div class="field">
+        <label for="manual-entry">
+          <i class="bi bi-box-arrow-in-right entry-icon"></i>
+          Hora de ingreso *
+        </label>
+        <input id="manual-entry" name="manual-entry" type="time" [(ngModel)]="entryTime"
+          [readonly]="action === 'COMPLETAR_SALIDA'" [disabled]="!action || saving" [required]="action === 'CREAR'">
+        <small>Indicá la hora real; el cronograma se usa para calcular el estado.</small>
+      </div>
+
+      <div class="field">
+        <label for="manual-exit">
+          <i class="bi bi-box-arrow-right exit-icon"></i>
+          Hora de egreso
+          {{ action === 'COMPLETAR_SALIDA' ? '*' : '(opcional)' }}
+        </label>
+        <input id="manual-exit" name="manual-exit" type="time" [(ngModel)]="exitTime" [disabled]="!action || saving"
+          [required]="action === 'COMPLETAR_SALIDA'">
+      </div>
+
+      <div class="field full-width">
+        <label for="manual-contingency">Contingencia *</label>
+        <select id="manual-contingency" name="manual-contingency" [(ngModel)]="contingency"
+          [disabled]="!action || saving" required>
+          <option value="">Seleccionar contingencia...</option>
+          <option *ngFor="let option of contingencies" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+
+      <div class="field full-width">
+        <label for="manual-reason">Motivo del registro manual *</label>
+        <textarea id="manual-reason" name="manual-reason" rows="3" minlength="10" maxlength="500"
+          placeholder="Describí qué ocurrió. Ej.: falla del lector QR en la entrada principal." [(ngModel)]="reason"
+          [disabled]="!action || saving" required></textarea>
+        <small>Entre 10 y 500 caracteres.</small>
+      </div>
+    </div>
+
+    <p class="context-message" *ngIf="loadingContext">
+      Consultando cronograma y asistencia del día...
+    </p>
+    <p class="context-message error" *ngIf="contextError">
+      {{ contextError }}
+    </p>
+
+    <div class="schedule-info" *ngIf="context as current">
+      <ng-container *ngIf="current.accion_disponible; else alreadyComplete">
+        Cronograma aplicable:
+        {{ formatTime(current.horario.hora_entrada) }}–{{ formatTime(current.horario.hora_salida) }}
+        · {{ current.horario.modalidad }}
+        <span *ngIf="current.accion_disponible === 'COMPLETAR_SALIDA'">
+          · El ingreso ya existe: completá solamente el egreso.
+        </span>
+      </ng-container>
+      <ng-template #alreadyComplete>
+        Esta persona ya tiene su asistencia completa de hoy. Seleccioná otra
+        persona para registrar una contingencia.
+      </ng-template>
+    </div>
+
+    <p class="context-message error" role="alert"
+      *ngIf="userId && context && action && !loadingContext && blockingReason">
+      {{ blockingReason }}
+    </p>
+
+    <button class="register-button" type="submit" [disabled]="!canRegister">
+      <i class="bi bi-check-circle" aria-hidden="true"></i>
+      {{
+      saving
+      ? 'Registrando...'
+      : action === 'COMPLETAR_SALIDA'
+      ? 'Registrar egreso'
+      : 'Registrar asistencia'
+      }}
+    </button>
+  </form>
+
+  <section class="history-section">
+    <div class="history-heading">
+      <h2>
+        <i class="bi bi-clock-history" aria-hidden="true"></i>
+        Registros manuales ({{ records.length }})
+      </h2>
+      <button type="button" (click)="loadRecords()" [disabled]="loadingRecords" aria-label="Actualizar registros">
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+        Actualizar
+      </button>
+    </div>
+
+    <p class="context-message" *ngIf="loadingRecords">
+      Cargando registros...
+    </p>
+    <p class="context-message error" *ngIf="recordsError">
+      {{ recordsError }}
+    </p>
+    <p class="empty-history" *ngIf="!loadingRecords && !recordsError && !records.length">
+      Todavía no hay registros manuales para mostrar.
+    </p>
+
+    <article class="record-card" *ngFor="let record of records">
+      <div class="record-header">
+        <span class="avatar">{{ initials(record.usuario) }}</span>
+
+        <div class="record-title">
+          <h3>{{ record.usuario.nombre }} {{ record.usuario.apellido }}</h3>
+          <p>
+            {{ formatDate(record.fecha) }} ·
+            {{ record.usuario.role === 'supervisor' ? 'Supervisor' : 'Empleado' }}
+            · {{ record.tipo_asistencia }} · {{ record.estado }}
+          </p>
+        </div>
+
+        <button class="complete-exit-button" type="button" *ngIf="!readOnly && !record.hora_salida"
+          (click)="openExitCompletion(record)">
+          <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+          Completar salida
+        </button>
+      </div>
+      <div class="times">
+        <div class="time-box entry">
+          <span>
+            <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+            Ingreso
+          </span>
+          <strong>{{ formatTime(record.hora_entrada) }}</strong>
+          <small>Origen: {{ record.origen_entrada }}</small>
+        </div>
+        <div class="time-box exit">
+          <span>
+            <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+            Egreso
+          </span>
+          <strong>{{ formatTime(record.hora_salida) }}</strong>
+          <small *ngIf="record.origen_salida">
+            Origen: {{ record.origen_salida }}
+          </small>
+        </div>
+      </div>
+
+      <div class="audit-event" *ngFor="let event of record.eventos">
+        <div class="event-heading">
+          <strong>
+            {{ event.accion === 'SALIDA_MANUAL' ? 'Egreso manual' : 'Registro manual' }}
+          </strong>
+          <span>{{ formatTimestamp(event.registrada_en) }}</span>
+        </div>
+        <p>
+          <strong>Contingencia:</strong>
+          {{ contingencyLabel(event.contingencia) }}
+        </p>
+        <p><strong>Motivo:</strong> {{ event.motivo }}</p>
+        <small>
+          Registrado por {{ event.responsable_nombre }}
+          {{ event.responsable_apellido }}
+        </small>
+      </div>
+    </article>
+  </section>
+</div>
+<app-modal [visible]="!!pendingRecord" titulo="Completar salida pendiente"
+  mensaje="La fecha, el ingreso, la modalidad y el estado de la asistencia no se modificarán." tipo="warning"
+  textoConfirmar="Registrar salida" textoCancelar="Cancelar" [mostrarCancelar]="true" [procesando]="completingExit"
+  (confirmar)="completePendingExit()" (cancelar)="closeExitCompletion()">
+
+  <div class="completion-modal" *ngIf="pendingRecord as record">
+    <div class="completion-summary">
+      <strong>{{ record.usuario.nombre }} {{ record.usuario.apellido }}</strong>
+
+      <span>
+        {{ formatDate(record.fecha) }} ·
+        {{ record.tipo_asistencia }} ·
+        Ingreso {{ formatTime(record.hora_entrada) }}
+      </span>
+    </div>
+
+    <div class="field">
+      <label for="pending-exit-time">Hora de egreso *</label>
+      <input id="pending-exit-time" name="pending-exit-time" type="time" [(ngModel)]="pendingExitTime"
+        [disabled]="completingExit">
+    </div>
+
+    <div class="field">
+      <label for="pending-exit-contingency">Contingencia *</label>
+      <select id="pending-exit-contingency" name="pending-exit-contingency" [(ngModel)]="pendingExitContingency"
+        [disabled]="completingExit">
+        <option value="">Seleccionar contingencia...</option>
+        <option *ngFor="let option of contingencies" [value]="option.value">
+          {{ option.label }}
+        </option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="pending-exit-reason">Motivo del egreso manual *</label>
+      <textarea id="pending-exit-reason" name="pending-exit-reason" rows="3" minlength="10" maxlength="500"
+        placeholder="Explicá por qué no se pudo registrar el egreso normalmente." [(ngModel)]="pendingExitReason"
+        [disabled]="completingExit">
+      </textarea>
+      <small>Entre 10 y 500 caracteres.</small>
+    </div>
+
+    <p class="context-message error" role="alert" *ngIf="pendingExitValidation">
+      {{ pendingExitValidation }}
+    </p>
+  </div>
+</app-modal>

@@ -1,9 +1,9 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit} from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import {Router,RouterModule} from '@angular/router';
-import { Header } from '../../components/header/header';
-import { AuthService } from '../../services/auth.service';
+import {CommonModule} from '@angular/common';
+import {Component, OnInit} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {Router, RouterModule} from '@angular/router';
+import {Header} from '../../components/header/header';
+import {AuthService} from '../../services/auth.service';
 
 @Component({
   selector: 'app-admin',
@@ -39,27 +39,26 @@ export class Admin implements OnInit {
       apellido: user.apellido,
       email: user.email,
       role: user.role,
-      iniciales:
-        user.nombre.charAt(0).toUpperCase() +
+      iniciales: user.nombre.charAt(0).toUpperCase() +
         user.apellido.charAt(0).toUpperCase()
     };
   }
 
   irAEmployees(): void {
-    this.router.navigate([
-      '/employee-list'
-    ]);
+    this.router.navigate(['/employee-list']);
   }
 
   irAqrDinamico(): void {
-    this.router.navigate([
-      '/qr-visor'
-    ]);
+    this.router.navigate(['/qr-visor']);
   }
 
   irAGestionCronogramas(): void {
-    this.router.navigate([
-      '/gestion-cronogramas'
-    ]);
+    this.router.navigate(['/gestion-cronogramas']);
+  }
+
+  irARegistroManual(): void {
+    this.router.navigate(['/gestion-cronogramas'], {
+      queryParams: {tab: 'manual'}
+    });
   }
 }

@@ -14,6 +14,7 @@ const userRoutes = require('./routes/users.router');
 const reporteAsistenciaRoutes = require('./routes/reporte-asistencia.router');
 const notificacionRoutes = require('./routes/notificacion.router');
 const alertaRoutes = require('./routes/alerta.router');
+const asistenciaManualRoutes = require('./routes/asistencia-manual.router');
 
 require('./config/db');
 
@@ -31,6 +32,8 @@ app.use('/api/solicitudes', solicitudRoutes);
 app.use('/api/reportes-asistencia', reporteAsistenciaRoutes);
 app.use('/api/notificaciones', notificacionRoutes);
 app.use('/api/alertas', alertaRoutes);
+app.use('/api/asistencias/manual', asistenciaManualRoutes);
+
 
 app.get('/prueba', (req, res) => {
   res.send('PRUEBA OK');
