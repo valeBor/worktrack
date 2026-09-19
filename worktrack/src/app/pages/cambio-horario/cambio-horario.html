@@ -5,6 +5,26 @@
   </app-header>
 
   <main class="content">
+    <div class="tabs">
+  <button
+    type="button"
+    class="tab-btn"
+    [class.active]="activeTab === 'horario'"
+    (click)="cambiarTab('horario')">
+      <i class="bi bi-clock"></i>
+    Cambio de horario
+  </button>
+
+  <button
+    type="button"
+    class="tab-btn"
+    [class.active]="activeTab === 'falta'"
+    (click)="cambiarTab('falta')">
+    <i class="bi bi-file-medical"></i>
+    Justificar falta
+  </button>
+</div>
+<div *ngIf="activeTab === 'horario'">
     <!-- NUEVA SOLICITUD -->
     <button
       type="button"
@@ -380,10 +400,188 @@
           </button>
         </div>
       </form>
-    </section>
+        </section>
+      </div>
+<div *ngIf="activeTab === 'falta'">
+ <button
+  type="button"
+  class="btn-new"
+  *ngIf="!mostrarFormularioFalta"
+  (click)="nuevaSolicitudFalta()">
+  <i class="bi bi-file-medical"></i>
+  <span>Justificar inasistencia</span>
+</button>
 
-    <!-- LISTADO -->
-    <ng-container *ngIf="!mostrarFormulario">
+<section class="form-card" *ngIf="mostrarFormularioFalta">
+  <div class="form-header">
+    <div class="form-header-icon">
+      <i class="bi bi-file-medical"></i>
+    </div>
+
+    <div>
+      <h2>Justificar falta</h2>
+      <p>
+        Contanos el motivo de tu inasistencia y adjuntá
+        un comprobante si tenés.
+      </p>
+    </div>
+  </div>
+
+  <form
+    class="request-form"
+    [formGroup]="justificativoForm"
+    (ngSubmit)="guardarJustificativo()"
+    novalidate>
+
+    <!-- FECHA -->
+    <div class="form-group">
+      <label for="fecha-inasistencia">
+        Fecha de la inasistencia
+        <span class="required">*</span>
+      </label>
+
+      <div
+        class="input-wrapper"
+        [class.input-error]="campoInvalidoFalta('fecha_inasistencia')">
+        <i class="bi bi-calendar3"></i>
+
+        <input
+          id="fecha-inasistencia"
+          type="date"
+          formControlName="fecha_inasistencia">
+      </div>
+
+      <div
+        class="field-error"
+        *ngIf="campoInvalidoFalta('fecha_inasistencia')">
+        <span>La fecha es obligatoria.</span>
+      </div>
+    </div>
+    
+    <!-- TIPO DE JUSTIFICATIVO -->
+    <div class="form-group">
+      <label>
+        Tipo de justificativo
+        <span class="required">*</span>
+      </label>
+
+      <div class="tipo-justificativo-grid">
+        <button
+          type="button"
+          class="tipo-btn"
+          [class.active]="justificativoForm.get('tipo_justificativo')?.value === 'CERTIFICADO_MEDICO'"
+          (click)="justificativoForm.patchValue({ tipo_justificativo: 'CERTIFICADO_MEDICO' })">
+          <i class="bi bi-file-earmark-medical"></i>
+          <span>Certificado médico</span>
+        </button>
+
+        <button
+          type="button"
+          class="tipo-btn"
+          [class.active]="justificativoForm.get('tipo_justificativo')?.value === 'EMERGENCIA_FAMILIAR'"
+          (click)="justificativoForm.patchValue({ tipo_justificativo: 'EMERGENCIA_FAMILIAR' })">
+          <i class="bi bi-people"></i>
+          <span>Emergencia familiar</span>
+        </button>
+
+        <button
+          type="button"
+          class="tipo-btn"
+          [class.active]="justificativoForm.get('tipo_justificativo')?.value === 'OTRO_MOTIVO'"
+          (click)="justificativoForm.patchValue({ tipo_justificativo: 'OTRO_MOTIVO' })">
+          <i class="bi bi-question-circle"></i>
+          <span>Otro motivo</span>
+        </button>
+      </div>
+
+      <div
+        class="field-error"
+        *ngIf="campoInvalidoFalta('tipo_justificativo')">
+        <span>Seleccioná un tipo de justificativo.</span>
+      </div>
+    </div>
+    
+    <!-- DESCRIPCIÓN -->
+    <div class="form-group">
+      <label for="descripcion-falta">
+        Descripción
+        <span class="required">*</span>
+      </label>
+
+        <textarea
+        id="descripcion-falta"
+        rows="3"
+        [class.input-error]="campoInvalidoFalta('descripcion')"
+        formControlName="descripcion"
+        placeholder="Describí brevemente el motivo de la inasistencia...">
+      </textarea>
+
+      <div
+        class="field-error"
+        *ngIf="campoInvalidoFalta('descripcion')">
+        <span *ngIf="tieneErrorFalta('descripcion', 'required')">
+          La descripción es obligatoria.
+        </span>
+        <span *ngIf="tieneErrorFalta('descripcion', 'minlength')">
+          La descripción debe tener al menos 5 caracteres.
+        </span>
+      </div>
+    </div>
+    
+    <!-- ARCHIVO -->
+    <div class="form-group">
+      <label>Certificado o comprobante (imagen o PDF, opcional)</label>
+
+      <div class="file-upload">
+        <input
+          type="file"
+          id="archivo-falta"
+          accept="image/jpeg,image/png,application/pdf"
+          (change)="onArchivoSeleccionado($event)">
+
+        <span *ngIf="archivoSeleccionado">
+          {{ archivoSeleccionado.name }}
+        </span>
+      </div>
+
+      <div class="field-error" *ngIf="errorArchivo">
+        <span>{{ errorArchivo }}</span>
+      </div>
+
+      <p class="field-help">JPG, PNG o PDF · máx 5 MB</p>
+    </div>
+
+    <!-- ACCIONES -->
+    <div class="form-actions">
+      <button
+        type="button"
+        class="btn-cancel"
+        [disabled]="guardandoFalta"
+        (click)="cancelarFormularioFalta()">
+        Cancelar
+      </button>
+
+      <button
+        type="submit"
+        class="btn-submit"
+        [disabled]="guardandoFalta">
+        <ng-container *ngIf="!guardandoFalta">
+          <i class="bi bi-send"></i>
+          Enviar justificativo
+        </ng-container>
+
+        <ng-container *ngIf="guardandoFalta">
+          <div class="button-spinner"></div>
+          Enviando...
+        </ng-container>
+      </button>
+    </div>
+  </form>
+</section>
+</div>
+
+      <!-- LISTADO (compartido por las dos pestañas) -->
+      <ng-container *ngIf="(activeTab === 'horario' && !mostrarFormulario) || (activeTab === 'falta' && !mostrarFormularioFalta)">
       <section class="state-card" *ngIf="cargando">
         <div class="spinner"></div>
         <p>Cargando solicitudes...</p>
@@ -491,7 +689,7 @@
                 {{ obtenerEtiquetaEstado(solicitud.estado) }}
               </span>
             </div>
-
+<ng-container *ngIf="solicitud.tipo !== 'JUSTIFICATIVO_FALTA'">
             <!-- FECHA -->
             <div class="date-row">
               <i class="bi bi-calendar"></i>
@@ -573,6 +771,49 @@
               <span>Motivo</span>
               <p>{{ solicitud.motivo }}</p>
             </div>
+            
+</ng-container>
+
+<ng-container *ngIf="solicitud.tipo === 'JUSTIFICATIVO_FALTA'">
+  <!-- FECHA DE INASISTENCIA -->
+  <div class="date-row">
+    <i class="bi bi-calendar"></i>
+    <span>
+      Fecha de la inasistencia:
+      <strong>
+        {{
+          formatearFecha(
+            solicitud.fecha_inasistencia || ''
+          )
+        }}
+      </strong>
+    </span>
+  </div>
+
+  <!-- TIPO DE JUSTIFICATIVO -->
+  <div class="request-details">
+    <span class="detail-chip">
+      <i class="bi bi-file-medical"></i>
+      {{
+        obtenerEtiquetaTipoJustificativo(
+          solicitud.tipo_justificativo!
+        )
+      }}
+    </span>
+  </div>
+
+  <!-- DESCRIPCIÓN -->
+  <div class="reason">
+    <span>Descripción</span>
+    <p>{{ solicitud.descripcion }}</p>
+  </div>
+
+  <!-- ARCHIVO ADJUNTO -->
+  <div class="reason" *ngIf="solicitud.archivo_url">
+    <span>Comprobante</span>
+     <p><a [href]="obtenerUrlArchivo(solicitud.archivo_url)" target="_blank" rel="noopener">Ver archivo adjunto</a></p>
+  </div>
+</ng-container>
 
             <!-- RESPUESTA -->
             <div
@@ -608,9 +849,10 @@
               </span>
             </div>
           </article>
-        </section>
+        </section> 
       </ng-container>
     </ng-container>
+
   </main>
 
   <!-- TOAST REUTILIZABLE -->

@@ -386,11 +386,12 @@ async function crearNotificaciones(
 exports.notificarSolicitudCreada =
   async (
     connection,
-    {
+       {
       solicitudId,
       solicitante,
       fechaSolicitada,
-      creadaEn
+      creadaEn,
+      tipo
     }
   ) => {
     const solicitudIdValidado =
@@ -459,10 +460,14 @@ exports.notificarSolicitudCreada =
         tipo:
           TIPOS_NOTIFICACION
             .SOLICITUD_CREADA,
-        titulo:
-          'Nueva solicitud de cambio',
+               titulo:
+          tipo === 'JUSTIFICATIVO_FALTA'
+            ? 'Nuevo justificativo de falta'
+            : 'Nueva solicitud de cambio',
         mensaje:
-          `${nombre} solicitó un cambio de horario para el ${fechaSolicitada}.`,
+          tipo === 'JUSTIFICATIVO_FALTA'
+            ? `${nombre} justificó una falta para el ${fechaSolicitada}.`
+            : `${nombre} solicitó un cambio de horario para el ${fechaSolicitada}.`,
         entidad_tipo:
           'SOLICITUD',
         entidad_id:
@@ -479,13 +484,14 @@ exports.notificarSolicitudCreada =
 exports.notificarSolicitudResuelta =
   async (
     connection,
-    {
+     {
       solicitudId,
       solicitante,
       responsable,
       estado,
       fechaSolicitada,
-      resueltaEn
+      resueltaEn,
+      tipo
     }
   ) => {
     const solicitudIdValidado =
@@ -574,11 +580,15 @@ exports.notificarSolicitudResuelta =
               .SOLICITUD_APROBADA
           : TIPOS_NOTIFICACION
               .SOLICITUD_RECHAZADA,
-        titulo: aprobada
+            titulo: aprobada
           ? 'Solicitud aprobada'
           : 'Solicitud rechazada',
         mensaje:
-          `Tu solicitud de cambio para el ${fechaSolicitada} fue ${
+          `Tu ${
+            tipo === 'JUSTIFICATIVO_FALTA'
+              ? 'justificativo de falta'
+              : 'solicitud de cambio'
+          } para el ${fechaSolicitada} fue ${
             aprobada
               ? 'aprobada'
               : 'rechazada'

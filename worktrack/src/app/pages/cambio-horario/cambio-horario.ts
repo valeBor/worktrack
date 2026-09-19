@@ -9,8 +9,10 @@ import {Toast, TipoToast} from '../../components/toast/toast';
 import {SolicitudService} from '../../services/solicitud.service';
 import {AuthService} from '../../services/auth.service';
 import { GrupoSolicitudes, HorarioActualFecha, NuevaSolicitudCambioHorario,
-  SolicitudCambioHorario, SolicitudEstado} from '../../models/solicitud.model';
+  SolicitudCambioHorario, SolicitudEstado, TipoJustificativo,
+  NuevaSolicitudJustificativo, SolicitudJustificativo} from '../../models/solicitud.model';
 import {Role} from '../../models/user.models';
+import {environment} from '../../../environments/environment';
 
 @Component({
   selector: 'app-cambio-horario',
@@ -30,6 +32,7 @@ export class CambioHorario implements OnInit {
   // ====================================================
 
   mostrarFormulario = false;
+  activeTab: 'horario' | 'falta' = 'horario'; 
   solicitudForm: FormGroup;
   formularioEnviado = false;
   guardando = false;
@@ -37,6 +40,18 @@ export class CambioHorario implements OnInit {
   horarioActual: HorarioActualFecha | null = null;
   errorHorario = '';
   fechaMinima: string;
+
+  
+  // ====================================================
+  // FORMULARIO JUSTIFICATIVO
+  // ====================================================
+
+  mostrarFormularioFalta = false;
+  justificativoForm: FormGroup;
+  formularioFaltaEnviado = false;
+  guardandoFalta = false;
+  archivoSeleccionado: File | null = null;
+  errorArchivo = '';
 
   // ====================================================
   // TOAST REUTILIZABLE
@@ -93,6 +108,26 @@ export class CambioHorario implements OnInit {
         validators: this.validarRangoHorario
       }
     );
+
+    
+    this.justificativoForm = this.formBuilder.group({
+      fecha_inasistencia: [
+        '',
+        [Validators.required]
+      ],
+      tipo_justificativo: [
+        '',
+        [Validators.required]
+      ],
+      descripcion: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(5),
+          Validators.maxLength(500)
+        ]
+      ]
+    });
   }
 
   // ====================================================
@@ -103,7 +138,9 @@ export class CambioHorario implements OnInit {
     this.rolActual = this.authService.getRole() as Role | null;
     this.cargarSolicitudes();
   }
-
+  cambiarTab(tab: 'horario' | 'falta'): void {
+  this.activeTab = tab;
+  }
   // ====================================================
   // TEXTO SEGÚN EL ROL
   // ====================================================
@@ -146,8 +183,15 @@ export class CambioHorario implements OnInit {
   private filtrarSolicitudes(
     estado: SolicitudEstado
   ): SolicitudCambioHorario[] {
+    const tipoBuscado =
+      this.activeTab === 'falta'
+        ? 'JUSTIFICATIVO_FALTA'
+        : 'CAMBIO_HORARIO';
+
     return this.solicitudes.filter(
-      solicitud => solicitud.estado === estado
+      solicitud =>
+        solicitud.estado === estado &&
+        solicitud.tipo === tipoBuscado
     );
   }
 
@@ -206,6 +250,32 @@ export class CambioHorario implements OnInit {
 
     this.limpiarFormulario();
     this.mostrarFormulario = false;
+  }
+  
+  // ====================================================
+  // ABRIR / CANCELAR FORMULARIO DE FALTA
+  // ====================================================
+
+  nuevaSolicitudFalta(): void {
+    this.limpiarFormularioFalta();
+    this.guardandoFalta = false;
+    this.mostrarFormularioFalta = true;
+  }
+
+  cancelarFormularioFalta(): void {
+    if (this.guardandoFalta) {
+      return;
+    }
+
+    this.limpiarFormularioFalta();
+    this.mostrarFormularioFalta = false;
+  }
+
+  private limpiarFormularioFalta(): void {
+    this.justificativoForm.reset();
+    this.formularioFaltaEnviado = false;
+    this.archivoSeleccionado = null;
+    this.errorArchivo = '';
   }
 
   // ====================================================
@@ -355,8 +425,92 @@ export class CambioHorario implements OnInit {
           );
         }
       });
+  }    
+
+  // ====================================================
+  // ARCHIVO DEL JUSTIFICATIVO
+  // ====================================================
+
+  onArchivoSeleccionado(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const archivo = input.files?.[0] || null;
+
+    this.errorArchivo = '';
+
+    if (!archivo) {
+      this.archivoSeleccionado = null;
+      return;
+    }
+
+    const tiposPermitidos = ['image/jpeg', 'image/png', 'application/pdf'];
+    const tamanioMaximo = 5 * 1024 * 1024;
+
+    if (!tiposPermitidos.includes(archivo.type)) {
+      this.errorArchivo = 'Solo se permiten archivos JPG, PNG o PDF.';
+      this.archivoSeleccionado = null;
+      input.value = '';
+      return;
+    }
+
+    if (archivo.size > tamanioMaximo) {
+      this.errorArchivo = 'El archivo no puede superar los 5 MB.';
+      this.archivoSeleccionado = null;
+      input.value = '';
+      return;
+    }
+
+    this.archivoSeleccionado = archivo;
   }
 
+  // ====================================================
+  // GUARDAR JUSTIFICATIVO
+  // ====================================================
+
+  guardarJustificativo(): void {
+    this.formularioFaltaEnviado = true;
+    this.justificativoForm.markAllAsTouched();
+
+    if (this.justificativoForm.invalid) {
+      this.mostrarToast(
+        'Revisá los campos marcados en el formulario.',
+        'warning'
+      );
+      return;
+    }
+
+    const valores = this.justificativoForm.getRawValue();
+
+    this.guardandoFalta = true;
+
+    this.solicitudService
+      .createJustificativo(valores, this.archivoSeleccionado)
+      .pipe(
+        finalize(() => {
+          this.guardandoFalta = false;
+          this.changeDetector.detectChanges();
+        })
+      )
+      .subscribe({
+        next: respuesta => {
+          this.mostrarFormularioFalta = false;
+          this.limpiarFormularioFalta();
+
+          this.mostrarToast(
+            respuesta.mensaje,
+            'success'
+          );
+        },
+        error: (error: HttpErrorResponse) => {
+          this.mostrarToast(
+            this.obtenerMensajeError(
+              error,
+              'No fue posible enviar el justificativo.'
+            ),
+            'error'
+          );
+        }
+      });
+  }
   // ====================================================
   // VALIDAR FECHA FUTURA
   // ====================================================
@@ -462,6 +616,34 @@ export class CambioHorario implements OnInit {
   ): boolean {
     return Boolean(
       this.solicitudForm
+        .get(nombreCampo)
+        ?.hasError(error)
+    );
+  }
+  
+  campoInvalidoFalta(
+    nombreCampo: string
+  ): boolean {
+    const control = this.justificativoForm.get(
+      nombreCampo
+    );
+
+    return Boolean(
+      control &&
+      control.invalid &&
+      (
+        control.touched ||
+        this.formularioFaltaEnviado
+      )
+    );
+  }
+
+  tieneErrorFalta(
+    nombreCampo: string,
+    error: string
+  ): boolean {
+    return Boolean(
+      this.justificativoForm
         .get(nombreCampo)
         ?.hasError(error)
     );
@@ -580,8 +762,40 @@ export class CambioHorario implements OnInit {
       default:
         return 'bi-clock';
     }
+}
+
+  // ====================================================
+  // TEXTOS DEL JUSTIFICATIVO
+  // ====================================================
+
+  obtenerEtiquetaTipoJustificativo(
+    tipo: TipoJustificativo
+  ): string {
+    switch (tipo) {
+      case 'CERTIFICADO_MEDICO':
+        return 'Certificado médico';
+      case 'EMERGENCIA_FAMILIAR':
+        return 'Emergencia familiar';
+      default:
+        return 'Otro motivo';
+    }
   }
 
+  obtenerUrlArchivo(
+    archivoUrl: string | null
+  ): string {
+    if (!archivoUrl) {
+      return '';
+    }
+
+    const base =
+      environment.apiUrl.replace(
+        '/api',
+        ''
+      );
+
+    return base + archivoUrl;
+  }
   // ====================================================
   // MENSAJE DE ERROR
   // ====================================================

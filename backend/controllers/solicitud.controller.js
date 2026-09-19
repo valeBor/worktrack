@@ -199,3 +199,32 @@ exports.resolveSolicitud = async (
     );
   }
 };
+
+// ======================================================
+// CREAR JUSTIFICATIVO DE FALTA
+// ======================================================
+
+exports.createJustificativo = async (
+  req,
+  res
+) => {
+  try {
+    const resultado =
+      await solicitudService
+        .createJustificativo(
+          req.user,
+          req.body,
+          req.file
+        );
+
+    return res.status(201).json(
+      resultado
+    );
+  } catch (error) {
+    return responderError(
+      res,
+      error,
+      'Error al crear el justificativo de falta.'
+    );
+  }
+};

@@ -19,6 +19,10 @@ const CAMPOS_SOLICITUD = `
   s.hora_salida_solicitada,
   s.modalidad_solicitada,
   s.motivo,
+  s.fecha_inasistencia,
+  s.tipo_justificativo,
+  s.descripcion,
+  s.archivo_url,
   s.creada_en,
   s.respuesta,
   s.resuelto_por,
@@ -384,4 +388,40 @@ exports.getPrimeraAprobadaByUsuario = async (
   ]);
 
   return rows[0]?.primera_fecha || null;
+};
+
+// ======================================================
+// CREAR JUSTIFICATIVO DE FALTA
+// ======================================================
+
+exports.createJustificativo = async (
+  connection,
+  justificativo
+) => {
+  const sql = `
+    INSERT INTO solicitudes (
+      usuario_id,
+      tipo,
+      estado,
+      fecha_inasistencia,
+      tipo_justificativo,
+      descripcion,
+      archivo_url
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+  const [result] = await connection.query(
+    sql,
+    [
+      justificativo.usuario_id,
+      justificativo.tipo,
+      justificativo.estado,
+      justificativo.fecha_inasistencia,
+      justificativo.tipo_justificativo,
+      justificativo.descripcion,
+      justificativo.archivo_url
+    ]
+  );
+
+  return result;
 };

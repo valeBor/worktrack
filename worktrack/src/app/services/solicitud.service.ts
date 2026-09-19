@@ -2,7 +2,8 @@ import {Injectable, inject} from '@angular/core';
 import {HttpClient,HttpParams} from '@angular/common/http';
 import { Observable} from 'rxjs';
 import {SolicitudCambioHorario, NuevaSolicitudCambioHorario, HorarioActualFecha,
-  CrearSolicitudResponse, ResolverSolicitudRequest, ResolverSolicitudResponse} from '../models/solicitud.model';
+  CrearSolicitudResponse, ResolverSolicitudRequest, ResolverSolicitudResponse,
+  NuevaSolicitudJustificativo, CrearJustificativoResponse} from '../models/solicitud.model';
 import {environment} from '../../environments/environment';
 
 @Injectable({
@@ -120,5 +121,30 @@ export class SolicitudService {
     `${this.apiUrl}/gestionables`
   );
 }
+
+ 
+  // CREAR JUSTIFICATIVO DE FALTA
+  
+
+  createJustificativo(
+    datos: NuevaSolicitudJustificativo,
+    archivo: File | null
+  ): Observable<CrearJustificativoResponse> {
+
+    const formData = new FormData();
+    formData.append('fecha_inasistencia', datos.fecha_inasistencia);
+    formData.append('tipo_justificativo', datos.tipo_justificativo);
+    formData.append('descripcion', datos.descripcion);
+
+    if (archivo) {
+      formData.append('archivo', archivo);
+    }
+
+    return this.http.post<CrearJustificativoResponse>(
+      `${this.apiUrl}/justificativos`,
+      formData
+    );
+
+  }
 
 }

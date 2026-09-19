@@ -720,7 +720,8 @@ exports.createSolicitud = async (
           solicitante: actor,
           fechaSolicitada:
             nuevaSolicitud
-              .fecha_solicitada
+              .fecha_solicitada,
+          tipo: nuevaSolicitud.tipo
         }
       );
 
@@ -740,6 +741,92 @@ exports.createSolicitud = async (
   } finally {
     connection.release();
   }
+};
+
+// ======================================================
+// CREAR JUSTIFICATIVO DE FALTA
+// ======================================================
+
+exports.createJustificativo = async (
+  actorToken,
+  datos,
+  archivo
+) => {
+  const actor =
+    await obtenerActor(
+      actorToken
+    );
+
+  const fechaInasistencia =
+    String(datos.fecha_inasistencia || '').trim();
+  const tipoJustificativo =
+    String(datos.tipo_justificativo || '').trim();
+  const descripcion =
+    String(datos.descripcion || '').trim();
+
+  if (!fechaInasistencia) {
+    throw crearError(
+      'La fecha de la inasistencia es obligatoria.',
+      400
+    );
+  }
+
+  const tiposValidos = [
+    'CERTIFICADO_MEDICO',
+    'EMERGENCIA_FAMILIAR',
+    'OTRO_MOTIVO'
+  ];
+
+  if (!tiposValidos.includes(tipoJustificativo)) {
+    throw crearError(
+      'El tipo de justificativo es inválido.',
+      400
+    );
+  }
+
+  if (descripcion.length < 5) {
+    throw crearError(
+      'La descripción es obligatoria.',
+      400
+    );
+  }
+
+  const nuevoJustificativo = {
+    usuario_id: actor.id,
+    tipo: 'JUSTIFICATIVO_FALTA',
+    estado: 'PENDIENTE',
+    fecha_inasistencia: fechaInasistencia,
+    tipo_justificativo: tipoJustificativo,
+    descripcion: descripcion,
+    archivo_url: archivo
+      ? `/uploads/justificativos/${archivo.filename}`
+      : null
+  };
+
+  const result =
+    await solicitudModel.createJustificativo(
+      db,
+      nuevoJustificativo
+    );
+    
+  await notificacionService.notificarSolicitudCreada(
+    db,
+    {
+      solicitudId: result.insertId,
+      solicitante: actor,
+      fechaSolicitada: nuevoJustificativo.fecha_inasistencia,
+      tipo: nuevoJustificativo.tipo
+    }
+  );
+
+  return {
+    mensaje:
+      'Justificativo enviado correctamente.',
+    solicitud: {
+      id: result.insertId,
+      ...nuevoJustificativo
+    }
+  };
 };
 
 // ======================================================
@@ -953,16 +1040,15 @@ exports.resolveSolicitud = async (
       );
     }
 
-    if (
-      solicitud.tipo !==
-      TIPO_CAMBIO_HORARIO
+        if (
+      solicitud.tipo !== TIPO_CAMBIO_HORARIO &&
+      solicitud.tipo !== 'JUSTIFICATIVO_FALTA'
     ) {
       throw crearError(
-        'La solicitud no corresponde a un cambio de horario.',
+        'Tipo de solicitud no soportado.',
         409
       );
     }
-
     if (
       solicitud.estado !==
       'PENDIENTE'
@@ -997,9 +1083,11 @@ exports.resolveSolicitud = async (
       solicitud
     );
 
-    const fechaSolicitada =
+      const fechaSolicitada =
       normalizarFechaBaseDatos(
-        solicitud.fecha_solicitada
+        solicitud.tipo === 'JUSTIFICATIVO_FALTA'
+          ? solicitud.fecha_inasistencia
+          : solicitud.fecha_solicitada
       );
 
     const {
@@ -1019,9 +1107,9 @@ exports.resolveSolicitud = async (
         );
       }
 
-      if (
-        !fechaSolicitada ||
-        fechaSolicitada <= fecha
+        if (
+        solicitud.tipo === TIPO_CAMBIO_HORARIO &&
+        (!fechaSolicitada || fechaSolicitada <= fecha)
       ) {
         throw crearError(
           'No se puede aprobar una solicitud cuya fecha ya llegó o pasó.',
@@ -1052,7 +1140,7 @@ exports.resolveSolicitud = async (
       );
     }
 
-    await notificacionService
+       await notificacionService
       .notificarSolicitudResuelta(
         connection,
         {
@@ -1062,7 +1150,8 @@ exports.resolveSolicitud = async (
           estado,
           fechaSolicitada,
           resueltaEn:
-            fechaResolucion
+            fechaResolucion,
+          tipo: solicitud.tipo
         }
       );
 

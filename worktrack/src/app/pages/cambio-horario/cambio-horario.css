@@ -23,6 +23,47 @@
   gap: 26px;
 }
 
+/* ======================================================
+   PESTAÑAS
+   ====================================================== */
+
+.tabs {
+  display: flex;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 22px;
+
+  background: white;
+  border: 1px solid var(--color-border);
+
+  box-shadow:
+    0 7px 20px
+    rgba(0, 0, 0, 0.08);
+}
+
+.tab-btn {
+  flex: 1;
+  border: none;
+  border-radius: 16px;
+  padding: 15px;
+
+  background: transparent;
+  color: #6b7280;
+  font-size: 16px;
+
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  background: #f0fdf4;
+}
+
+.tab-btn.active {
+  background: var(--color-secondary);
+  color: white;
+}
 
 /* ======================================================
    BOTÓN NUEVA SOLICITUD
@@ -37,8 +78,8 @@
   background:
     linear-gradient(
       90deg,
-      #22c55e,
-      #4ade80
+      var(--color-primary),
+      var(--color-primary-soft)
     );
 
   color: white;
@@ -54,7 +95,7 @@
 
   box-shadow:
     0 8px 18px
-    rgba(34, 197, 94, 0.25);
+    rgba(22, 48, 76, 0.25);
 
   transition:
     transform 0.2s ease,
@@ -67,7 +108,7 @@
 
   box-shadow:
     0 12px 24px
-    rgba(34, 197, 94, 0.3);
+    rgba(22, 48, 76, 0.3);
 }
 
 
@@ -306,7 +347,118 @@ textarea.input-error {
 .range-error {
   margin-top: -3px;
 }
+.tipo-justificativo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
 
+
+.tipo-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  padding: 14px 10px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  background-color: white;
+
+  color: #374151;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+
+.tipo-btn i {
+  font-size: 20px;
+  color: #6b7280;
+}
+
+
+.tipo-btn:hover {
+  border-color: #22c55e;
+}
+
+
+.tipo-btn.active {
+  border-color: #22c55e;
+  background-color: rgba(34, 197, 94, 0.08);
+  color: #15803d;
+}
+
+
+.tipo-btn.active i {
+  color: #22c55e;
+}
+
+
+.file-upload {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  padding: 12px 14px;
+
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+  background-color: #f9fafb;
+}
+
+
+.file-upload input[type="file"] {
+  font-family: inherit;
+  font-size: 13px;
+  color: #374151;
+}
+
+
+.file-upload input[type="file"]::file-selector-button {
+  padding: 8px 14px;
+  margin-right: 10px;
+
+  border: none;
+  border-radius: 8px;
+  background-color: #22c55e;
+
+  color: white;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+
+.file-upload input[type="file"]::file-selector-button:hover {
+  background-color: #16a34a;
+}
+
+
+.file-upload span {
+  color: #374151;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+
+@media (max-width: 480px) {
+  .tipo-justificativo-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
 /* ======================================================
    CONSULTA DEL HORARIO

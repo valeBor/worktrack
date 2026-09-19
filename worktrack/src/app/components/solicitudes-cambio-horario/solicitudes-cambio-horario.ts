@@ -8,7 +8,8 @@ import {SolicitudCambioHorario} from '../../models/solicitud.model';
 import {SolicitudService} from '../../services/solicitud.service';
 import {AuthService} from '../../services/auth.service';
 import {Role} from '../../models/user.models';
-
+import {environment} from '../../../environments/environment';
+import {TipoJustificativo} from '../../models/solicitud.model';
 @Component({
   selector: 'app-solicitudes-cambio-horario',
   standalone: true,
@@ -67,10 +68,19 @@ export class SolicitudesCambioHorario implements OnInit {
   // DATOS DEL MODAL
   // =====================================================
 
-  get tituloModal(): string {
+   get tituloModal(): string {
+    const esJustificativo =
+      this.solicitudSeleccionada?.tipo ===
+      'JUSTIFICATIVO_FALTA';
+
+    const sustantivo =
+      esJustificativo
+        ? 'justificativo'
+        : 'cambio de horario';
+
     return this.accionSeleccionada === 'APROBADA'
-      ? 'Aprobar cambio de horario'
-      : 'Rechazar cambio de horario';
+      ? `Aprobar ${sustantivo}`
+      : `Rechazar ${sustantivo}`;
   }
 
   get mensajeModal(): string {
@@ -423,6 +433,39 @@ export class SolicitudesCambioHorario implements OnInit {
       nombre.charAt(0).toUpperCase() +
       apellido.charAt(0).toUpperCase()
     ) || '?';
+  }
+  
+  // =====================================================
+  // TEXTOS DEL JUSTIFICATIVO
+  // =====================================================
+
+  obtenerEtiquetaTipoJustificativo(
+    tipo: TipoJustificativo
+  ): string {
+    switch (tipo) {
+      case 'CERTIFICADO_MEDICO':
+        return 'Certificado médico';
+      case 'EMERGENCIA_FAMILIAR':
+        return 'Emergencia familiar';
+      default:
+        return 'Otro motivo';
+    }
+  }
+
+  obtenerUrlArchivo(
+    archivoUrl: string | null | undefined
+  ): string {
+    if (!archivoUrl) {
+      return '';
+    }
+
+    const base =
+      environment.apiUrl.replace(
+        '/api',
+        ''
+      );
+
+    return base + archivoUrl;
   }
 
   // =====================================================

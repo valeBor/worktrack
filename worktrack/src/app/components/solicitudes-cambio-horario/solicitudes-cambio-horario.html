@@ -3,7 +3,7 @@
   <!-- ENCABEZADO -->
   <header class="panel-header">
     <div>
-      <h2>Solicitudes de cambio de horario</h2>
+      <h2>Solicitudes </h2>
 
       <p *ngIf="rolActual === 'rrhh'">
         Consultá y resolvé solicitudes de empleados y supervisores.
@@ -165,7 +165,7 @@
           </span>
         </div>
       </div>
-
+<ng-container *ngIf="solicitud.tipo !== 'JUSTIFICATIVO_FALTA'">
       <!-- FECHA SOLICITADA -->
       <div class="date-row">
         <i class="bi bi-calendar3"></i>
@@ -259,6 +259,46 @@
           min
         </span>
       </div>
+</ng-container>
+
+<ng-container *ngIf="solicitud.tipo === 'JUSTIFICATIVO_FALTA'">
+  <!-- FECHA DE INASISTENCIA -->
+  <div class="date-row">
+    <i class="bi bi-calendar3"></i>
+    <span>Fecha de la inasistencia:</span>
+    <strong>
+      {{
+        formatearFecha(
+          solicitud.fecha_inasistencia || ''
+        )
+      }}
+    </strong>
+  </div>
+
+  <!-- TIPO DE JUSTIFICATIVO -->
+  <div class="request-details">
+    <span>
+      <i class="bi bi-file-medical"></i>
+      {{
+        obtenerEtiquetaTipoJustificativo(
+          solicitud.tipo_justificativo!
+        )
+      }}
+    </span>
+  </div>
+
+  <!-- DESCRIPCIÓN -->
+  <div class="reason-box">
+    <span>Descripción</span>
+    <p>{{ solicitud.descripcion }}</p>
+  </div>
+
+  <!-- ARCHIVO ADJUNTO -->
+  <div class="reason-box" *ngIf="solicitud.archivo_url">
+    <span>Comprobante</span>
+    <p><a [href]="obtenerUrlArchivo(solicitud.archivo_url)" target="_blank" rel="noopener">Ver archivo adjunto</a></p>
+  </div>
+</ng-container>
 
       <!-- SOLICITUD YA RESUELTA -->
       <div
@@ -359,6 +399,7 @@
     *ngIf="solicitudSeleccionada">
 
     <!-- COMPARACIÓN DENTRO DEL MODAL -->
+     <ng-container *ngIf="solicitudSeleccionada.tipo !== 'JUSTIFICATIVO_FALTA'">
     <div class="modal-schedule">
 
       <div>
@@ -417,6 +458,30 @@
         </small>
       </div>
     </div>
+    
+</ng-container>
+
+<ng-container *ngIf="solicitudSeleccionada.tipo === 'JUSTIFICATIVO_FALTA'">
+  <div class="modal-schedule">
+    <div>
+      <span>Tipo de justificativo</span>
+      <strong>
+        {{
+          obtenerEtiquetaTipoJustificativo(
+            solicitudSeleccionada.tipo_justificativo!
+          )
+        }}
+      </strong>
+      <small>
+        {{
+          formatearFecha(
+            solicitudSeleccionada.fecha_inasistencia || ''
+          )
+        }}
+      </small>
+    </div>
+  </div>
+</ng-container>
 
     <!-- RESPUESTA -->
     <div class="response-group">

@@ -10,8 +10,13 @@ export type SolicitudEstado =
 
 
 export type SolicitudTipo =
-  'CAMBIO_HORARIO';
+  | 'CAMBIO_HORARIO'
+  | 'JUSTIFICATIVO_FALTA';
 
+export type TipoJustificativo =
+  | 'CERTIFICADO_MEDICO'
+  | 'EMERGENCIA_FAMILIAR'
+  | 'OTRO_MOTIVO';
 
 export type ModalidadHorario =
   | 'PRESENCIAL'
@@ -42,6 +47,13 @@ export interface SolicitudCambioHorario {
   respuesta: string | null;
   resuelto_por: number | null;
   resuelta_en: string | null;
+
+  
+  // Campos propios del justificativo de falta.
+  fecha_inasistencia?: string;
+  tipo_justificativo?: TipoJustificativo;
+  descripcion?: string;
+  archivo_url?: string | null;
 
 
   // Responsable que aprobó o rechazó.
@@ -179,4 +191,41 @@ export interface GrupoSolicitudes {
   titulo: string;
   icono: string;
   solicitudes: SolicitudCambioHorario[];
+}
+
+// SOLICITUD DE JUSTIFICATIVO DE FALTA
+
+export interface SolicitudJustificativo {
+  id: number;
+  usuario_id: number;
+  tipo: SolicitudTipo;
+  tipo_justificativo: TipoJustificativo;
+  estado: SolicitudEstado;
+  fecha_inasistencia: string;
+  descripcion: string;
+  archivo_url: string | null;
+  creada_en: string;
+  respuesta: string | null;
+  resuelto_por: number | null;
+  resuelta_en: string | null;
+
+  responsable_nombre?: string | null;
+  responsable_apellido?: string | null;
+  responsable_role?: Role | null;
+
+  usuario_nombre?: string;
+  usuario_apellido?: string;
+  usuario_email?: string;
+  usuario_role?: Role;
+}
+
+export interface NuevaSolicitudJustificativo {
+  fecha_inasistencia: string;
+  tipo_justificativo: TipoJustificativo;
+  descripcion: string;
+}
+
+export interface CrearJustificativoResponse {
+  mensaje: string;
+  solicitud: SolicitudJustificativo;
 }

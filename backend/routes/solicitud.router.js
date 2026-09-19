@@ -3,7 +3,7 @@ const router = express.Router();
 const solicitudController = require('../controllers/solicitud.controller');
 const {verifyToken} = require('../middlewares/authMiddleware');
 const {verifyPermission} = require('../middlewares/permissionMiddleware');
-
+const upload = require('../middlewares/upload.middleware');
 // ======================================================
 // MI HORARIO PARA UNA FECHA
 // ======================================================
@@ -69,5 +69,15 @@ router.patch(
   verifyPermission('RESOLVER_SOLICITUDES'),
   solicitudController.resolveSolicitud
 );
+// ======================================================
+// CREAR JUSTIFICATIVO DE FALTA
+// ======================================================
 
+router.post(
+  '/justificativos',
+  verifyToken,
+  verifyPermission('CREAR_JUSTIFICATIVO_FALTA'),
+  upload.single('archivo'),
+  solicitudController.createJustificativo
+);
 module.exports = router;
