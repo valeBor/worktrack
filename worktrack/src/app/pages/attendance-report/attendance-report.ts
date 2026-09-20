@@ -1,23 +1,17 @@
-import {ChangeDetectorRef, Component, Inject, OnDestroy, OnInit, PLATFORM_ID} from '@angular/core';
-import {CommonModule, isPlatformBrowser} from '@angular/common';
-import {FormsModule} from '@angular/forms';
-import {ActivatedRoute, Router} from '@angular/router';
-import {Subscription, finalize} from 'rxjs';
-import {jsPDF} from 'jspdf';
+import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subscription, finalize } from 'rxjs';
+import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import {Header} from '../../components/header/header';
-import {Toast, TipoToast} from '../../components/toast/toast';
-import {AttendanceReportService} from '../../services/attendance-report.service';
+import { Header } from '../../components/header/header';
+import { Toast, TipoToast } from '../../components/toast/toast';
+import { AttendanceReportService } from '../../services/attendance-report.service';
 import {
-  AttendanceJourneyStatus,
-  AttendanceReportModality,
-  AttendanceReportRecord,
-  AttendanceReportStatus,
-  AttendanceReportSummary,
-  DailyAttendanceReport,
-  GlobalAttendanceHistory,
-  ReportableRole,
-  ReportableUser
+  AttendanceJourneyStatus, AttendanceReportModality, AttendanceReportRecord,
+  AttendanceReportStatus, AttendanceReportSummary, DailyAttendanceReport, GlobalAttendanceHistory,
+  ReportableRole, ReportableUser
 } from '../../models/attendance-report.model';
 
 type AttendanceReportTab =
@@ -27,12 +21,7 @@ type AttendanceReportTab =
 @Component({
   selector: 'app-attendance-report',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    Header,
-    Toast
-  ],
+  imports: [CommonModule, FormsModule, Header, Toast],
   templateUrl: './attendance-report.html',
   styleUrl: './attendance-report.css'
 })
@@ -160,7 +149,7 @@ export class AttendanceReport implements OnInit, OnDestroy {
       `${values['month']}-` +
       `${values['day']}`
     );
- }
+  }
 
   // ====================================================
   // CAMBICHANTE PESTAÑA
@@ -177,7 +166,7 @@ export class AttendanceReport implements OnInit, OnDestroy {
       [],
       {
         relativeTo: this.route,
-        queryParams: {tab},
+        queryParams: { tab },
         queryParamsHandling: 'merge'
       }
     );
@@ -435,6 +424,7 @@ export class AttendanceReport implements OnInit, OnDestroy {
     document.text(
       `Presentes: ${summary.registros_presentes} | ` +
       `Ausencias: ${summary.ausencias} | ` +
+      `Justificadas: ${summary.faltas_justificadas} | ` +
       `Tardanzas: ${summary.tardanzas} | ` +
       `Asistencia: ${summary.porcentaje_asistencia}%`,
       14,
@@ -547,7 +537,7 @@ export class AttendanceReport implements OnInit, OnDestroy {
     ).format(
       new Date(
         year,
-        month -1,
+        month - 1,
         day
       )
     );
@@ -598,12 +588,13 @@ export class AttendanceReport implements OnInit, OnDestroy {
         AttendanceReportStatus,
         string
       > = {
-        PRESENTE: 'Presente',
-        TARDE: 'Tarde',
-        AUSENTE: 'Ausente',
-        PENDIENTE: 'Pendiente',
-        SIN_HORARIO: 'Sin horario'
-      };
+      PRESENTE: 'Presente',
+      TARDE: 'Tarde',
+      AUSENTE: 'Ausente',
+      FALTA_JUSTIFICADA: 'Falta justificada',
+      PENDIENTE: 'Pendiente',
+      SIN_HORARIO: 'Sin horario'
+    };
 
     return labels[status];
   }
@@ -616,11 +607,11 @@ export class AttendanceReport implements OnInit, OnDestroy {
         AttendanceJourneyStatus,
         string
       > = {
-        SIN_REGISTRO: 'Sin registro',
-        EN_CURSO: 'En curso',
-        COMPLETA: 'Completa',
-        INCOMPLETA: 'Incompleta'
-      };
+      SIN_REGISTRO: 'Sin registro',
+      EN_CURSO: 'En curso',
+      COMPLETA: 'Completa',
+      INCOMPLETA: 'Incompleta'
+    };
 
     return labels[status];
   }

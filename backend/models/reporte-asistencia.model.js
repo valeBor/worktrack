@@ -386,3 +386,83 @@ exports.getCambiosAprobadosByPeriodo =
       false
     );
   };
+  // ======================================================
+// JUSTIFICACIONES DE INASISTENCIA APROBADAS
+// ======================================================
+
+async function getJustificacionesAprobadas(
+  fechaDesde,
+  fechaHasta,
+  soloActivos
+) {
+  const filtroActivos = obtenerFiltroActivos(
+    soloActivos
+  );
+
+  const sql = `
+    SELECT
+      s.id,
+      s.usuario_id,
+      DATE_FORMAT(
+        s.fecha_inasistencia,
+        '%Y-%m-%d'
+      ) AS fecha_inasistencia,
+      s.motivo,
+      tj.codigo AS tipo_justificativo,
+      tj.nombre AS tipo_justificativo_nombre
+    FROM solicitudes s
+    JOIN usuarios u
+      ON u.id = s.usuario_id
+    JOIN roles r
+      ON r.id = u.rol_id
+    JOIN tipos_justificativo tj
+      ON tj.id = s.tipo_justificativo_id
+    WHERE s.tipo = 'JUSTIFICACION_INASISTENCIA'
+      AND s.estado = 'APROBADA'
+      AND s.fecha_inasistencia BETWEEN ? AND ?
+      AND LOWER(r.nombre) IN (
+        'empleado',
+        'supervisor'
+      )
+      ${filtroActivos}
+    ORDER BY
+      s.usuario_id,
+      s.fecha_inasistencia,
+      s.resuelta_en DESC,
+      s.id DESC
+  `;
+
+  const [rows] = await db.query(sql, [
+    fechaDesde,
+    fechaHasta
+  ]);
+
+  return rows;
+}
+
+// ======================================================
+// JUSTIFICACIONES DEL REPORTE DIARIO
+// ======================================================
+
+exports.getJustificacionesAprobadasByFecha = async fecha => {
+  return getJustificacionesAprobadas(
+    fecha,
+    fecha,
+    true
+  );
+};
+
+// ======================================================
+// JUSTIFICACIONES DEL HISTORIAL Y ESTADÍSTICAS
+// ======================================================
+
+exports.getJustificacionesAprobadasByPeriodo = async (
+  fechaDesde,
+  fechaHasta
+) => {
+  return getJustificacionesAprobadas(
+    fechaDesde,
+    fechaHasta,
+    false
+  );
+};

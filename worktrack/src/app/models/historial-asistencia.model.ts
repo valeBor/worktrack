@@ -1,4 +1,5 @@
-import { Role } from './user.models';
+import {Role} from './user.models';
+import {TipoJustificativo} from './solicitud.model';
 
 export type PeriodoHistorial =
   | 'mes_actual'
@@ -9,6 +10,7 @@ export type EstadoHistorial =
   | 'PRESENTE'
   | 'TARDE'
   | 'AUSENTE'
+  | 'FALTA_JUSTIFICADA'
   | 'PENDIENTE'
   | null;
 
@@ -56,6 +58,7 @@ export interface PeriodoHistorialDetalle {
   primera_asistencia: string | null;
   primera_vigencia: string | null;
   primera_solicitud_aprobada: string | null;
+  primera_justificacion_aprobada: string | null;
 }
 
 // ======================================================
@@ -68,6 +71,7 @@ export interface ResumenHistorial {
   horas_totales: number;
   llegadas_tarde: number;
   ausencias: number;
+  faltas_justificadas: number;
   registros_incompletos: number;
   promedio_horas_dia: number;
   porcentaje_asistencia: number;
@@ -80,7 +84,10 @@ export interface ResumenHistorial {
 export interface HorarioEsperadoHistorial {
   hora_entrada: string;
   hora_salida: string;
-  modalidad: Exclude<ModalidadHistorial, null>;
+  modalidad: Exclude<
+    ModalidadHistorial,
+    null
+  >;
   tolerancia_minutos: number;
 }
 
@@ -100,6 +107,11 @@ export interface RegistroHistorial {
   modalidad: ModalidadHistorial;
   cambio_horario: boolean;
   solicitud_cambio_id: number | null;
+  falta_justificada: boolean;
+  justificacion_id: number | null;
+  tipo_justificativo: TipoJustificativo | null;
+  tipo_justificativo_nombre: string | null;
+  motivo_justificacion: string | null;
   horario_esperado: HorarioEsperadoHistorial | null;
 }
 

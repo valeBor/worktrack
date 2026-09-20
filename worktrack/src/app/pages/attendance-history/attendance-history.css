@@ -299,7 +299,7 @@
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 18px;
 }
 
@@ -361,6 +361,11 @@
 .absent-card .stat-icon {
   background: #fee2e2;
   color: #dc2626;
+}
+
+.justified-card .stat-icon {
+  background: #ccfbf1;
+  color: #0f766e;
 }
 
 /* =====================================================
@@ -451,6 +456,10 @@
   border-left-color: #ef4444;
 }
 
+.record-item.status-justified {
+  border-left-color: #0f9f8f;
+}
+
 .record-item.status-pending {
   border-left-color: #3b82f6;
 }
@@ -482,6 +491,11 @@
 .status-absent .record-status-icon {
   background: #fee2e2;
   color: #dc2626;
+}
+
+.status-justified .record-status-icon {
+  background: #ccfbf1;
+  color: #0f766e;
 }
 
 .status-pending .record-status-icon {
@@ -540,6 +554,11 @@
   color: #b91c1c;
 }
 
+.status-badge.status-justified {
+  background: #ccfbf1;
+  color: #0f766e;
+}
+
 .status-badge.status-pending {
   background: #dbeafe;
   color: #1d4ed8;
@@ -571,7 +590,8 @@
 }
 
 .expected-schedule,
-.schedule-change {
+.schedule-change,
+.justification-info {
   margin-top: 12px;
   padding: 9px 12px;
   border-radius: 9px;
@@ -589,6 +609,27 @@
 .schedule-change {
   background: #ede9fe;
   color: #6d28d9;
+}
+
+.justification-info {
+  align-items: flex-start;
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+.justification-info div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.justification-info strong {
+  font-size: 12px;
+}
+
+.justification-info span {
+  color: #475569;
+  line-height: 1.4;
 }
 
 /* =====================================================

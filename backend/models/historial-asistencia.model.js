@@ -146,3 +146,66 @@ exports.getUsuarioGestionable = async (
     estado: Boolean(rows[0].estado)
   };
 };
+
+// ======================================================
+// PRIMERA JUSTIFICACIÓN APROBADA DEL USUARIO
+// ======================================================
+
+exports.getPrimeraJustificacionAprobada = async usuarioId => {
+  const sql = `
+    SELECT
+      DATE_FORMAT(
+        MIN(fecha_inasistencia),
+        '%Y-%m-%d'
+      ) AS primera_fecha
+    FROM solicitudes
+    WHERE usuario_id = ?
+      AND tipo = 'JUSTIFICACION_INASISTENCIA'
+      AND estado = 'APROBADA'
+  `;
+
+  const [rows] = await db.query(sql, [usuarioId]);
+
+  return rows[0]?.primera_fecha || null;
+};
+
+// ======================================================
+// JUSTIFICACIONES APROBADAS DEL PERÍODO
+// ======================================================
+
+exports.getJustificacionesAprobadasByPeriodo = async (
+  usuarioId,
+  fechaDesde,
+  fechaHasta
+) => {
+  const sql = `
+    SELECT
+      s.id,
+      s.usuario_id,
+      DATE_FORMAT(
+        s.fecha_inasistencia,
+        '%Y-%m-%d'
+      ) AS fecha_inasistencia,
+      s.motivo,
+      tj.codigo AS tipo_justificativo,
+      tj.nombre AS tipo_justificativo_nombre
+    FROM solicitudes s
+    JOIN tipos_justificativo tj
+      ON tj.id = s.tipo_justificativo_id
+    WHERE s.usuario_id = ?
+      AND s.tipo = 'JUSTIFICACION_INASISTENCIA'
+      AND s.estado = 'APROBADA'
+      AND s.fecha_inasistencia BETWEEN ? AND ?
+    ORDER BY
+      s.fecha_inasistencia ASC,
+      s.id ASC
+  `;
+
+  const [rows] = await db.query(sql, [
+    usuarioId,
+    fechaDesde,
+    fechaHasta
+  ]);
+
+  return rows;
+};

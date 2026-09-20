@@ -401,7 +401,7 @@ select {
 
 .secondary-summary {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
   margin-bottom: 28px;
   border: 1px solid #e2e8f0;
   border-radius: 20px;
@@ -496,6 +496,10 @@ select {
   border-left-color: #ef233c;
 }
 
+.record-card.status-falta-justificada {
+  border-left-color: #0f9f8f;
+}
+
 .record-card.status-pendiente {
   border-left-color: #3b82f6;
 }
@@ -543,7 +547,8 @@ select {
 
 .role-badge,
 .inactive-badge,
-.change-badge {
+.change-badge,
+.justified-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -566,6 +571,11 @@ select {
 .change-badge {
   background: #ede9fe;
   color: #6d28d9;
+}
+
+.justified-badge {
+  background: #ccfbf1;
+  color: #0f766e;
 }
 
 .record-date {
@@ -596,6 +606,27 @@ select {
 
 .schedule-column small {
   color: #64748b;
+}
+
+.justification-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #f0fdfa;
+}
+
+.justification-detail strong {
+  color: #0f766e;
+  font-size: 12px;
+}
+
+.justification-detail small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .attendance-column {
@@ -649,6 +680,11 @@ select {
 .status-badge.status-ausente {
   background: #fee2e2;
   color: #b91c1c;
+}
+
+.status-badge.status-falta-justificada {
+  background: #ccfbf1;
+  color: #0f766e;
 }
 
 .status-badge.status-pendiente {

@@ -223,6 +223,14 @@
           </div>
 
           <div>
+            <span>Faltas justificadas</span>
+
+            <strong>
+              {{ dailyReport.resumen.faltas_justificadas }}
+            </strong>
+          </div>
+
+          <div>
             <span>Sin horario</span>
 
             <strong>
@@ -405,6 +413,10 @@
 
             <option value="AUSENTE">
               Ausente
+            </option>
+
+            <option value="FALTA_JUSTIFICADA">
+              Falta justificada
             </option>
 
             <option value="PENDIENTE">
@@ -590,6 +602,14 @@
           </div>
 
           <div>
+            <span>Faltas justificadas</span>
+
+            <strong>
+              {{ globalHistory.resumen.faltas_justificadas }}
+            </strong>
+          </div>
+
+          <div>
             <span>Horas totales</span>
 
             <strong>
@@ -709,6 +729,13 @@
             <i class="bi bi-arrow-left-right"></i>
             Cambio aprobado
           </span>
+
+          <span
+            class="justified-badge"
+            *ngIf="record.falta_justificada">
+            <i class="bi bi-file-earmark-check"></i>
+            Falta justificada
+          </span>
         </div>
 
         <span class="record-date">
@@ -755,6 +782,21 @@
       <ng-template #noSchedule>
         <strong>Sin horario asignado</strong>
       </ng-template>
+
+      <div
+        class="justification-detail"
+        *ngIf="record.falta_justificada">
+        <strong>
+          {{
+            record.tipo_justificativo_nombre ||
+            'Justificación aprobada'
+          }}
+        </strong>
+
+        <small *ngIf="record.motivo_justificacion">
+          {{ record.motivo_justificacion }}
+        </small>
+      </div>
     </div>
 
     <div class="attendance-column">

@@ -2,8 +2,8 @@ const historialModel = require('../models/historial-asistencia.model');
 const asistenciaModel = require('../models/asistencia.model');
 const horarioModel = require('../models/horario.model');
 const solicitudModel = require('../models/solicitud.model');
-const {obtenerFechaHoraActual, obtenerDiaSemanaDeFecha, obtenerRangoMes, obtenerFechasEntre,
-  horaASegundos} = require('../utils/fecha.util');
+const { obtenerFechaHoraActual, obtenerDiaSemanaDeFecha, obtenerRangoMes, obtenerFechasEntre,
+  horaASegundos } = require('../utils/fecha.util');
 
 // ======================================================
 // CONSTANTES
@@ -133,12 +133,14 @@ function obtenerPrimeraFecha(
   primeraAsistencia,
   primeraVigencia,
   primeraSolicitudAprobada,
+  primeraJustificacionAprobada,
   fechaPredeterminada
 ) {
   const fechas = [
     normalizarFecha(primeraAsistencia),
     normalizarFecha(primeraVigencia),
-    normalizarFecha(primeraSolicitudAprobada)
+    normalizarFecha(primeraSolicitudAprobada),
+    normalizarFecha(primeraJustificacionAprobada)
   ].filter(Boolean);
 
   if (fechas.length === 0) {
@@ -245,7 +247,7 @@ function crearHorarioEsperado(
       hora_salida:
         cambioAprobado.hora_salida_solicitada,
       modalidad:
-         cambioAprobado.modalidad_solicitada,
+        cambioAprobado.modalidad_solicitada,
       tolerancia_minutos:
         Number(cambioAprobado.tolerancia_actual)
     };
@@ -300,6 +302,7 @@ function calcularHorasTrabajadas(asistencia) {
 function determinarEstadoDiario({
   asistencia,
   horarioEsperado,
+  justificacionAprobada,
   fecha,
   fechaActual,
   horaActual
@@ -314,17 +317,20 @@ function determinarEstadoDiario({
     return null;
   }
 
+  if (justificacionAprobada) {
+    return 'FALTA_JUSTIFICADA';
+  }
+
   if (
     fecha === fechaActual &&
     horaASegundos(horaActual) <=
-      horaASegundos(horarioEsperado.hora_salida)
+    horaASegundos(horarioEsperado.hora_salida)
   ) {
     return 'PENDIENTE';
   }
 
   return 'AUSENTE';
 }
-
 // ======================================================
 // DETERMINAR ESTADO DE LA JORNADA
 // ======================================================
@@ -348,7 +354,7 @@ function determinarEstadoJornada({
     fecha === fechaActual &&
     horarioEsperado &&
     horaASegundos(horaActual) <=
-      horaASegundos(horarioEsperado.hora_salida)
+    horaASegundos(horarioEsperado.hora_salida)
   ) {
     return 'EN_CURSO';
   }
@@ -365,6 +371,7 @@ function crearRegistrosDiarios({
   horarios,
   asistencias,
   cambios,
+  justificaciones,
   fechaActual,
   horaActual
 }) {
@@ -378,6 +385,11 @@ function crearRegistrosDiarios({
     'fecha_solicitada'
   );
 
+  const justificacionesPorFecha = crearMapaPorFecha(
+    justificaciones,
+    'fecha_inasistencia'
+  );
+
   const registros = [];
 
   for (const fecha of fechas) {
@@ -389,6 +401,9 @@ function crearRegistrosDiarios({
 
     const cambioAprobado =
       cambiosPorFecha.get(fecha) || null;
+
+    const justificacionAprobada =
+      justificacionesPorFecha.get(fecha) || null;
 
     const horario = buscarHorarioParaFecha(
       horarios,
@@ -408,6 +423,7 @@ function crearRegistrosDiarios({
     const estado = determinarEstadoDiario({
       asistencia,
       horarioEsperado,
+      justificacionAprobada,
       fecha,
       fechaActual,
       horaActual
@@ -427,21 +443,46 @@ function crearRegistrosDiarios({
       estado,
       estado_jornada: estadoJornada,
       programado: Boolean(horarioEsperado),
+
       hora_entrada:
         asistencia?.hora_entrada || null,
+
       hora_salida:
         asistencia?.hora_salida || null,
+
       horas_trabajadas:
         calcularHorasTrabajadas(asistencia),
+
       modalidad:
         asistencia?.tipo_asistencia ||
         horarioEsperado?.modalidad ||
         null,
+
       cambio_horario:
         Boolean(cambioAprobado),
+
       solicitud_cambio_id:
         cambioAprobado?.id || null,
-      horario_esperado: horarioEsperado
+
+      falta_justificada:
+        Boolean(justificacionAprobada),
+
+      justificacion_id:
+        justificacionAprobada?.id || null,
+
+      tipo_justificativo:
+        justificacionAprobada
+          ?.tipo_justificativo || null,
+
+      tipo_justificativo_nombre:
+        justificacionAprobada
+          ?.tipo_justificativo_nombre || null,
+
+      motivo_justificacion:
+        justificacionAprobada?.motivo || null,
+
+      horario_esperado:
+        horarioEsperado
     });
   }
 
@@ -449,7 +490,6 @@ function crearRegistrosDiarios({
     (a, b) => b.fecha.localeCompare(a.fecha)
   );
 }
-
 // ======================================================
 // CREAR RESUMEN
 // ======================================================
@@ -467,6 +507,11 @@ function crearResumen(registros) {
     registro => registro.estado === 'AUSENTE'
   ).length;
 
+  const faltasJustificadas = registros.filter(
+    registro =>
+      registro.estado === 'FALTA_JUSTIFICADA'
+  ).length;
+
   const registrosIncompletos = registros.filter(
     registro =>
       registro.estado_jornada === 'INCOMPLETA'
@@ -482,7 +527,10 @@ function crearResumen(registros) {
     registros.filter(
       registro =>
         registro.programado &&
-        registro.estado !== 'PENDIENTE'
+        ![
+          'PENDIENTE',
+          'FALTA_JUSTIFICADA'
+        ].includes(registro.estado)
     ).length;
 
   const presentesProgramados =
@@ -495,9 +543,9 @@ function crearResumen(registros) {
   const porcentajeAsistencia =
     diasProgramadosEvaluados > 0
       ? (
-          presentesProgramados /
-          diasProgramadosEvaluados
-        ) * 100
+        presentesProgramados /
+        diasProgramadosEvaluados
+      ) * 100
       : 0;
 
   const promedioHorasDia =
@@ -508,20 +556,31 @@ function crearResumen(registros) {
   return {
     dias_programados:
       diasProgramadosEvaluados,
-    dias_presentes: diasPresentes,
+
+    dias_presentes:
+      diasPresentes,
+
     horas_totales:
       Number(horasTotales.toFixed(2)),
-    llegadas_tarde: llegadasTarde,
+
+    llegadas_tarde:
+      llegadasTarde,
+
     ausencias,
+
+    faltas_justificadas:
+      faltasJustificadas,
+
     registros_incompletos:
       registrosIncompletos,
+
     promedio_horas_dia:
       Number(promedioHorasDia.toFixed(2)),
+
     porcentaje_asistencia:
       Number(porcentajeAsistencia.toFixed(2))
   };
 }
-
 // ======================================================
 // GENERAR HISTORIAL
 // ======================================================
@@ -545,21 +604,32 @@ async function generarHistorial(
   const [
     primeraAsistenciaResultado,
     primeraVigenciaResultado,
-    primeraSolicitudResultado
+    primeraSolicitudResultado,
+    primeraJustificacionResultado
   ] = await Promise.all([
     asistenciaModel.getPrimeraFechaByUsuario(
       usuario.id
     ),
+
     horarioModel.getPrimeraVigenciaByUsuario(
       usuario.id
     ),
+
     solicitudModel.getPrimeraAprobadaByUsuario(
+      usuario.id
+    ),
+
+    historialModel.getPrimeraJustificacionAprobada(
       usuario.id
     )
   ]);
 
   const primeraAsistencia = normalizarFecha(
     primeraAsistenciaResultado
+  );
+
+  const primeraJustificacionAprobada = normalizarFecha(
+    primeraJustificacionResultado
   );
 
   const primeraVigencia = normalizarFecha(
@@ -574,9 +644,9 @@ async function generarHistorial(
     primeraAsistencia,
     primeraVigencia,
     primeraSolicitudAprobada,
+    primeraJustificacionAprobada,
     rangoActual.fechaDesde
   );
-
   const {
     fechaDesde,
     fechaHasta
@@ -589,19 +659,28 @@ async function generarHistorial(
   const [
     asistencias,
     horarios,
-    cambios
+    cambios,
+    justificaciones
   ] = await Promise.all([
     asistenciaModel.getByUsuarioAndPeriodo(
       usuario.id,
       fechaDesde,
       fechaHasta
     ),
+
     horarioModel.getHistorialByUsuarioAndPeriodo(
       usuario.id,
       fechaDesde,
       fechaHasta
     ),
+
     solicitudModel.getAprobadasByUsuarioAndPeriodo(
+      usuario.id,
+      fechaDesde,
+      fechaHasta
+    ),
+
+    historialModel.getJustificacionesAprobadasByPeriodo(
       usuario.id,
       fechaDesde,
       fechaHasta
@@ -618,6 +697,7 @@ async function generarHistorial(
     horarios,
     asistencias,
     cambios,
+    justificaciones,
     fechaActual,
     horaActual
   });
@@ -640,7 +720,11 @@ async function generarHistorial(
       primera_asistencia: primeraAsistencia,
       primera_vigencia: primeraVigencia,
       primera_solicitud_aprobada:
-        primeraSolicitudAprobada
+        primeraSolicitudAprobada,
+
+      primera_justificacion_aprobada:
+        primeraJustificacionAprobada
+
     },
     resumen: crearResumen(registros),
     registros

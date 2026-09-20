@@ -137,3 +137,44 @@ exports.getCambiosAprobados = async (usuarioIds, fechaDesde, fechaHasta) => {
 
   return rows;
 };
+
+// ======================================================
+// JUSTIFICACIONES APROBADAS
+// ======================================================
+
+exports.getJustificacionesAprobadas = async (
+  usuarioIds,
+  fechaDesde,
+  fechaHasta
+) => {
+  if (usuarioIds.length === 0) {
+    return [];
+  }
+
+  const sql = `
+    SELECT
+      s.id,
+      s.usuario_id,
+      DATE_FORMAT(
+        s.fecha_inasistencia,
+        '%Y-%m-%d'
+      ) AS fecha_inasistencia
+    FROM solicitudes s
+    WHERE s.usuario_id IN (${placeholders(usuarioIds.length)})
+      AND s.tipo = 'JUSTIFICACION_INASISTENCIA'
+      AND s.estado = 'APROBADA'
+      AND s.fecha_inasistencia BETWEEN ? AND ?
+    ORDER BY
+      s.usuario_id,
+      s.fecha_inasistencia,
+      s.id DESC
+  `;
+
+  const [rows] = await db.query(sql, [
+    ...usuarioIds,
+    fechaDesde,
+    fechaHasta
+  ]);
+
+  return rows;
+};

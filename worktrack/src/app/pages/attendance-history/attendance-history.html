@@ -219,6 +219,19 @@
             </strong>
           </div>
         </article>
+
+        <article class="stat-card justified-card">
+          <div class="stat-icon">
+            <i class="bi bi-file-earmark-check"></i>
+          </div>
+
+          <div class="stat-information">
+            <span>Faltas justificadas</span>
+            <strong>
+              {{ history.resumen.faltas_justificadas }}
+            </strong>
+          </div>
+        </article>
       </section>
 
       <!-- INFORMACIÓN ADICIONAL -->
@@ -315,6 +328,11 @@
               </i>
 
               <i
+                class="bi bi-file-earmark-check"
+                *ngIf="record.estado === 'FALTA_JUSTIFICADA'">
+              </i>
+
+              <i
                 class="bi bi-hourglass-split"
                 *ngIf="record.estado === 'PENDIENTE'">
               </i>
@@ -405,6 +423,26 @@
 
                 <i class="bi bi-arrow-left-right"></i>
                 Cambio de horario aprobado
+              </div>
+
+              <div
+                class="justification-info"
+                *ngIf="record.falta_justificada">
+
+                <i class="bi bi-file-earmark-check"></i>
+
+                <div>
+                  <strong>
+                    {{
+                      record.tipo_justificativo_nombre ||
+                      'Justificación aprobada'
+                    }}
+                  </strong>
+
+                  <span *ngIf="record.motivo_justificacion">
+                    {{ record.motivo_justificacion }}
+                  </span>
+                </div>
               </div>
 
             </div>

@@ -1,12 +1,5 @@
-const reporteModel = require(
-  '../models/reporte-asistencia.model'
-);
-
-const {
-  obtenerFechaHoraActual,
-  obtenerDiaSemanaDeFecha,
-  obtenerRangoMes,
-  obtenerFechasEntre,
+const reporteModel = require('../models/reporte-asistencia.model');
+const {obtenerFechaHoraActual, obtenerDiaSemanaDeFecha, obtenerRangoMes,  obtenerFechasEntre,
   horaASegundos
 } = require('../utils/fecha.util');
 
@@ -28,6 +21,7 @@ const ESTADOS_VALIDOS = [
   'PRESENTE',
   'TARDE',
   'AUSENTE',
+  'FALTA_JUSTIFICADA',
   'PENDIENTE',
   'SIN_HORARIO'
 ];
@@ -421,8 +415,8 @@ function buscarHorario(
     const vigenteHasta =
       horario.vigente_hasta
         ? normalizarFecha(
-            horario.vigente_hasta
-          )
+          horario.vigente_hasta
+        )
         : null;
 
     const mismoDia =
@@ -522,10 +516,10 @@ function obtenerEstadoRegistrado(
 // ======================================================
 // DETERMINAR ESTADO
 // ======================================================
-
 function determinarEstado({
   asistencia,
   horarioEsperado,
+  justificacionAprobada,
   fecha,
   fechaActual,
   horaActual
@@ -540,20 +534,25 @@ function determinarEstado({
     return 'SIN_HORARIO';
   }
 
+  if (justificacionAprobada) {
+    return 'FALTA_JUSTIFICADA';
+  }
+
   const jornadaFinalizada =
     fecha < fechaActual ||
     (
       fecha === fechaActual &&
       horaASegundos(horaActual) >
-        horaASegundos(
-          horarioEsperado.hora_salida
-        )
+      horaASegundos(
+        horarioEsperado.hora_salida
+      )
     );
 
   return jornadaFinalizada
     ? 'AUSENTE'
     : 'PENDIENTE';
 }
+
 
 // ======================================================
 // DETERMINAR ESTADO DE JORNADA
@@ -638,6 +637,7 @@ function crearRegistro({
   asistencia,
   horario,
   cambioAprobado,
+  justificacionAprobada,
   fecha,
   diaSemana,
   fechaActual,
@@ -667,6 +667,7 @@ function crearRegistro({
     estado: determinarEstado({
       asistencia,
       horarioEsperado,
+      justificacionAprobada,
       fecha,
       fechaActual,
       horaActual
@@ -709,6 +710,25 @@ function crearRegistro({
     solicitud_cambio_id:
       cambioAprobado?.id || null,
 
+    falta_justificada:
+      Boolean(justificacionAprobada),
+
+    justificacion_id:
+      justificacionAprobada?.id || null,
+
+    tipo_justificativo:
+      justificacionAprobada
+        ?.tipo_justificativo || null,
+
+    tipo_justificativo_nombre:
+      justificacionAprobada
+        ?.tipo_justificativo_nombre ||
+      null,
+
+    motivo_justificacion:
+      justificacionAprobada?.motivo ||
+      null,
+
     horario_esperado:
       horarioEsperado
   };
@@ -724,6 +744,7 @@ function crearRegistros({
   asistencias,
   horarios,
   cambios,
+  justificaciones,
   incluirSinHorario
 }) {
   const {
@@ -741,6 +762,12 @@ function crearRegistros({
     crearMapaPorFecha(
       cambios,
       'fecha_solicitada'
+    );
+
+  const justificacionesMapa =
+    crearMapaPorFecha(
+      justificaciones,
+      'fecha_inasistencia'
     );
 
   const horariosMapa =
@@ -768,6 +795,10 @@ function crearRegistros({
 
       const cambioAprobado =
         cambiosMapa.get(clave) ||
+        null;
+
+      const justificacionAprobada =
+        justificacionesMapa.get(clave) ||
         null;
 
       const horariosUsuario =
@@ -801,6 +832,7 @@ function crearRegistros({
           asistencia,
           horario,
           cambioAprobado,
+          justificacionAprobada,
           fecha,
           diaSemana,
           fechaActual,
@@ -870,8 +902,10 @@ function crearResumen(registros) {
   const evaluados =
     programados.filter(
       registro =>
-        registro.estado !==
-        'PENDIENTE'
+        ![
+          'PENDIENTE',
+          'FALTA_JUSTIFICADA'
+        ].includes(registro.estado)
     );
 
   const presentesEvaluados =
@@ -896,9 +930,9 @@ function crearResumen(registros) {
   const porcentajeAsistencia =
     evaluados.length > 0
       ? (
-          presentesEvaluados.length /
-          evaluados.length
-        ) * 100
+        presentesEvaluados.length /
+        evaluados.length
+      ) * 100
       : 0;
 
   return {
@@ -916,6 +950,13 @@ function crearResumen(registros) {
         registro =>
           registro.estado ===
           'AUSENTE'
+      ).length,
+
+    faltas_justificadas:
+      registros.filter(
+        registro =>
+          registro.estado ===
+          'FALTA_JUSTIFICADA'
       ).length,
 
     tardanzas:
@@ -954,11 +995,11 @@ function crearResumen(registros) {
     promedio_horas_dia:
       presentes.length > 0
         ? Number(
-            (
-              horasTotales /
-              presentes.length
-            ).toFixed(2)
-          )
+          (
+            horasTotales /
+            presentes.length
+          ).toFixed(2)
+        )
         : 0,
 
     porcentaje_asistencia:
@@ -981,7 +1022,7 @@ function aplicarFiltros(
       if (
         filtros.usuarioId &&
         registro.usuario.id !==
-          filtros.usuarioId
+        filtros.usuarioId
       ) {
         return false;
       }
@@ -989,7 +1030,7 @@ function aplicarFiltros(
       if (
         filtros.role &&
         registro.usuario.role !==
-          filtros.role
+        filtros.role
       ) {
         return false;
       }
@@ -997,7 +1038,7 @@ function aplicarFiltros(
       if (
         filtros.estado &&
         registro.estado !==
-          filtros.estado
+        filtros.estado
       ) {
         return false;
       }
@@ -1063,9 +1104,9 @@ exports.obtenerReporteDiario = async (
 
   const fecha = fechaRecibida
     ? validarFecha(
-        fechaRecibida,
-        'La fecha del reporte'
-      )
+      fechaRecibida,
+      'La fecha del reporte'
+    )
     : fechaActual;
 
   if (fecha > fechaActual) {
@@ -1082,7 +1123,8 @@ exports.obtenerReporteDiario = async (
     usuarios,
     asistencias,
     horarios,
-    cambios
+    cambios,
+    justificaciones
   ] = await Promise.all([
     reporteModel
       .getUsuariosReportables(),
@@ -1099,6 +1141,11 @@ exports.obtenerReporteDiario = async (
     reporteModel
       .getCambiosAprobadosByFecha(
         fecha
+      ),
+
+    reporteModel
+      .getJustificacionesAprobadasByFecha(
+        fecha
       )
   ]);
 
@@ -1109,6 +1156,7 @@ exports.obtenerReporteDiario = async (
       asistencias,
       horarios,
       cambios,
+      justificaciones,
       incluirSinHorario: true
     });
 
@@ -1149,7 +1197,8 @@ exports.obtenerHistorial = async (
     usuarios,
     asistencias,
     horarios,
-    cambios
+    cambios,
+    justificaciones
   ] = await Promise.all([
     reporteModel
       .getUsuariosReportablesHistorial(),
@@ -1168,6 +1217,12 @@ exports.obtenerHistorial = async (
 
     reporteModel
       .getCambiosAprobadosByPeriodo(
+        fechaDesde,
+        fechaHasta
+      ),
+
+    reporteModel
+      .getJustificacionesAprobadasByPeriodo(
         fechaDesde,
         fechaHasta
       )
@@ -1189,6 +1244,7 @@ exports.obtenerHistorial = async (
       asistencias,
       horarios,
       cambios,
+      justificaciones,
       incluirSinHorario: false
     });
 
@@ -1379,9 +1435,9 @@ function crearEstadisticasPorModalidad(
     registros.filter(
       registro =>
         registro.modalidad ===
-          'PRESENCIAL' ||
+        'PRESENCIAL' ||
         registro.modalidad ===
-          'HOME'
+        'HOME'
     );
 
   return agruparRegistros(
@@ -1437,7 +1493,8 @@ exports.obtenerEstadisticas = async (
     usuarios,
     asistencias,
     horarios,
-    cambios
+    cambios,
+    justificaciones
   ] = await Promise.all([
     reporteModel
       .getUsuariosReportablesHistorial(),
@@ -1456,6 +1513,12 @@ exports.obtenerEstadisticas = async (
 
     reporteModel
       .getCambiosAprobadosByPeriodo(
+        fechaDesde,
+        fechaHasta
+      ),
+
+    reporteModel
+      .getJustificacionesAprobadasByPeriodo(
         fechaDesde,
         fechaHasta
       )
@@ -1479,6 +1542,7 @@ exports.obtenerEstadisticas = async (
       asistencias,
       horarios,
       cambios,
+      justificaciones,
       incluirSinHorario: false
     });
 

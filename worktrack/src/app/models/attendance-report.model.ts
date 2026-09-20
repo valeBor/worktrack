@@ -1,3 +1,4 @@
+import {TipoJustificativo} from './solicitud.model';
 
 export type ReportableRole =
   | 'empleado'
@@ -7,6 +8,7 @@ export type AttendanceReportStatus =
   | 'PRESENTE'
   | 'TARDE'
   | 'AUSENTE'
+  | 'FALTA_JUSTIFICADA'
   | 'PENDIENTE'
   | 'SIN_HORARIO';
 
@@ -66,8 +68,12 @@ export interface AttendanceReportRecord {
   ubicacion: string | null;
   cambio_horario: boolean;
   solicitud_cambio_id: number | null;
-  horario_esperado:
-    ExpectedAttendanceSchedule | null;
+  falta_justificada: boolean;
+  justificacion_id: number | null;
+  tipo_justificativo: TipoJustificativo | null;
+  tipo_justificativo_nombre: string | null;
+  motivo_justificacion: string | null;
+  horario_esperado: ExpectedAttendanceSchedule | null;
 }
 
 // ======================================================
@@ -79,6 +85,7 @@ export interface AttendanceReportSummary {
   registros_programados: number;
   registros_presentes: number;
   ausencias: number;
+  faltas_justificadas: number;
   tardanzas: number;
   pendientes: number;
   sin_horario: number;
@@ -188,16 +195,8 @@ export interface AttendanceStatistics {
   };
 
   resumen: AttendanceReportSummary;
-
-  por_rol:
-    AttendanceStatisticsByRole[];
-
-  por_usuario:
-    AttendanceStatisticsByUser[];
-
-  evolucion_diaria:
-    DailyAttendanceStatistics[];
-
-  por_modalidad:
-    AttendanceStatisticsByModality[];
+  por_rol: AttendanceStatisticsByRole[];
+  por_usuario: AttendanceStatisticsByUser[];
+  evolucion_diaria: DailyAttendanceStatistics[];
+  por_modalidad: AttendanceStatisticsByModality[];
 }

@@ -229,6 +229,10 @@ export class AttendanceHistory implements OnInit {
       return 'Ausente';
     }
 
+    if (record.estado === 'FALTA_JUSTIFICADA') {
+      return 'Falta justificada';
+    }
+
     if (record.estado === 'PENDIENTE') {
       return 'Pendiente';
     }
@@ -253,6 +257,10 @@ export class AttendanceHistory implements OnInit {
 
     if (record.estado === 'AUSENTE') {
       return 'status-absent';
+    }
+
+    if (record.estado === 'FALTA_JUSTIFICADA') {
+      return 'status-justified';
     }
 
     if (record.estado === 'PENDIENTE') {
@@ -380,6 +388,7 @@ export class AttendanceHistory implements OnInit {
         'Horas totales',
         'Llegadas tarde',
         'Ausencias',
+        'Justificadas',
         'Incompletos',
         'Asistencia'
       ]],
@@ -391,6 +400,7 @@ export class AttendanceHistory implements OnInit {
         ),
         String(resumen.llegadas_tarde),
         String(resumen.ausencias),
+        String(resumen.faltas_justificadas),
         String(resumen.registros_incompletos),
         `${Number(resumen.porcentaje_asistencia).toFixed(1)} %`
       ]],
