@@ -1,0 +1,339 @@
+<section class="justification-page">
+  <button
+    type="button"
+    class="new-request-button"
+    *ngIf="!mostrarFormulario"
+    (click)="nuevaJustificacion()">
+    <i class="bi bi-file-earmark-medical"></i>
+    Nueva justificación de inasistencia
+  </button>
+
+  <section class="form-card" *ngIf="mostrarFormulario">
+    <div class="form-header">
+      <div class="form-header-icon">
+        <i class="bi bi-file-earmark-medical"></i>
+      </div>
+
+      <div>
+        <h2>Justificar inasistencia</h2>
+        <p>
+          Informá el motivo de la inasistencia y adjuntá
+          el certificado cuando corresponda.
+        </p>
+      </div>
+    </div>
+
+    <form
+      class="request-form"
+      [formGroup]="justificativoForm"
+      (ngSubmit)="guardarJustificativo()">
+
+      <div class="form-group">
+        <label for="fecha-inasistencia">
+          Fecha de la inasistencia <span>*</span>
+        </label>
+
+        <div class="input-with-icon">
+          <i class="bi bi-calendar3"></i>
+          <input
+            id="fecha-inasistencia"
+            type="date"
+            formControlName="fecha_inasistencia"
+            [max]="fechaMaximaInasistencia"
+            [class.input-error]="campoInvalido('fecha_inasistencia')">
+        </div>
+
+        <small class="field-error" *ngIf="campoInvalido('fecha_inasistencia')">
+          <ng-container *ngIf="tieneError('fecha_inasistencia', 'required')">
+            Seleccioná la fecha de la inasistencia.
+          </ng-container>
+          <ng-container *ngIf="tieneError('fecha_inasistencia', 'fechaFutura')">
+            La fecha no puede ser futura.
+          </ng-container>
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label>Tipo de justificación <span>*</span></label>
+
+        <div class="justification-type-grid">
+          <button
+            type="button"
+            class="type-button"
+            [class.selected]="justificativoForm.get('tipo_justificativo')?.value === 'CERTIFICADO_MEDICO'"
+            (click)="seleccionarTipo('CERTIFICADO_MEDICO')">
+            <i class="bi bi-file-earmark-medical"></i>
+            <span>Certificado médico</span>
+          </button>
+
+          <button
+            type="button"
+            class="type-button"
+            [class.selected]="justificativoForm.get('tipo_justificativo')?.value === 'CERTIFICADO_ESTUDIO'"
+            (click)="seleccionarTipo('CERTIFICADO_ESTUDIO')">
+            <i class="bi bi-mortarboard"></i>
+            <span>Certificado de estudio</span>
+          </button>
+
+          <button
+            type="button"
+            class="type-button"
+            [class.selected]="justificativoForm.get('tipo_justificativo')?.value === 'EMERGENCIA_FAMILIAR'"
+            (click)="seleccionarTipo('EMERGENCIA_FAMILIAR')">
+            <i class="bi bi-people"></i>
+            <span>Emergencia familiar</span>
+          </button>
+
+          <button
+            type="button"
+            class="type-button"
+            [class.selected]="justificativoForm.get('tipo_justificativo')?.value === 'OTRO'"
+            (click)="seleccionarTipo('OTRO')">
+            <i class="bi bi-question-circle"></i>
+            <span>Otro motivo</span>
+          </button>
+        </div>
+
+        <small class="field-error" *ngIf="campoInvalido('tipo_justificativo')">
+          Seleccioná un tipo de justificación.
+        </small>
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label for="motivo-inasistencia">
+            Motivo <span>*</span>
+          </label>
+          <small>
+            {{ justificativoForm.get('motivo')?.value?.length || 0 }}/500
+          </small>
+        </div>
+
+        <textarea
+          id="motivo-inasistencia"
+          rows="5"
+          maxlength="500"
+          formControlName="motivo"
+          placeholder="Describí brevemente el motivo de la inasistencia."
+          [class.input-error]="campoInvalido('motivo')">
+        </textarea>
+
+        <small class="field-error" *ngIf="campoInvalido('motivo')">
+          <ng-container *ngIf="tieneError('motivo', 'required')">
+            Ingresá el motivo de la inasistencia.
+          </ng-container>
+          <ng-container *ngIf="tieneError('motivo', 'minlength')">
+            El motivo debe tener al menos 10 caracteres.
+          </ng-container>
+          <ng-container *ngIf="tieneError('motivo', 'maxlength')">
+            El motivo no puede superar los 500 caracteres.
+          </ng-container>
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="archivo-justificativo">
+          Comprobante
+          <span *ngIf="archivoObligatorio">*</span>
+          <small *ngIf="!archivoObligatorio">(opcional)</small>
+        </label>
+
+        <div class="file-field">
+          <input
+            #archivoJustificativoInput
+            id="archivo-justificativo"
+            type="file"
+            accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+            [disabled]="guardando"
+            (change)="onArchivoSeleccionado($event)">
+
+          <div class="selected-file" *ngIf="archivoSeleccionado">
+            <i class="bi bi-file-earmark-check"></i>
+            <div>
+              <strong>{{ archivoSeleccionado.name }}</strong>
+              <small>{{ formatearTamanio(archivoSeleccionado.size) }}</small>
+            </div>
+            <button
+              type="button"
+              aria-label="Quitar archivo"
+              [disabled]="guardando"
+              (click)="quitarArchivo()">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+        </div>
+
+        <small class="file-help">
+          JPG, PNG o PDF. Tamaño máximo: 4 MB.
+          El archivo se almacena de forma privada.
+        </small>
+        <small class="field-error" *ngIf="errorArchivo">
+          {{ errorArchivo }}
+        </small>
+      </div>
+
+      <div class="information-box">
+        <i class="bi bi-shield-lock"></i>
+        <span>
+          La justificación quedará pendiente hasta que sea
+          revisada por el responsable autorizado.
+        </span>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          class="cancel-button"
+          [disabled]="guardando"
+          (click)="cancelarFormulario()">
+          Cancelar
+        </button>
+
+        <button
+          type="submit"
+          class="submit-button"
+          [disabled]="guardando">
+          <span *ngIf="!guardando">Enviar justificación</span>
+          <span *ngIf="guardando">Enviando...</span>
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="state-card" *ngIf="cargando && !mostrarFormulario">
+    <div class="spinner"></div>
+    <p>Cargando justificaciones...</p>
+  </section>
+
+  <section class="state-card error-state" *ngIf="errorCarga && !cargando">
+    <i class="bi bi-exclamation-triangle"></i>
+    <h3>No pudimos cargar las justificaciones</h3>
+    <button type="button" (click)="cargarSolicitudes()">
+      Reintentar
+    </button>
+  </section>
+
+  <section
+    class="history-section"
+    *ngIf="!cargando && !errorCarga && !mostrarFormulario">
+
+    <div class="history-header">
+      <div>
+        <h2>Historial de justificaciones</h2>
+        <p>Consultá el estado de las justificaciones presentadas.</p>
+      </div>
+      <button type="button" (click)="cargarSolicitudes()">
+        <i class="bi bi-arrow-clockwise"></i>
+        Actualizar
+      </button>
+    </div>
+
+    <div
+      class="empty-state"
+      *ngIf="solicitudes.length === 0">
+      <i class="bi bi-file-earmark-text"></i>
+      <h3>Todavía no presentaste justificaciones</h3>
+      <p>Las justificaciones que envíes aparecerán en esta pantalla.</p>
+    </div>
+
+    <div class="request-groups" *ngIf="solicitudes.length > 0">
+      <section class="request-group" *ngFor="let grupo of gruposSolicitudes">
+        <h3>
+          <i class="bi" [ngClass]="grupo.icono"></i>
+          {{ grupo.titulo }} ({{ grupo.solicitudes.length }})
+        </h3>
+
+        <p class="group-empty" *ngIf="grupo.solicitudes.length === 0">
+          No hay justificaciones en este estado.
+        </p>
+
+        <article
+          class="request-card"
+          *ngFor="let solicitud of grupo.solicitudes"
+          [ngClass]="'state-' + solicitud.estado.toLowerCase()">
+
+          <div class="request-card-header">
+            <div class="state-icon" [ngClass]="'state-' + solicitud.estado.toLowerCase()">
+              <i class="bi" [ngClass]="obtenerIconoEstado(solicitud.estado)"></i>
+            </div>
+            <div>
+              <h4>{{ obtenerTituloEstado(solicitud.estado) }}</h4>
+              <span>Enviada el {{ formatearFechaHora(solicitud.creada_en) }}</span>
+            </div>
+            <span class="state-badge" [ngClass]="'state-' + solicitud.estado.toLowerCase()">
+              {{ obtenerEtiquetaEstado(solicitud.estado) }}
+            </span>
+          </div>
+
+          <div class="request-data">
+            <div>
+              <span>Fecha de inasistencia</span>
+              <strong>{{ formatearFecha(solicitud.fecha_inasistencia || null) }}</strong>
+            </div>
+            <div>
+              <span>Tipo</span>
+              <strong>{{ obtenerEtiquetaTipoJustificativo(solicitud.tipo_justificativo) }}</strong>
+            </div>
+          </div>
+
+          <div class="reason-box">
+            <span>Motivo</span>
+            <p>{{ solicitud.motivo }}</p>
+          </div>
+
+          <div class="file-card" *ngIf="solicitud.archivo_id; else noFile">
+            <div>
+              <i class="bi bi-file-earmark-lock"></i>
+              <span>
+                <strong>{{ solicitud.archivo_nombre_original || 'Comprobante' }}</strong>
+                <small *ngIf="solicitud.archivo_tamanio_bytes">
+                  {{ formatearTamanio(solicitud.archivo_tamanio_bytes) }}
+                </small>
+              </span>
+            </div>
+            <div class="file-actions">
+              <button
+                type="button"
+                [disabled]="procesandoArchivoId === solicitud.archivo_id"
+                (click)="verArchivo(solicitud)">
+                <i class="bi bi-eye"></i> Ver
+              </button>
+              <button
+                type="button"
+                [disabled]="procesandoArchivoId === solicitud.archivo_id"
+                (click)="descargarArchivo(solicitud)">
+                <i class="bi bi-download"></i> Descargar
+              </button>
+            </div>
+          </div>
+
+          <ng-template #noFile>
+            <div class="no-file">
+              <i class="bi bi-info-circle"></i>
+              No se adjuntó un comprobante.
+            </div>
+          </ng-template>
+
+          <div class="response-box" *ngIf="solicitud.respuesta">
+            <span>Respuesta</span>
+            <p>{{ solicitud.respuesta }}</p>
+          </div>
+
+          <div class="resolved-data" *ngIf="solicitud.resuelta_en">
+            Resuelta el {{ formatearFechaHora(solicitud.resuelta_en) }}
+            <ng-container *ngIf="solicitud.responsable_nombre || solicitud.responsable_apellido">
+              por {{ solicitud.responsable_nombre }} {{ solicitud.responsable_apellido }}
+            </ng-container>
+          </div>
+        </article>
+      </section>
+    </div>
+  </section>
+
+  <app-toast
+    [visible]="toastVisible"
+    [mensaje]="toastMensaje"
+    [tipo]="toastTipo"
+    (cerrar)="cerrarToast()">
+  </app-toast>
+</section>

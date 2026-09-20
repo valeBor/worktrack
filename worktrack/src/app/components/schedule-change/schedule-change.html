@@ -1,0 +1,303 @@
+<section class="schedule-change-page">
+  <button
+    type="button"
+    class="new-request-button"
+    *ngIf="!mostrarFormulario"
+    (click)="nuevaSolicitud()">
+    <i class="bi bi-calendar-plus"></i>
+    Nueva solicitud de cambio
+  </button>
+
+  <section class="form-card" *ngIf="mostrarFormulario">
+    <div class="form-header">
+      <div class="form-header-icon">
+        <i class="bi bi-calendar-plus"></i>
+      </div>
+      <div>
+        <h2>Nueva solicitud de cambio</h2>
+        <p>
+          Seleccioná una fecha y proponé un nuevo horario
+          o modalidad para ese día.
+        </p>
+      </div>
+    </div>
+
+    <form
+      class="request-form"
+      [formGroup]="solicitudForm"
+      (ngSubmit)="guardarSolicitud()">
+
+      <div class="form-group">
+        <label for="fecha-solicitada">
+          Fecha solicitada <span>*</span>
+        </label>
+
+        <div class="date-row">
+          <div class="input-with-icon">
+            <i class="bi bi-calendar3"></i>
+            <input
+              id="fecha-solicitada"
+              type="date"
+              formControlName="fecha_solicitada"
+              [min]="fechaMinima"
+              [class.input-error]="campoInvalido('fecha_solicitada')">
+          </div>
+
+          <button
+            type="button"
+            class="consult-button"
+            [disabled]="consultandoHorario"
+            (click)="consultarHorario()">
+            {{ consultandoHorario ? 'Consultando...' : 'Consultar horario' }}
+          </button>
+        </div>
+
+        <small class="field-error" *ngIf="campoInvalido('fecha_solicitada')">
+          <ng-container *ngIf="tieneError('fecha_solicitada', 'required')">
+            Seleccioná una fecha.
+          </ng-container>
+          <ng-container *ngIf="tieneError('fecha_solicitada', 'fechaNoFutura')">
+            La fecha debe ser posterior al día actual.
+          </ng-container>
+        </small>
+        <small class="field-error" *ngIf="errorHorario">
+          {{ errorHorario }}
+        </small>
+      </div>
+
+      <section class="current-schedule" *ngIf="horarioActual">
+        <div>
+          <span>Horario actual</span>
+          <strong>
+            {{ formatearHora(horarioActual.horario_actual.hora_entrada) }}
+            –
+            {{ formatearHora(horarioActual.horario_actual.hora_salida) }}
+          </strong>
+        </div>
+        <div>
+          <span>Modalidad</span>
+          <strong>{{ horarioActual.horario_actual.modalidad }}</strong>
+        </div>
+        <div>
+          <span>Tolerancia</span>
+          <strong>{{ horarioActual.horario_actual.tolerancia_minutos }} min</strong>
+        </div>
+      </section>
+
+      <div class="form-section">
+        <h3>Horario solicitado</h3>
+
+        <div class="time-grid">
+          <div class="form-group">
+            <label for="hora-entrada">Hora de entrada <span>*</span></label>
+            <input
+              id="hora-entrada"
+              type="time"
+              formControlName="hora_entrada_solicitada"
+              [class.input-error]="campoInvalido('hora_entrada_solicitada')">
+            <small class="field-error" *ngIf="campoInvalido('hora_entrada_solicitada')">
+              Ingresá una hora de entrada válida.
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="hora-salida">Hora de salida <span>*</span></label>
+            <input
+              id="hora-salida"
+              type="time"
+              formControlName="hora_salida_solicitada"
+              [class.input-error]="campoInvalido('hora_salida_solicitada')">
+            <small class="field-error" *ngIf="campoInvalido('hora_salida_solicitada')">
+              Ingresá una hora de salida válida.
+            </small>
+          </div>
+        </div>
+
+        <small class="field-error" *ngIf="rangoHorarioInvalido()">
+          La hora de salida debe ser posterior a la hora de entrada.
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label>Modalidad solicitada <span>*</span></label>
+        <div class="modality-grid">
+          <button
+            type="button"
+            [class.selected]="solicitudForm.get('modalidad_solicitada')?.value === 'PRESENCIAL'"
+            (click)="solicitudForm.patchValue({modalidad_solicitada: 'PRESENCIAL'})">
+            <i class="bi bi-building"></i>
+            Presencial
+          </button>
+          <button
+            type="button"
+            [class.selected]="solicitudForm.get('modalidad_solicitada')?.value === 'HOME'"
+            (click)="solicitudForm.patchValue({modalidad_solicitada: 'HOME'})">
+            <i class="bi bi-house"></i>
+            Home
+          </button>
+        </div>
+        <small class="field-error" *ngIf="campoInvalido('modalidad_solicitada')">
+          Seleccioná una modalidad.
+        </small>
+      </div>
+
+      <div class="form-group">
+        <div class="label-row">
+          <label for="motivo-cambio">Motivo <span>*</span></label>
+          <small>{{ solicitudForm.get('motivo')?.value?.length || 0 }}/500</small>
+        </div>
+        <textarea
+          id="motivo-cambio"
+          rows="5"
+          maxlength="500"
+          formControlName="motivo"
+          placeholder="Explicá brevemente el motivo del cambio."
+          [class.input-error]="campoInvalido('motivo')">
+        </textarea>
+        <small class="field-error" *ngIf="campoInvalido('motivo')">
+          <ng-container *ngIf="tieneError('motivo', 'required')">
+            Ingresá el motivo de la solicitud.
+          </ng-container>
+          <ng-container *ngIf="tieneError('motivo', 'minlength')">
+            El motivo debe tener al menos 5 caracteres.
+          </ng-container>
+        </small>
+      </div>
+
+      <div class="information-box">
+        <i class="bi bi-info-circle"></i>
+        <span>{{ textoAprobacion }}</span>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          class="cancel-button"
+          [disabled]="guardando"
+          (click)="cancelarFormulario()">
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="submit-button"
+          [disabled]="guardando">
+          {{ guardando ? 'Enviando...' : 'Enviar solicitud' }}
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="state-card" *ngIf="cargando && !mostrarFormulario">
+    <div class="spinner"></div>
+    <p>Cargando solicitudes...</p>
+  </section>
+
+  <section class="state-card error-state" *ngIf="errorCarga && !cargando">
+    <i class="bi bi-exclamation-circle"></i>
+    <h3>No pudimos cargar tus solicitudes</h3>
+    <button type="button" (click)="cargarSolicitudes()">Reintentar</button>
+  </section>
+
+  <section
+    class="history-section"
+    *ngIf="!cargando && !errorCarga && !mostrarFormulario">
+
+    <div class="history-header">
+      <div>
+        <h2>Historial de cambios de horario</h2>
+        <p>Consultá el estado de las solicitudes enviadas.</p>
+      </div>
+      <button type="button" (click)="cargarSolicitudes()">
+        <i class="bi bi-arrow-clockwise"></i> Actualizar
+      </button>
+    </div>
+
+    <div class="empty-state" *ngIf="solicitudes.length === 0">
+      <i class="bi bi-calendar2-check"></i>
+      <h3>Todavía no tenés solicitudes</h3>
+      <p>Las solicitudes que envíes aparecerán en esta pantalla.</p>
+    </div>
+
+    <div class="request-groups" *ngIf="solicitudes.length > 0">
+      <section class="request-group" *ngFor="let grupo of gruposSolicitudes">
+        <h3>
+          <i class="bi" [ngClass]="grupo.icono"></i>
+          {{ grupo.titulo }} ({{ grupo.solicitudes.length }})
+        </h3>
+
+        <p class="group-empty" *ngIf="grupo.solicitudes.length === 0">
+          No hay solicitudes en este estado.
+        </p>
+
+        <article
+          class="request-card"
+          *ngFor="let solicitud of grupo.solicitudes"
+          [ngClass]="'state-' + solicitud.estado.toLowerCase()">
+
+          <div class="request-card-header">
+            <div class="state-icon" [ngClass]="'state-' + solicitud.estado.toLowerCase()">
+              <i class="bi" [ngClass]="obtenerIconoEstado(solicitud.estado)"></i>
+            </div>
+            <div>
+              <h4>{{ obtenerTituloEstado(solicitud.estado) }}</h4>
+              <span>Enviada el {{ formatearFechaHora(solicitud.creada_en) }}</span>
+            </div>
+            <span class="state-badge" [ngClass]="'state-' + solicitud.estado.toLowerCase()">
+              {{ obtenerEtiquetaEstado(solicitud.estado) }}
+            </span>
+          </div>
+
+          <div class="requested-date">
+            <i class="bi bi-calendar3"></i>
+            Fecha solicitada:
+            <strong>{{ formatearFecha(solicitud.fecha_solicitada) }}</strong>
+          </div>
+
+          <div class="schedule-comparison">
+            <div>
+              <span>Horario actual</span>
+              <strong>
+                {{ formatearHora(solicitud.hora_entrada_actual) }} –
+                {{ formatearHora(solicitud.hora_salida_actual) }}
+              </strong>
+              <small>{{ solicitud.modalidad_actual }}</small>
+            </div>
+            <i class="bi bi-arrow-right"></i>
+            <div class="requested">
+              <span>Horario solicitado</span>
+              <strong>
+                {{ formatearHora(solicitud.hora_entrada_solicitada) }} –
+                {{ formatearHora(solicitud.hora_salida_solicitada) }}
+              </strong>
+              <small>{{ solicitud.modalidad_solicitada }}</small>
+            </div>
+          </div>
+
+          <div class="reason-box">
+            <span>Motivo</span>
+            <p>{{ solicitud.motivo }}</p>
+          </div>
+
+          <div class="response-box" *ngIf="solicitud.respuesta">
+            <span>Respuesta</span>
+            <p>{{ solicitud.respuesta }}</p>
+          </div>
+
+          <div class="resolved-data" *ngIf="solicitud.resuelta_en">
+            Resuelta el {{ formatearFechaHora(solicitud.resuelta_en) }}
+            <ng-container *ngIf="solicitud.responsable_nombre || solicitud.responsable_apellido">
+              por {{ solicitud.responsable_nombre }} {{ solicitud.responsable_apellido }}
+            </ng-container>
+          </div>
+        </article>
+      </section>
+    </div>
+  </section>
+
+  <app-toast
+    [visible]="toastVisible"
+    [mensaje]="toastMensaje"
+    [tipo]="toastTipo"
+    (cerrar)="cerrarToast()">
+  </app-toast>
+</section>

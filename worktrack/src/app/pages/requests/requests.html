@@ -1,0 +1,53 @@
+<div class="page-container">
+  <app-header
+    titulo="Solicitudes"
+    [mostrarVolver]="true">
+  </app-header>
+
+  <main class="content">
+    <nav
+      class="tabs"
+      aria-label="Tipos de solicitudes">
+
+      <button
+        type="button"
+        class="tab-button"
+        [class.active]="activeTab === 'schedule'"
+        [attr.aria-selected]="activeTab === 'schedule'"
+        (click)="selectTab('schedule')">
+        <i
+          class="bi bi-clock"
+          aria-hidden="true">
+        </i>
+        Cambio de horario
+      </button>
+
+      <button
+        type="button"
+        class="tab-button"
+        [class.active]="activeTab === 'absence'"
+        [attr.aria-selected]="activeTab === 'absence'"
+        (click)="selectTab('absence')">
+        <i
+          class="bi bi-file-earmark-medical"
+          aria-hidden="true">
+        </i>
+        Justificar inasistencia
+      </button>
+    </nav>
+
+    <section
+      class="tab-content"
+      *ngIf="activeTab === 'schedule'">
+      <app-schedule-change>
+      </app-schedule-change>
+    </section>
+
+    <section
+      class="tab-content"
+      *ngIf="activeTab === 'absence'">
+      <app-absence-justification>
+      </app-absence-justification>
+    </section>
+  </main>
+</div>

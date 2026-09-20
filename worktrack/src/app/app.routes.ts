@@ -3,20 +3,21 @@ import { Admin } from './pages/admin/admin';
 import { Rrhh } from './pages/rrhh/rrhh';
 import { Scanner } from './pages/scanner/scanner';
 import { Home } from './pages/home/home';
-import {EmployeeList} from './pages/admin/components/employee-list/employee-list';
-import {SupervisorComponent} from './pages/supervisor/supervisor';
+import { EmployeeList } from './pages/admin/components/employee-list/employee-list';
+import { SupervisorComponent } from './pages/supervisor/supervisor';
 import { Employee } from './pages/employee/employee';
 import { QrVisor } from './pages/qr-visor/qr-visor';
-import {CambioHorario} from './pages/cambio-horario/cambio-horario';
-import {GestionCronogramas} from './pages/gestion-cronogramas/gestion-cronogramas';
+import { Requests } from './pages/requests/requests';
+import { ScheduleManagement } from './pages/schedule-management/schedule-management';
 import { roleGuard } from './guards/role.guard';
 import { authGuard } from './guards/auth.guard';
-import {AttendanceHistory} from './pages/attendance-history/attendance-history';
+import { AttendanceHistory } from './pages/attendance-history/attendance-history';
 import { NotFound } from './pages/not-found/not-found';
 
 export const routes: Routes = [
   {
-    path: '', redirectTo: 'login', pathMatch: 'full'},
+    path: '', redirectTo: 'login', pathMatch: 'full'
+  },
   {
     path: 'login',
     loadComponent: () =>
@@ -75,10 +76,12 @@ export const routes: Routes = [
     }
   },
   {
-    path: 'gestion-cronogramas', component: GestionCronogramas,
+    path: 'gestion-cronogramas',
+    component: ScheduleManagement,
     canActivate: [roleGuard],
     data: {
-      roles: ['supervisor','rrhh','admin']}
+      roles: ['supervisor', 'rrhh', 'admin']
+    }
   },
   {
     path: 'employee',
@@ -90,10 +93,10 @@ export const routes: Routes = [
   },
   {
     path: 'cambio-horario',
-    component: CambioHorario,
+    component: Requests,
     canActivate: [roleGuard],
     data: {
-      roles: ['empleado','supervisor' ]
+      roles: ['empleado', 'supervisor']
     }
   },
   {
@@ -110,56 +113,56 @@ export const routes: Routes = [
     }
   },
   {
-  path: 'historial',
-  component: AttendanceHistory,
-  canActivate: [roleGuard],
-  data: {
-    roles: [
-      'empleado',
-      'supervisor',
-      'rrhh',
-      'admin'
-    ]
-  }
-},
-{
-  path: 'reporte-asistencia',
-  loadComponent: () =>
-    import(
-      './pages/attendance-report/attendance-report'
-    ).then(
-      module =>
-        module.AttendanceReport
-    ),
-  canActivate: [roleGuard],
-  data: {
-    roles: [
-      'rrhh',
-      'admin'
-    ]
-  }
-},
+    path: 'historial',
+    component: AttendanceHistory,
+    canActivate: [roleGuard],
+    data: {
+      roles: [
+        'empleado',
+        'supervisor',
+        'rrhh',
+        'admin'
+      ]
+    }
+  },
+  {
+    path: 'reporte-asistencia',
+    loadComponent: () =>
+      import(
+        './pages/attendance-report/attendance-report'
+      ).then(
+        module =>
+          module.AttendanceReport
+      ),
+    canActivate: [roleGuard],
+    data: {
+      roles: [
+        'rrhh',
+        'admin'
+      ]
+    }
+  },
 
-{
-  path: 'reportes',
-  loadComponent: () =>
-    import(
-      './pages/reports/reports'
-    ).then(
-      module =>
-        module.Reports
-    ),
-  canActivate: [roleGuard],
-  data: {
-    roles: [
-      'rrhh',
-      'admin'
-    ]
-  }
-},
+  {
+    path: 'reportes',
+    loadComponent: () =>
+      import(
+        './pages/reports/reports'
+      ).then(
+        module =>
+          module.Reports
+      ),
+    canActivate: [roleGuard],
+    data: {
+      roles: [
+        'rrhh',
+        'admin'
+      ]
+    }
+  },
 
-{
-  path: '**',
-  component: NotFound
-}
+  {
+    path: '**',
+    component: NotFound
+  }
 ];

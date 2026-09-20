@@ -1,0 +1,38 @@
+<section class="requests-management">
+  <header class="management-header">
+    <h2>Solicitudes y justificaciones</h2>
+    <p>Consultá y gestioná los cambios de horario y las justificaciones de inasistencia.</p>
+  </header>
+
+  <nav class="request-tabs" aria-label="Tipo de solicitud">
+    <button
+      type="button"
+      class="request-tab"
+      [class.active]="activeTab === 'SCHEDULE_CHANGES'"
+      [attr.aria-selected]="activeTab === 'SCHEDULE_CHANGES'"
+      (click)="selectTab('SCHEDULE_CHANGES')">
+      <i class="bi bi-clock-history" aria-hidden="true"></i>
+      <span>Cambios de horario</span>
+    </button>
+
+    <button
+      type="button"
+      class="request-tab"
+      [class.active]="activeTab === 'ABSENCE_JUSTIFICATIONS'"
+      [attr.aria-selected]="activeTab === 'ABSENCE_JUSTIFICATIONS'"
+      (click)="selectTab('ABSENCE_JUSTIFICATIONS')">
+      <i class="bi bi-file-earmark-medical" aria-hidden="true"></i>
+      <span>Justificaciones de inasistencia</span>
+    </button>
+  </nav>
+
+  <div class="tab-content">
+    <app-schedule-change-requests
+      *ngIf="activeTab === 'SCHEDULE_CHANGES'">
+    </app-schedule-change-requests>
+
+    <app-absence-justification-requests
+      *ngIf="activeTab === 'ABSENCE_JUSTIFICATIONS'">
+    </app-absence-justification-requests>
+  </div>
+</section>

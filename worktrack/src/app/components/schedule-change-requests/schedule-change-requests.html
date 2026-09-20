@@ -1,0 +1,177 @@
+<section class="requests-panel">
+  <header class="panel-header">
+    <div>
+      <h2>Cambios de horario</h2>
+      <p *ngIf="puedeResolver">Consultá y resolvé las solicitudes de cambio de horario.</p>
+      <p *ngIf="!puedeResolver">Consultá las solicitudes de cambio de horario registradas.</p>
+    </div>
+
+    <button type="button" class="reload-btn" [disabled]="cargando" (click)="cargarSolicitudes()">
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+      Actualizar
+    </button>
+  </header>
+
+  <div class="read-only-info" *ngIf="rolActual === 'admin'">
+    <i class="bi bi-eye" aria-hidden="true"></i>
+    <span>El administrador puede consultar las solicitudes, pero no aprobarlas ni rechazarlas.</span>
+  </div>
+
+  <div class="state-card" *ngIf="cargando">
+    <div class="spinner"></div>
+    <p>Cargando solicitudes...</p>
+  </div>
+
+  <div class="state-card error-state" *ngIf="!cargando && errorCarga">
+    <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+    <h3>No fue posible cargar las solicitudes</h3>
+    <p>Verificá que MariaDB y el backend estén funcionando.</p>
+    <button type="button" class="retry-btn" (click)="cargarSolicitudes()">Volver a intentar</button>
+  </div>
+
+  <div class="state-card" *ngIf="!cargando && !errorCarga && solicitudes.length === 0">
+    <i class="bi bi-calendar2-check" aria-hidden="true"></i>
+    <h3>Sin solicitudes</h3>
+    <p>No hay solicitudes de cambio de horario registradas.</p>
+  </div>
+
+  <div class="requests-list" *ngIf="!cargando && !errorCarga && solicitudes.length > 0">
+    <article
+      class="request-card"
+      [class.approved-card]="solicitud.estado === 'APROBADA'"
+      [class.rejected-card]="solicitud.estado === 'RECHAZADA'"
+      *ngFor="let solicitud of solicitudes">
+
+      <div class="card-header">
+        <div class="employee-avatar">{{ obtenerIniciales(solicitud) }}</div>
+
+        <div class="employee-info">
+          <h3>{{ solicitud.usuario_nombre }} {{ solicitud.usuario_apellido }}</h3>
+          <span>{{ solicitud.usuario_email }}</span>
+          <small>Presentada el {{ formatearFechaHora(solicitud.creada_en) }}</small>
+        </div>
+
+        <div class="card-badges">
+          <span class="role-badge">{{ obtenerEtiquetaRol(solicitud.usuario_role) }}</span>
+          <span
+            class="status-badge"
+            [class.approved]="solicitud.estado === 'APROBADA'"
+            [class.rejected]="solicitud.estado === 'RECHAZADA'">
+            <i class="bi" [ngClass]="obtenerIconoEstado(solicitud.estado)"></i>
+            {{ obtenerEtiquetaEstado(solicitud.estado) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="date-row">
+        <i class="bi bi-calendar3" aria-hidden="true"></i>
+        <span>Fecha solicitada:</span>
+        <strong>{{ formatearFecha(solicitud.fecha_solicitada) }}</strong>
+      </div>
+
+      <div class="schedule-comparison">
+        <div class="schedule-box current">
+          <span>Horario actual</span>
+          <strong>{{ formatearHora(solicitud.hora_entrada_actual) }} – {{ formatearHora(solicitud.hora_salida_actual) }}</strong>
+          <small>{{ solicitud.modalidad_actual }}</small>
+        </div>
+
+        <i class="bi bi-arrow-right comparison-arrow" aria-hidden="true"></i>
+
+        <div class="schedule-box requested">
+          <span>Horario solicitado</span>
+          <strong>{{ formatearHora(solicitud.hora_entrada_solicitada) }} – {{ formatearHora(solicitud.hora_salida_solicitada) }}</strong>
+          <small>{{ solicitud.modalidad_solicitada }}</small>
+        </div>
+      </div>
+
+      <div class="reason-box">
+        <span>Motivo de la solicitud</span>
+        <p>{{ solicitud.motivo }}</p>
+      </div>
+
+      <div class="request-details">
+        <span><i class="bi bi-arrow-left-right"></i>{{ solicitud.modalidad_actual }} → {{ solicitud.modalidad_solicitada }}</span>
+        <span><i class="bi bi-hourglass-split"></i>Tolerancia: {{ solicitud.tolerancia_actual }} min</span>
+      </div>
+
+      <div class="resolution-box" *ngIf="solicitud.estado !== 'PENDIENTE'">
+        <div class="resolution-header">
+          <strong>{{ obtenerEtiquetaEstado(solicitud.estado) }}</strong>
+          <span>{{ formatearFechaHora(solicitud.resuelta_en) }}</span>
+        </div>
+        <p *ngIf="solicitud.responsable_nombre || solicitud.responsable_apellido">
+          Resuelta por: <strong>{{ solicitud.responsable_nombre }} {{ solicitud.responsable_apellido }}</strong>
+        </p>
+        <p *ngIf="solicitud.respuesta">Respuesta: {{ solicitud.respuesta }}</p>
+      </div>
+
+      <div class="card-actions" *ngIf="puedeResolver && solicitud.estado === 'PENDIENTE'">
+        <button type="button" class="reject-btn" (click)="abrirModal(solicitud, 'RECHAZADA')">
+          <i class="bi bi-x-lg"></i>Rechazar
+        </button>
+        <button type="button" class="approve-btn" (click)="abrirModal(solicitud, 'APROBADA')">
+          <i class="bi bi-check-lg"></i>Aprobar
+        </button>
+      </div>
+    </article>
+  </div>
+</section>
+
+<app-modal
+  [visible]="mostrarModal"
+  [titulo]="tituloModal"
+  [mensaje]="mensajeModal"
+  [tipo]="tipoModal"
+  [textoConfirmar]="textoConfirmarModal"
+  textoCancelar="Cancelar"
+  [mostrarCancelar]="true"
+  [procesando]="procesando"
+  (confirmar)="confirmarResolucion()"
+  (cancelar)="cerrarModal()">
+
+  <div class="modal-content" *ngIf="solicitudSeleccionada">
+    <div class="modal-schedule">
+      <div>
+        <span>Horario actual</span>
+        <strong>{{ formatearHora(solicitudSeleccionada.hora_entrada_actual) }} – {{ formatearHora(solicitudSeleccionada.hora_salida_actual) }}</strong>
+        <small>{{ solicitudSeleccionada.modalidad_actual }}</small>
+      </div>
+      <i class="bi bi-arrow-right" aria-hidden="true"></i>
+      <div>
+        <span>Horario solicitado</span>
+        <strong>{{ formatearHora(solicitudSeleccionada.hora_entrada_solicitada) }} – {{ formatearHora(solicitudSeleccionada.hora_salida_solicitada) }}</strong>
+        <small>{{ solicitudSeleccionada.modalidad_solicitada }}</small>
+      </div>
+    </div>
+
+    <div class="response-group">
+      <div class="response-label">
+        <label for="respuesta-cambio-horario">
+          {{ accionSeleccionada === 'RECHAZADA' ? 'Motivo del rechazo *' : 'Observación opcional' }}
+        </label>
+        <span>{{ respuesta.length }}/500</span>
+      </div>
+
+      <textarea
+        id="respuesta-cambio-horario"
+        rows="4"
+        maxlength="500"
+        [(ngModel)]="respuesta"
+        [class.input-error]="!!errorRespuesta"
+        [placeholder]="accionSeleccionada === 'RECHAZADA' ? 'Explicá el motivo del rechazo...' : 'Podés agregar una observación...'">
+      </textarea>
+
+      <small class="response-help" *ngIf="accionSeleccionada === 'APROBADA'">La observación es opcional para aprobar.</small>
+      <small class="response-error" *ngIf="errorRespuesta">{{ errorRespuesta }}</small>
+    </div>
+  </div>
+</app-modal>
+
+<app-toast
+  [visible]="toastVisible"
+  [mensaje]="toastMensaje"
+  [tipo]="toastTipo"
+  [duracion]="4000"
+  (cerrar)="cerrarToast()">
+</app-toast>

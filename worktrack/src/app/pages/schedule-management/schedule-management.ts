@@ -9,19 +9,19 @@ import { User, Role } from '../../models/user.models';
 import { Horario, HorarioNuevo, CronogramaAgrupado } from '../../models/horario.model';
 import { HorarioService } from '../../services/horario.service';
 import { AuthService } from '../../services/auth.service';
-import { SolicitudesCambioHorario } from '../../components/solicitudes-cambio-horario/solicitudes-cambio-horario';
+import { RequestsManagement } from '../../components/requests-management/requests-management';
 import { ActivatedRoute } from '@angular/router';
 import { ManualAttendance } from '../../components/manual-attendance/manual-attendance';
 
 
 @Component({
-  selector: 'app-gestion-cronogramas',
+  selector: 'app-schedule-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, Header, Modal, Toast, SolicitudesCambioHorario, ManualAttendance],
-  templateUrl: './gestion-cronogramas.html',
-  styleUrl: './gestion-cronogramas.css'
+  imports: [CommonModule, FormsModule, Header, Modal, Toast, RequestsManagement, ManualAttendance],
+  templateUrl: './schedule-management.html',
+  styleUrl: './schedule-management.css'
 })
-export class GestionCronogramas
+export class  ScheduleManagement
   implements OnInit {
 
   isBrowser = false;

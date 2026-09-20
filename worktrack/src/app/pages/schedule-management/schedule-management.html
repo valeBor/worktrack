@@ -327,9 +327,10 @@
   </ng-container>
 
 
-  <!-- SOLICITUDES -->
-  <app-solicitudes-cambio-horario *ngIf="tabActiva === 'solicitudes'">
-  </app-solicitudes-cambio-horario>
+ <!-- SOLICITUDES Y JUSTIFICACIONES -->
+<app-requests-management
+  *ngIf="tabActiva === 'solicitudes'">
+</app-requests-management>
 
   <!-- REGISTRO MANUAL -->
   <app-manual-attendance *ngIf="tabActiva === 'manual'" [readOnly]="rolActual === 'admin'">
