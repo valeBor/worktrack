@@ -10,7 +10,7 @@ export interface HorarioNuevo {
 }
 
 export interface Horario {
-  id: number;
+  id: number | null;
   usuario_id: number;
   dia_semana: string;
   hora_entrada: string;
@@ -21,6 +21,16 @@ export interface Horario {
   apellido?: string;
   email?: string;
   role?: Role;
+  origen_horario?:
+    'CRONOGRAMA_SEMANAL' |
+    'SOLICITUD_APROBADA';
+  cambio_horario_hoy?: {
+    solicitud_id: number;
+    hora_entrada: string;
+    hora_salida: string;
+    tolerancia_minutos: number;
+    modalidad: 'PRESENCIAL' | 'HOME';
+  } | null;
 }
 
 export interface GuardarHorarioResponse {

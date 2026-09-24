@@ -29,14 +29,13 @@ button:disabled {
 
 .new-request-button {
   width: 100%;
-  min-height: 88px;
-  border: 0;
-  border-radius: 20px;
+  min-height: 50px;
+  padding: 15px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
   background: linear-gradient(135deg, #183d63, #315f89);
-  color: #fff;
-  font-size: 23px;
-  font-weight: 750;
-  box-shadow: 0 12px 24px rgb(15 23 42 / 16%);
+  color: #ffffff;
 }
 
 .new-request-button i {
@@ -99,15 +98,15 @@ button:disabled {
   gap: 9px;
 }
 
-.form-group > label,
+.form-group>label,
 .label-row label {
   color: #273449;
   font-size: 14px;
   font-weight: 750;
 }
 
-.form-group label > span,
-.label-row label > span {
+.form-group label>span,
+.label-row label>span {
   color: #dc2626;
 }
 
@@ -234,14 +233,14 @@ textarea:focus {
   background: #f5f8ff;
 }
 
-.selected-file > i,
-.file-card > div:first-child > i {
+.selected-file>i,
+.file-card>div:first-child>i {
   color: #2947b8;
   font-size: 23px;
 }
 
-.selected-file > div,
-.file-card > div:first-child,
+.selected-file>div,
+.file-card>div:first-child,
 .file-card span {
   display: flex;
   min-width: 0;
@@ -346,13 +345,13 @@ textarea:focus {
   margin: 0;
 }
 
-.state-card > i,
-.empty-state > i {
+.state-card>i,
+.empty-state>i {
   color: #10b981;
   font-size: 40px;
 }
 
-.error-state > i {
+.error-state>i {
   color: #dc2626;
 }
 
@@ -366,7 +365,9 @@ textarea:focus {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .history-header {
@@ -484,7 +485,7 @@ textarea:focus {
   margin-top: 18px;
 }
 
-.request-data > div {
+.request-data>div {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -494,8 +495,8 @@ textarea:focus {
 }
 
 .request-data span,
-.reason-box > span,
-.response-box > span {
+.reason-box>span,
+.response-box>span {
   color: #64748b;
   font-size: 12px;
 }
@@ -538,6 +539,7 @@ textarea:focus {
 }
 
 @media (max-width: 760px) {
+
   .form-card,
   .history-section {
     padding: 20px;
@@ -577,7 +579,7 @@ textarea:focus {
 
 @media (max-width: 480px) {
   .new-request-button {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .form-header {

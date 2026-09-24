@@ -38,7 +38,7 @@
                 !cargandoHorario &&
                 !cargandoAsistencia &&
                 !registrando &&
-                horarioHoy?.modalidad === 'PRESENCIAL'
+                modalidadAplicable === 'PRESENCIAL'
               "
             ></i>
             <i
@@ -47,7 +47,7 @@
                 !cargandoHorario &&
                 !cargandoAsistencia &&
                 !registrando &&
-                horarioHoy?.modalidad === 'HOME'
+                modalidadAplicable === 'HOME'
               "
             ></i>
             <i
@@ -136,11 +136,15 @@
 
       <div class="estado-grid">
         <div class="estado-item">
-          <span class="estado-label">Horario de entrada</span>
+          <span class="estado-label">
+            {{ cambioHorarioHoy ? 'Entrada habitual' : 'Horario de entrada' }}
+          </span>
           <span class="estado-valor">{{ horarioEntrada }}</span>
         </div>
         <div class="estado-item">
-          <span class="estado-label">Horario de salida</span>
+          <span class="estado-label">
+            {{ cambioHorarioHoy ? 'Salida habitual' : 'Horario de salida' }}
+          </span>
           <span class="estado-valor">{{ horarioSalida }}</span>
         </div>
         <div class="estado-item">
@@ -152,13 +156,32 @@
           <span class="estado-valor">{{ salidaRegistrada }}</span>
         </div>
         <div class="estado-item">
-          <span class="estado-label">Modalidad</span>
+          <span class="estado-label">
+            {{ cambioHorarioHoy ? 'Modalidad habitual' : 'Modalidad' }}
+          </span>
           <span class="estado-valor modalidad">{{ horarioHoy.modalidad }}</span>
         </div>
         <div class="estado-item">
           <span class="estado-label">Estado</span>
           <span class="estado-valor estado-asistencia">
             {{ asistenciaHoy?.asistencia?.estado || 'Sin registro' }}
+          </span>
+        </div>
+
+        <div
+          class="estado-item cambio-aprobado"
+          *ngIf="cambioHorarioHoy"
+        >
+          <span class="cambio-titulo">
+            <i class="bi bi-calendar-check"></i>
+            Cambio de horario aprobado para hoy
+          </span>
+          <span class="estado-valor cambio-horario">
+            {{ horarioCambioEntrada }} – {{ horarioCambioSalida }}
+          </span>
+          <span class="cambio-detalle">
+            Modalidad {{ cambioHorarioHoy.modalidad }}. Este horario reemplaza
+            al habitual únicamente durante el día de hoy.
           </span>
         </div>
       </div>

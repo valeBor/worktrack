@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const horarioModel = require('../models/horario.model');
+const solicitudModel = require('../models/solicitud.model');
 const notificacionService = require('./notificacion.service');
 const {obtenerFechaHoraActual, sumarDiasAFecha} = require('../utils/fecha.util');
 
@@ -391,21 +392,60 @@ exports.getMiHorarioHoy = async (usuarioId) => {
     diaSemana
   } = obtenerFechaHoraActual();
 
-  const horario =
-    await horarioModel.getByUsuarioAndDiaEnFecha(
-      id,
-      diaSemana,
-      fecha
-    );
+  const [horario, cambioAprobado] =
+    await Promise.all([
+      horarioModel.getByUsuarioAndDiaEnFecha(
+        id,
+        diaSemana,
+        fecha
+      ),
+      solicitudModel.getAprobadaByUsuarioAndFecha(
+        null,
+        id,
+        fecha
+      )
+    ]);
 
-  if (!horario) {
+  if (!horario && !cambioAprobado) {
     throw crearError(
       'No tiene horario asignado para hoy.',
       404
     );
   }
 
-  return horario;
+  const horarioHabitual = horario || {
+    id: null,
+    usuario_id: id,
+    dia_semana: diaSemana,
+    hora_entrada:
+      cambioAprobado.hora_entrada_actual,
+    hora_salida:
+      cambioAprobado.hora_salida_actual,
+    tolerancia_minutos:
+      cambioAprobado.tolerancia_actual,
+    modalidad:
+      cambioAprobado.modalidad_actual
+  };
+
+  return {
+    ...horarioHabitual,
+    origen_horario: cambioAprobado
+      ? 'SOLICITUD_APROBADA'
+      : 'CRONOGRAMA_SEMANAL',
+    cambio_horario_hoy: cambioAprobado
+      ? {
+          solicitud_id: cambioAprobado.id,
+          hora_entrada:
+            cambioAprobado.hora_entrada_solicitada,
+          hora_salida:
+            cambioAprobado.hora_salida_solicitada,
+          tolerancia_minutos:
+            cambioAprobado.tolerancia_actual,
+          modalidad:
+            cambioAprobado.modalidad_solicitada
+        }
+      : null
+  };
 };
 
 // ======================================================

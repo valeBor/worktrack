@@ -1,6 +1,7 @@
-import {Component,ElementRef,NgZone,OnDestroy,ViewChild} from '@angular/core';
+import {ChangeDetectorRef,Component,ElementRef,NgZone,OnDestroy,ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {BrowserQRCodeReader,IScannerControls} from '@zxing/browser';
+import {Subscription} from 'rxjs';
 import {Header} from '../../components/header/header';
 import {AsistenciaService} from '../../services/asistecia.service';
 import {TipoRegistro} from '../../models/asistencia.model';
@@ -28,12 +29,17 @@ export class Scanner implements OnDestroy {
     new BrowserQRCodeReader();
 
   private controls?: IScannerControls;
+  private registroSubscription?: Subscription;
+  private reintentoTimer?: ReturnType<typeof setTimeout>;
   private yaLeido = false;
+  private componenteDestruido = false;
 
   constructor(
     private asistenciaService:
       AsistenciaService,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private changeDetector:
+      ChangeDetectorRef
   ) {}
 
   // ====================================================
@@ -95,7 +101,9 @@ export class Scanner implements OnDestroy {
             result => {
               if (
                 !result ||
-                this.yaLeido
+                this.yaLeido ||
+                this.procesando ||
+                this.componenteDestruido
               ) {
                 return;
               }
@@ -106,7 +114,6 @@ export class Scanner implements OnDestroy {
                 const textoQR =
                   result.getText();
 
-                this.detenerCamara();
                 this.procesarQR(textoQR);
               });
             }
@@ -137,6 +144,8 @@ export class Scanner implements OnDestroy {
         'El código leído no corresponde a un QR válido de WorkTrack.';
 
       this.mensaje = '';
+      this.habilitarReintento();
+      this.actualizarVista();
       return;
     }
 
@@ -197,35 +206,97 @@ export class Scanner implements OnDestroy {
   private registrarAsistencia(
     token: string
   ): void {
+    if (this.procesando) {
+      return;
+    }
+
     this.procesando = true;
     this.mensaje = '';
     this.error = '';
+    this.actualizarVista();
 
-    this.asistenciaService
-      .registrarAsistencia({
-        token,
-        tipo: this.tipoRegistro
-      })
-      .subscribe({
-        next: response => {
-          this.procesando = false;
+    this.registroSubscription =
+      this.asistenciaService
+        .registrarAsistencia({
+          token,
+          tipo: this.tipoRegistro
+        })
+        .subscribe({
+          next: response => {
+            this.ngZone.run(() => {
+              this.registroSubscription =
+                undefined;
 
-          this.mensaje =
-            response.mensaje ||
-            'Asistencia registrada correctamente.';
+              this.procesando = false;
 
-          this.error = '';
-        },
-        error: err => {
-          this.procesando = false;
+              this.detenerCamara();
 
-          this.error =
-            err.error?.mensaje ||
-            'No fue posible registrar la asistencia.';
+              this.mensaje =
+                response.mensaje ||
+                'Asistencia registrada correctamente.';
 
-          this.mensaje = '';
-        }
-      });
+              this.error = '';
+              this.actualizarVista();
+            });
+          },
+          error: err => {
+            this.ngZone.run(() => {
+              this.registroSubscription =
+                undefined;
+
+              this.procesando = false;
+
+              this.error =
+                err.error?.mensaje ||
+                'No fue posible registrar la asistencia.';
+
+              this.mensaje = '';
+              this.habilitarReintento();
+              this.actualizarVista();
+            });
+          }
+        });
+  }
+
+  // ====================================================
+  // HABILITAR NUEVO INTENTO
+  // ====================================================
+
+  private habilitarReintento(): void {
+    this.cancelarTemporizadorReintento();
+
+    this.reintentoTimer = setTimeout(
+      () => {
+        this.ngZone.run(() => {
+          if (
+            this.scannerActivo &&
+            !this.procesando &&
+            !this.componenteDestruido
+          ) {
+            this.yaLeido = false;
+          }
+
+          this.reintentoTimer =
+            undefined;
+        });
+      },
+      1500
+    );
+  }
+
+  // ====================================================
+  // CANCELAR TEMPORIZADOR DE REINTENTO
+  // ====================================================
+
+  private cancelarTemporizadorReintento(): void {
+    if (this.reintentoTimer) {
+      clearTimeout(
+        this.reintentoTimer
+      );
+
+      this.reintentoTimer =
+        undefined;
+    }
   }
 
   // ====================================================
@@ -233,6 +304,16 @@ export class Scanner implements OnDestroy {
   // ====================================================
 
   detenerCamara(): void {
+    this.cancelarTemporizadorReintento();
+
+    if (this.registroSubscription) {
+      this.registroSubscription
+        .unsubscribe();
+
+      this.registroSubscription =
+        undefined;
+    }
+
     if (this.controls) {
       this.controls.stop();
       this.controls = undefined;
@@ -256,6 +337,20 @@ export class Scanner implements OnDestroy {
     }
 
     this.scannerActivo = false;
+    this.procesando = false;
+    this.yaLeido = false;
+    this.actualizarVista();
+  }
+
+  // ====================================================
+  // ACTUALIZAR VISTA
+  // ====================================================
+
+  private actualizarVista(): void {
+    if (!this.componenteDestruido) {
+      this.changeDetector
+        .detectChanges();
+    }
   }
 
   // ====================================================
@@ -263,6 +358,7 @@ export class Scanner implements OnDestroy {
   // ====================================================
 
   ngOnDestroy(): void {
+    this.componenteDestruido = true;
     this.detenerCamara();
   }
 }

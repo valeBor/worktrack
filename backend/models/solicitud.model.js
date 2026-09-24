@@ -280,7 +280,9 @@ exports.getAprobadaByUsuarioAndFecha = async (
   usuarioId,
   fechaSolicitada
 ) => {
-  const [rows] = await connection.query(`
+  const database = connection || db;
+
+  const [rows] = await database.query(`
     SELECT
       ${CAMPOS_SOLICITUD}
     FROM solicitudes s

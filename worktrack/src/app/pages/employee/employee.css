@@ -266,6 +266,31 @@
   text-transform: capitalize;
 }
 
+.estado-item.cambio-aprobado {
+  grid-column: 1 / -1;
+  border: 1px solid #86efac;
+  background: #f0fdf4;
+}
+
+.cambio-titulo {
+  color: #15803d;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.estado-valor.cambio-horario {
+  color: #166534;
+}
+
+.cambio-detalle {
+  color: #475569;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .stats-header {
   margin-bottom: 20px;
   display: flex;

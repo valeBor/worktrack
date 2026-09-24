@@ -188,7 +188,7 @@ export class Employee implements OnInit {
       return;
     }
 
-    const modalidad = String(this.horarioHoy.modalidad).toUpperCase();
+    const modalidad = this.modalidadAplicable;
 
     if (modalidad === 'PRESENCIAL') {
       this.router.navigate(['/scanner']);
@@ -237,7 +237,7 @@ export class Employee implements OnInit {
     if (!this.asistenciaHoy) return 'Asistencia no disponible';
     if (this.asistenciaHoy.jornadaCompletada) return 'Jornada completada';
 
-    if (String(this.horarioHoy.modalidad).toUpperCase() === 'PRESENCIAL') {
+    if (this.modalidadAplicable === 'PRESENCIAL') {
       return 'Escanear QR';
     }
 
@@ -257,7 +257,7 @@ export class Employee implements OnInit {
       return 'Entrada y salida registradas';
     }
 
-    if (String(this.horarioHoy.modalidad).toUpperCase() === 'PRESENCIAL') {
+    if (this.modalidadAplicable === 'PRESENCIAL') {
       return 'Registrar asistencia presencial';
     }
 
@@ -276,6 +276,28 @@ export class Employee implements OnInit {
     return this.horarioHoy?.hora_salida
       ? this.horarioHoy.hora_salida.substring(0, 5)
       : '--:--';
+  }
+
+  get cambioHorarioHoy() {
+    return this.horarioHoy?.cambio_horario_hoy || null;
+  }
+
+  get horarioCambioEntrada(): string {
+    return this.cambioHorarioHoy?.hora_entrada
+      ? this.cambioHorarioHoy.hora_entrada.substring(0, 5)
+      : '--:--';
+  }
+
+  get horarioCambioSalida(): string {
+    return this.cambioHorarioHoy?.hora_salida
+      ? this.cambioHorarioHoy.hora_salida.substring(0, 5)
+      : '--:--';
+  }
+
+  get modalidadAplicable(): 'PRESENCIAL' | 'HOME' | null {
+    return this.cambioHorarioHoy?.modalidad ||
+      this.horarioHoy?.modalidad ||
+      null;
   }
 
   get entradaRegistrada(): string {

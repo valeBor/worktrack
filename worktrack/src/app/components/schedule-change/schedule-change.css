@@ -1,5 +1,10 @@
-:host { display: block; }
-* { box-sizing: border-box; }
+:host {
+  display: block;
+}
+
+* {
+  box-sizing: border-box;
+}
 
 .schedule-change-page {
   display: flex;
@@ -7,23 +12,35 @@
   gap: 26px;
 }
 
-button, input, textarea { font: inherit; }
-button { cursor: pointer; }
-button:disabled { cursor: not-allowed; opacity: 0.6; }
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
 
 .new-request-button {
   width: 100%;
-  min-height: 88px;
-  border: 0;
-  border-radius: 20px;
+  min-height: 50px;
+  padding: 15px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
   background: linear-gradient(135deg, #183d63, #315f89);
-  color: #fff;
-  font-size: 23px;
-  font-weight: 750;
-  box-shadow: 0 12px 24px rgb(15 23 42 / 16%);
+  color: #ffffff;
 }
 
-.new-request-button i { margin-right: 10px; }
+.new-request-button i {
+  margin-right: 10px;
+}
 
 .form-card,
 .history-section {
@@ -81,7 +98,7 @@ button:disabled { cursor: not-allowed; opacity: 0.6; }
   gap: 9px;
 }
 
-.form-group > label,
+.form-group>label,
 .label-row label {
   color: #273449;
   font-size: 14px;
@@ -89,7 +106,9 @@ button:disabled { cursor: not-allowed; opacity: 0.6; }
 }
 
 .form-group label span,
-.label-row label span { color: #dc2626; }
+.label-row label span {
+  color: #dc2626;
+}
 
 .label-row,
 .date-row,
@@ -100,9 +119,17 @@ button:disabled { cursor: not-allowed; opacity: 0.6; }
   gap: 14px;
 }
 
-.label-row small { color: #94a3b8; }
-.date-row .input-with-icon { flex: 1; }
-.input-with-icon { position: relative; }
+.label-row small {
+  color: #94a3b8;
+}
+
+.date-row .input-with-icon {
+  flex: 1;
+}
+
+.input-with-icon {
+  position: relative;
+}
 
 .input-with-icon i {
   position: absolute;
@@ -145,8 +172,14 @@ textarea:focus {
   box-shadow: 0 0 0 3px rgb(37 99 235 / 12%);
 }
 
-.input-error { border-color: #dc2626 !important; }
-.field-error { color: #c62828; font-size: 12px; }
+.input-error {
+  border-color: #dc2626 !important;
+}
+
+.field-error {
+  color: #c62828;
+  font-size: 12px;
+}
 
 .consult-button,
 .history-header button,
@@ -176,8 +209,14 @@ textarea:focus {
   gap: 5px;
 }
 
-.current-schedule span { color: #64748b; font-size: 12px; }
-.current-schedule strong { color: #1e3a8a; }
+.current-schedule span {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.current-schedule strong {
+  color: #1e3a8a;
+}
 
 .form-section {
   padding: 19px;
@@ -186,7 +225,10 @@ textarea:focus {
   background: #f8fafc;
 }
 
-.form-section h3 { margin: 0 0 16px; color: #334155; }
+.form-section h3 {
+  margin: 0 0 16px;
+  color: #334155;
+}
 
 .time-grid,
 .modality-grid {
@@ -204,7 +246,9 @@ textarea:focus {
   font-weight: 700;
 }
 
-.modality-grid button i { margin-right: 7px; }
+.modality-grid button i {
+  margin-right: 7px;
+}
 
 .modality-grid button.selected {
   border-color: #2563eb;
@@ -267,12 +311,25 @@ textarea:focus {
 }
 
 .state-card h3,
-.empty-state h3 { margin: 0; color: #334155; }
+.empty-state h3 {
+  margin: 0;
+  color: #334155;
+}
+
 .state-card p,
-.empty-state p { margin: 0; }
-.state-card > i,
-.empty-state > i { color: #2563eb; font-size: 40px; }
-.error-state > i { color: #dc2626; }
+.empty-state p {
+  margin: 0;
+}
+
+.state-card>i,
+.empty-state>i {
+  color: #2563eb;
+  font-size: 40px;
+}
+
+.error-state>i {
+  color: #dc2626;
+}
 
 .spinner {
   width: 38px;
@@ -283,13 +340,32 @@ textarea:focus {
   animation: spin 0.8s linear infinite;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
-.history-header { margin-bottom: 24px; }
+.history-header {
+  margin-bottom: 24px;
+}
+
 .request-groups,
-.request-group { display: flex; flex-direction: column; gap: 17px; }
-.request-groups { gap: 28px; }
-.request-group h3 { margin: 0; color: #334155; font-size: 18px; }
+.request-group {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+}
+
+.request-groups {
+  gap: 28px;
+}
+
+.request-group h3 {
+  margin: 0;
+  color: #334155;
+  font-size: 18px;
+}
 
 .group-empty {
   margin: 0;
@@ -309,8 +385,13 @@ textarea:focus {
   box-shadow: 0 5px 15px rgb(15 23 42 / 6%);
 }
 
-.request-card.state-aprobada { border-left-color: #10b981; }
-.request-card.state-rechazada { border-left-color: #dc2626; }
+.request-card.state-aprobada {
+  border-left-color: #10b981;
+}
+
+.request-card.state-rechazada {
+  border-left-color: #dc2626;
+}
 
 .request-card-header {
   display: flex;
@@ -318,8 +399,16 @@ textarea:focus {
   gap: 13px;
 }
 
-.request-card-header h4 { margin: 0; color: #1f2937; font-size: 18px; }
-.request-card-header span { color: #64748b; font-size: 12px; }
+.request-card-header h4 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 18px;
+}
+
+.request-card-header span {
+  color: #64748b;
+  font-size: 12px;
+}
 
 .state-icon {
   display: grid;
@@ -332,8 +421,15 @@ textarea:focus {
   color: #c2410c;
 }
 
-.state-icon.state-aprobada { background: #d1fae5; color: #047857; }
-.state-icon.state-rechazada { background: #fee2e2; color: #b91c1c; }
+.state-icon.state-aprobada {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.state-icon.state-rechazada {
+  background: #fee2e2;
+  color: #b91c1c;
+}
 
 .state-badge {
   margin-left: auto;
@@ -344,11 +440,24 @@ textarea:focus {
   font-weight: 750;
 }
 
-.state-badge.state-aprobada { background: #d1fae5; color: #047857 !important; }
-.state-badge.state-rechazada { background: #fee2e2; color: #b91c1c !important; }
+.state-badge.state-aprobada {
+  background: #d1fae5;
+  color: #047857 !important;
+}
 
-.requested-date { margin-top: 18px; color: #64748b; }
-.requested-date strong { color: #1f2937; }
+.state-badge.state-rechazada {
+  background: #fee2e2;
+  color: #b91c1c !important;
+}
+
+.requested-date {
+  margin-top: 18px;
+  color: #64748b;
+}
+
+.requested-date strong {
+  color: #1f2937;
+}
 
 .schedule-comparison {
   display: grid;
@@ -358,7 +467,7 @@ textarea:focus {
   margin-top: 17px;
 }
 
-.schedule-comparison > div {
+.schedule-comparison>div {
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -368,16 +477,33 @@ textarea:focus {
   background: #f8fafc;
 }
 
-.schedule-comparison > div.requested { border-color: #bbf7d0; background: #f0fdf4; }
+.schedule-comparison>div.requested {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
 .schedule-comparison span,
 .reason-box span,
-.response-box span { color: #64748b; font-size: 12px; }
-.schedule-comparison small { color: #64748b; }
+.response-box span {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.schedule-comparison small {
+  color: #64748b;
+}
 
 .reason-box,
-.response-box { margin-top: 16px; }
+.response-box {
+  margin-top: 16px;
+}
+
 .reason-box p,
-.response-box p { margin: 5px 0 0; color: #334155; line-height: 1.5; }
+.response-box p {
+  margin: 5px 0 0;
+  color: #334155;
+  line-height: 1.5;
+}
 
 .response-box {
   padding: 13px;
@@ -385,32 +511,63 @@ textarea:focus {
   background: #f8fafc;
 }
 
-.resolved-data { margin-top: 14px; color: #64748b; font-size: 12px; }
+.resolved-data {
+  margin-top: 14px;
+  color: #64748b;
+  font-size: 12px;
+}
 
 @media (max-width: 760px) {
+
   .form-card,
-  .history-section { padding: 20px; }
+  .history-section {
+    padding: 20px;
+  }
 
   .date-row,
   .history-header,
-  .request-card-header { align-items: flex-start; flex-direction: column; }
+  .request-card-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 
   .consult-button,
-  .history-header button { width: 100%; }
+  .history-header button {
+    width: 100%;
+  }
 
   .current-schedule,
   .time-grid,
   .modality-grid,
-  .schedule-comparison { grid-template-columns: 1fr; }
+  .schedule-comparison {
+    grid-template-columns: 1fr;
+  }
 
-  .schedule-comparison > i { justify-self: center; transform: rotate(90deg); }
-  .state-badge { margin-left: 0; }
-  .form-actions { flex-direction: column-reverse; }
+  .schedule-comparison>i {
+    justify-self: center;
+    transform: rotate(90deg);
+  }
+
+  .state-badge {
+    margin-left: 0;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
   .cancel-button,
-  .submit-button { width: 100%; }
+  .submit-button {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
-  .new-request-button { font-size: 18px; }
-  .form-header { align-items: flex-start; }
+  .new-request-button {
+    font-size: 16px;
+  }
+
+  .form-header {
+    align-items: flex-start;
+  }
 }

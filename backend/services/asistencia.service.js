@@ -212,8 +212,17 @@ exports.registrarAsistencia = async ({
         <
         inicioPermitido
       ) {
+        const horaEntrada = String(
+          horario.hora_entrada
+        ).substring(0, 5);
+
+        const detalleCambio =
+          origenHorario === 'SOLICITUD_APROBADA'
+            ? ' Hoy tiene un cambio de horario aprobado y'
+            : ' Su horario';
+
         throw crearError(
-          `Todavía no puede registrar la entrada. Su horario comienza a las ${horario.hora_entrada}.`,
+          `Todavía no puede registrar la entrada.${detalleCambio} comienza a las ${horaEntrada}.`,
           403
         );
       }
