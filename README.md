@@ -1,102 +1,91 @@
 # WorkTrack
-Sistema de Gestión Laboral y Control de Asistencia mediante QR
 
----
+Sistema web de gestiÃ³n laboral y control de asistencia mediante QR.
 
-## Descripción del Proyecto
+## TecnologÃ­as
 
-WorkTrack es una plataforma web integral diseñada para optimizar el registro de jornada laboral mediante tecnología QR.
+- Angular standalone.
+- Node.js y Express.
+- MariaDB.
+- Flyway.
+- JWT y control de permisos por rol.
+- Cloudflare Turnstile.
+- Vercel Blob para archivos privados.
 
-El sistema permite centralizar la gestión de asistencia, supervisar presentismo en tiempo real y administrar usuarios mediante roles jerárquicos.
+## Arquitectura
 
----
+El backend utiliza la separaciÃ³n:
 
-##  Objetivos
+```text
+router -> controller -> service -> model
+```
 
-### Objetivo General
+El frontend se encuentra en `worktrack/`, el backend en `backend/` y las migraciones de la base de datos en `database/migrations/`.
 
-Diseñar e implementar un sistema distribuido para la gestión de asistencia laboral basado en tecnología QR y arquitectura cliente-servidor.
-
-### Objetivos Específicos
-
-- Implementar autenticación segura mediante RBAC.
-- Registrar ingresos y egresos digitales.
-- Garantizar integridad de datos mediante modelo relacional.
-- Administrar usuarios, horarios y permisos.
-
----
-
-## Arquitectura del Sistema
-
-### Frontend
-- Angular
-
-### Backend
-- Node.js
-- Express
-- API REST
-
-### Base de Datos
-- MySQL
-
-### Flujo de Datos
-
-Frontend ↔ Backend ↔ Base de Datos
-
----
-
-##  Tecnologías Utilizadas
-
-| Tecnología | Uso |
-|------------|-----|
-| Angular | Frontend |
-| Node.js | Backend |
-| Express | API REST |
-| MySQL | Persistencia |
-| DBeaver | Administración DB |
-| Git/GitHub | Control de versiones |
-
----
-
-##  Instalación
-
-### Backend
+## PreparaciÃ³n del backend
 
 ```bash
 cd backend
 npm install
-npm run init-db
-node server.js
 ```
 
-### Frontend
+Crear el archivo `backend/.env` a partir de `backend/.env.example` y completar las variables del entorno correspondiente.
+
+## Base de datos
+
+Flyway es el Ãºnico mecanismo autorizado para crear y actualizar la base de datos. No se utilizan scripts independientes de esquema o carga inicial.
+
+La base configurada debe existir y encontrarse vacÃ­a antes de la primera ejecuciÃ³n. Desde `backend/` ejecutar:
+
+```bash
+npm run db:info
+npm run db:migrate
+npm run db:validate
+```
+
+Las migraciones crean:
+
+- La estructura completa de WorkTrack.
+- Los cuatro roles del sistema.
+- Cuatro usuarios de demostraciÃ³n.
+- Las dos redes autorizadas para la presentaciÃ³n.
+- Permisos y relaciones entre roles y permisos.
+- Tipos de justificativo.
+
+La migraciÃ³n V14 retira los horarios amplios utilizados durante el desarrollo. En una instalaciÃ³n nueva, las tablas transaccionales quedan vacÃ­as.
+
+## EjecuciÃ³n del backend
+
+```bash
+cd backend
+npm start
+```
+
+## PreparaciÃ³n y ejecuciÃ³n del frontend
 
 ```bash
 cd worktrack
 npm install
-ng serve
+npm start
 ```
 
----
+Para generar una compilaciÃ³n de producciÃ³n:
 
-##  Credenciales de Prueba
-
-```txt
-Usuario: admin@test.com
-Clave: 123456
+```bash
+npm run build
 ```
 
----
+## Usuarios de demostraciÃ³n
 
-##  Autores
+Los cuatro usuarios iniciales representan los roles administrador, supervisor, empleado y Recursos Humanos. Sus datos se encuentran definidos en la migraciÃ³n `V2__datos_iniciales_desarrollo.sql`.
+
+## Autores
 
 - Borgatti Valeria
 - Dias Paredes Maria
 - Insaurralde Yeila
 - Zubiri Brisa
 
----
+## Contexto institucional
 
-##  Contexto Institucional
-
-Proyecto desarrollado en el marco de Prácticas Profesionalizantes III bajo la supervisión del Prof. Sergio Benitez.
+Proyecto desarrollado en el marco de PrÃ¡cticas Profesionalizantes III bajo la supervisiÃ³n del Prof. Sergio Benitez.

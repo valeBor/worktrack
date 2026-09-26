@@ -7,6 +7,9 @@ export const environment = {
   apiUrl:
     'https://REEMPLAZAR-POR-BACKEND/api',
 
+  qrUrl:
+    'https://REEMPLAZAR-POR-BACKEND/qr',
+
   // Se reemplazará por la siteKey real
   // del widget de producción.
   turnstileSiteKey:

@@ -1,50 +1,304 @@
-const path = require('path');
-require('dotenv').config({
-  path: path.join(__dirname, '.env')
-});
-const express = require('express');
-const cors = require('cors');
+const app =
+  require('./app');
 
-const qrRoutes = require('./routes/qr.router');
-const asistenciaRoutes = require('./routes/asistencia.router');
-const solicitudRoutes = require('./routes/solicitud.router');
-const horarioRoutes = require('./routes/horario.router');
-const authRoutes = require('./routes/auth.router');
-const userRoutes = require('./routes/users.router');
-const reporteAsistenciaRoutes = require('./routes/reporte-asistencia.router');
-const notificacionRoutes = require('./routes/notificacion.router');
-const alertaRoutes = require('./routes/alerta.router');
-const asistenciaManualRoutes = require('./routes/asistencia-manual.router');
+const pool =
+  require('./config/db');
 
-require('./config/db');
-
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-
-app.use('/qr', qrRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/asistencias', asistenciaRoutes);
-app.use('/api/horarios', horarioRoutes);
-app.use('/api/solicitudes', solicitudRoutes);
-app.use('/api/reportes-asistencia', reporteAsistenciaRoutes);
-app.use('/api/notificaciones', notificacionRoutes);
-app.use('/api/alertas', alertaRoutes);
-app.use('/api/asistencias/manual', asistenciaManualRoutes);
+const {
+  validateEnvironment
+} = require('./config/env');
 
 
-app.get('/prueba', (req, res) => {
-  res.send('PRUEBA OK');
-});
+let server =
+  null;
 
-app.get('/', (req, res) => {
-  res.send('API WORKTRACK FUNCIONANDO');
-});
+let shutdownStarted =
+  false;
 
-const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log(`Servidor http://localhost:${PORT}`);
-});
+// ======================================================
+// OBTENER PUERTO DEL SERVIDOR
+// ======================================================
+
+function getPort() {
+
+  const port =
+    Number(
+      process.env.PORT || 3000
+    );
+
+
+  if (
+
+    !Number.isInteger(port) ||
+
+    port <= 0
+
+  ) {
+
+    throw new Error(
+
+      'PORT debe ser un número entero positivo.'
+
+    );
+
+  }
+
+
+  return port;
+
+}
+
+
+// ======================================================
+// INICIAR SERVIDOR
+// ======================================================
+
+async function startServer() {
+
+  // Primero valida la configuración.
+  //
+  // En desarrollo controla los formatos.
+  //
+  // En producción también comprueba que estén
+  // todas las variables y que se use Vercel Blob.
+  validateEnvironment();
+
+
+  const port =
+    getPort();
+
+
+  // Verifica MariaDB mediante SELECT 1.
+  //
+  // No inserta ni modifica registros.
+  await pool.verifyConnection();
+
+
+  console.log(
+
+    'Conexión con MariaDB verificada'
+
+  );
+
+
+  server = app.listen(
+
+    port,
+
+    () => {
+
+      console.log(
+
+        `Servidor http://localhost:${port}`
+
+      );
+
+    }
+
+  );
+
+}
+
+
+// ======================================================
+// CERRAR POOL Y FINALIZAR
+// ======================================================
+
+async function finishProcess(
+  exitCode
+) {
+
+  try {
+
+    await pool.end();
+
+
+    console.log(
+
+      'Pool MySQL cerrado'
+
+    );
+
+  } catch (error) {
+
+    console.error(
+
+      'Error al cerrar el pool MySQL:',
+
+      error.message
+
+    );
+
+
+    exitCode =
+      1;
+
+  }
+
+
+  process.exitCode =
+    exitCode;
+
+}
+
+
+// ======================================================
+// CIERRE ORDENADO DEL SERVIDOR
+// ======================================================
+
+function shutdown(
+  signal
+) {
+
+  if (
+    shutdownStarted
+  ) {
+
+    return;
+
+  }
+
+
+  shutdownStarted =
+    true;
+
+
+  console.log(
+
+    `${signal} recibido. Cerrando servidor...`
+
+  );
+
+
+  const forceShutdown =
+    setTimeout(
+
+      () => {
+
+        console.error(
+
+          'El servidor no pudo cerrarse dentro del tiempo esperado.'
+
+        );
+
+
+        process.exit(1);
+
+      },
+
+      10000
+
+    );
+
+
+  forceShutdown.unref();
+
+
+  if (!server) {
+
+    clearTimeout(
+      forceShutdown
+    );
+
+
+    void finishProcess(0);
+
+    return;
+
+  }
+
+
+  server.close(
+
+    error => {
+
+      clearTimeout(
+        forceShutdown
+      );
+
+
+      if (error) {
+
+        console.error(
+
+          'Error al cerrar el servidor:',
+
+          error.message
+
+        );
+
+      }
+
+
+      void finishProcess(
+
+        error ? 1 : 0
+
+      );
+
+    }
+
+  );
+
+}
+
+
+// ======================================================
+// SEÑALES DEL SISTEMA
+// ======================================================
+
+process.on(
+
+  'SIGTERM',
+
+  () => {
+
+    shutdown(
+      'SIGTERM'
+    );
+
+  }
+
+);
+
+
+process.on(
+
+  'SIGINT',
+
+  () => {
+
+    shutdown(
+      'SIGINT'
+    );
+
+  }
+
+);
+
+
+// ======================================================
+// EJECUTAR INICIO
+// ======================================================
+
+startServer()
+
+  .catch(
+
+    async error => {
+
+      console.error(
+
+        'No se pudo iniciar el servidor:',
+
+        error.message
+
+      );
+
+
+      await finishProcess(1);
+
+    }
+
+  );
