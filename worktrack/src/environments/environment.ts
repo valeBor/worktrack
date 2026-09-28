@@ -7,7 +7,6 @@ export const environment = {
   qrUrl:
     'https://worktrack-production-a210.up.railway.app/qr',
 
-  // Se configurara despues de obtener el dominio de Vercel.
   turnstileSiteKey:
-    'REEMPLAZAR_POR_SITE_KEY_REAL'
+    '0x4AAAAAAFIJnj76ZDG9vKl1'
 };
