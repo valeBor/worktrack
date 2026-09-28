@@ -1,18 +1,13 @@
 export const environment = {
-
   production: true,
 
-  // Se reemplazará cuando despleguemos
-  // el backend de WorkTrack.
   apiUrl:
-    'https://REEMPLAZAR-POR-BACKEND/api',
+    'https://worktrack-production-a210.up.railway.app/api',
 
   qrUrl:
-    'https://REEMPLAZAR-POR-BACKEND/qr',
+    'https://worktrack-production-a210.up.railway.app/qr',
 
-  // Se reemplazará por la siteKey real
-  // del widget de producción.
+  // Se configurara despues de obtener el dominio de Vercel.
   turnstileSiteKey:
     'REEMPLAZAR_POR_SITE_KEY_REAL'
-
 };

@@ -1,6 +1,14 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 
 import { Admin } from './admin';
+
+@Component({
+  standalone: true,
+  template: '',
+})
+class TestLoginComponent {}
 
 describe('Admin', () => {
   let component: Admin;
@@ -9,6 +17,14 @@ describe('Admin', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Admin],
+      providers: [
+        provideRouter([
+          {
+            path: 'login',
+            component: TestLoginComponent,
+          },
+        ]),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Admin);
