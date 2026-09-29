@@ -1,51 +1,223 @@
 const nodemailer = require('nodemailer');
 
+const BREVO_API_URL =
+  'https://api.brevo.com/v3/smtp/email';
+
+const BREVO_ACCOUNT_URL =
+  'https://api.brevo.com/v3/account';
+
+const EMAIL_TIMEOUT_MS = 15000;
+
 
 // ======================================================
-// CREAR TRANSPORTADOR DE CORREO
-// ======================================================
-//
-// No creamos el transporter al iniciar el servidor.
-//
-// Lo creamos cuando realmente necesitamos enviar
-// un correo. De esa manera el backend puede arrancar
-// aunque todavía no tengamos configurado Gmail.
+// OBTENER CONFIGURACIÓN DE CORREO
 // ======================================================
 
-function crearTransporter() {
-
+function obtenerConfiguracionCorreo() {
   const emailUser =
-    process.env.EMAIL_USER;
+    process.env.EMAIL_USER?.trim();
 
   const emailPass =
-    process.env.EMAIL_PASS;
+    process.env.EMAIL_PASS?.trim();
 
+  const brevoApiKey =
+    process.env.BREVO_API_KEY?.trim();
 
-  if (!emailUser || !emailPass) {
+  const nombreRemitente =
+    process.env.EMAIL_FROM_NAME?.trim() ||
+    'Soporte técnico WorkTrack';
 
+  if (!emailUser) {
     throw new Error(
-      'Falta configurar EMAIL_USER o EMAIL_PASS en el archivo .env'
+      'Falta configurar EMAIL_USER en las variables de entorno'
     );
-
   }
 
+  return {
+    emailUser,
+    emailPass,
+    brevoApiKey,
+    nombreRemitente
+  };
+}
+
+
+// ======================================================
+// ESCAPAR TEXTO PARA HTML
+// ======================================================
+
+function escaparHtml(valor) {
+  return String(valor)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+
+// ======================================================
+// CREAR TRANSPORTADOR LOCAL DE GMAIL
+// ======================================================
+//
+// Se utiliza como alternativa para el desarrollo local
+// cuando BREVO_API_KEY no está configurada.
+//
+// Railway no permite SMTP en los planes utilizados por
+// WorkTrack, por eso producción utiliza la API de Brevo.
+// ======================================================
+
+function crearTransporterGmail(
+  emailUser,
+  emailPass
+) {
+  if (!emailPass) {
+    throw new Error(
+      'Falta configurar EMAIL_PASS para utilizar Gmail SMTP'
+    );
+  }
 
   return nodemailer.createTransport({
-
     service: 'gmail',
 
     auth: {
-
       user: emailUser,
-
-      // Esta será la contraseña de aplicación
-      // generada por Google.
       pass: emailPass
+    },
 
-    }
-
+    connectionTimeout: EMAIL_TIMEOUT_MS,
+    greetingTimeout: EMAIL_TIMEOUT_MS,
+    socketTimeout: EMAIL_TIMEOUT_MS
   });
+}
 
+
+// ======================================================
+// PROCESAR RESPUESTA DE BREVO
+// ======================================================
+
+async function procesarRespuestaBrevo(
+  response,
+  operacion
+) {
+  const contenido =
+    await response.text();
+
+  let datos = null;
+
+  if (contenido) {
+    try {
+      datos = JSON.parse(contenido);
+    } catch {
+      datos = {
+        message: contenido
+      };
+    }
+  }
+
+  if (!response.ok) {
+    const detalle =
+      datos?.message ||
+      `HTTP ${response.status}`;
+
+    throw new Error(
+      `Brevo rechazó la operación "${operacion}": ${detalle}`
+    );
+  }
+
+  return datos || {};
+}
+
+
+// ======================================================
+// ENVIAR CORREO MEDIANTE LA API HTTPS DE BREVO
+// ======================================================
+
+async function enviarConBrevo({
+  apiKey,
+  emailRemitente,
+  nombreRemitente,
+  destinatario,
+  nombreUsuario,
+  asunto,
+  texto,
+  html
+}) {
+  const response =
+    await fetch(
+      BREVO_API_URL,
+      {
+        method: 'POST',
+
+        headers: {
+          accept: 'application/json',
+          'api-key': apiKey,
+          'content-type': 'application/json'
+        },
+
+        body: JSON.stringify({
+          sender: {
+            name: nombreRemitente,
+            email: emailRemitente
+          },
+
+          to: [
+            {
+              email: destinatario,
+              name: nombreUsuario
+            }
+          ],
+
+          subject: asunto,
+          textContent: texto,
+          htmlContent: html
+        }),
+
+        signal:
+          AbortSignal.timeout(
+            EMAIL_TIMEOUT_MS
+          )
+      }
+    );
+
+  return procesarRespuestaBrevo(
+    response,
+    'envío de correo'
+  );
+}
+
+
+// ======================================================
+// ENVIAR CORREO MEDIANTE GMAIL SMTP LOCAL
+// ======================================================
+
+async function enviarConGmail({
+  emailUser,
+  emailPass,
+  nombreRemitente,
+  destinatario,
+  asunto,
+  texto,
+  html
+}) {
+  const transporter =
+    crearTransporterGmail(
+      emailUser,
+      emailPass
+    );
+
+  return transporter.sendMail({
+    from:
+      `"${nombreRemitente}" <${emailUser}>`,
+
+    to: destinatario,
+
+    subject: asunto,
+
+    text: texto,
+
+    html: html
+  });
 }
 
 
@@ -58,24 +230,22 @@ exports.enviarEmailRecuperacion = async (
   nombreUsuario,
   enlaceRecuperacion
 ) => {
+  const {
+    emailUser,
+    emailPass,
+    brevoApiKey,
+    nombreRemitente
+  } = obtenerConfiguracionCorreo();
 
-  const transporter =
-    crearTransporter();
+  const nombreSeguro =
+    escaparHtml(nombreUsuario);
 
-
-  const nombreRemitente =
-    process.env.EMAIL_FROM_NAME ||
-    'Soporte técnico WorkTrack';
-
+  const enlaceSeguro =
+    escaparHtml(enlaceRecuperacion);
 
   const asunto =
     'Recuperar contraseña - WorkTrack';
 
-
-  // Versión de texto simple.
-  //
-  // Se utiliza si el cliente de correo
-  // no puede mostrar HTML.
   const texto = `
 Hola ${nombreUsuario}:
 
@@ -90,10 +260,8 @@ El enlace es válido durante 15 minutos.
 Si no realizaste esta solicitud, podés ignorar este mensaje.
 
 Soporte técnico WorkTrack
-  `;
+  `.trim();
 
-
-  // Versión visual del correo.
   const html = `
     <div
       style="
@@ -104,7 +272,6 @@ Soporte técnico WorkTrack
         color: #1f2937;
       "
     >
-
       <h2
         style="
           color: #198754;
@@ -115,7 +282,7 @@ Soporte técnico WorkTrack
       </h2>
 
       <p>
-        Hola <strong>${nombreUsuario}</strong>:
+        Hola <strong>${nombreSeguro}</strong>:
       </p>
 
       <p>
@@ -134,9 +301,8 @@ Soporte técnico WorkTrack
           text-align: center;
         "
       >
-
         <a
-          href="${enlaceRecuperacion}"
+          href="${enlaceSeguro}"
           style="
             display: inline-block;
             padding: 12px 22px;
@@ -149,7 +315,6 @@ Soporte técnico WorkTrack
         >
           Restablecer contraseña
         </a>
-
       </p>
 
       <p>
@@ -179,50 +344,79 @@ Soporte técnico WorkTrack
       >
         Soporte técnico WorkTrack
       </p>
-
     </div>
   `;
 
-
-  const resultado =
-    await transporter.sendMail({
-
-      from:
-        `"${nombreRemitente}" <${process.env.EMAIL_USER}>`,
-
-      to: destinatario,
-
-      subject: asunto,
-
-      text: texto,
-
-      html: html
-
+  if (brevoApiKey) {
+    return enviarConBrevo({
+      apiKey: brevoApiKey,
+      emailRemitente: emailUser,
+      nombreRemitente,
+      destinatario,
+      nombreUsuario,
+      asunto,
+      texto,
+      html
     });
+  }
 
-
-  return resultado;
-
+  return enviarConGmail({
+    emailUser,
+    emailPass,
+    nombreRemitente,
+    destinatario,
+    asunto,
+    texto,
+    html
+  });
 };
 
 
 // ======================================================
-// VERIFICAR CONFIGURACIÓN DE GMAIL
-// ======================================================
-//
-// Esta función permitirá probar más adelante
-// la conexión con Gmail sin enviar un mensaje.
+// VERIFICAR CONFIGURACIÓN DE CORREO
 // ======================================================
 
 exports.verificarConexionCorreo = async () => {
+  const {
+    emailUser,
+    emailPass,
+    brevoApiKey
+  } = obtenerConfiguracionCorreo();
+
+  if (brevoApiKey) {
+    const response =
+      await fetch(
+        BREVO_ACCOUNT_URL,
+        {
+          method: 'GET',
+
+          headers: {
+            accept: 'application/json',
+            'api-key': brevoApiKey
+          },
+
+          signal:
+            AbortSignal.timeout(
+              EMAIL_TIMEOUT_MS
+            )
+        }
+      );
+
+    await procesarRespuestaBrevo(
+      response,
+      'verificación de la cuenta'
+    );
+
+    return true;
+  }
 
   const transporter =
-    crearTransporter();
-
+    crearTransporterGmail(
+      emailUser,
+      emailPass
+    );
 
   await transporter.verify();
 
-
   return true;
-
 };
