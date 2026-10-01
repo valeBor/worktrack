@@ -23,11 +23,6 @@ exports.registrar = async (req, res) => {
       req.ip ||
       req.socket.remoteAddress;
 
-    console.log(
-      "IP detectada:",
-      ipDetectada
-    );
-
     const resultado =
       await asistenciaService.registrarAsistencia({
         usuarioId,
