@@ -6,11 +6,8 @@ const VALID_NODE_ENVIRONMENTS =
   new Set([
 
     'development',
-
     'test',
-
     'production'
-
   ]);
 
 
@@ -21,39 +18,22 @@ const VALID_NODE_ENVIRONMENTS =
 const REQUIRED_PRODUCTION_VARIABLES = [
 
   'FRONTEND_URL',
-
   'CORS_ORIGINS',
-
   'TRUST_PROXY_HOPS',
-
   'APP_TIMEZONE',
-
   'DB_HOST',
-
   'DB_PORT',
-
   'DB_USER',
-
   'DB_PASSWORD',
-
   'DB_NAME',
-
   'JWT_SECRET',
-
   'RESET_TOKEN_SECRET',
-
   'TURNSTILE_SECRET_KEY',
-
   'EMAIL_USER',
-
-  'EMAIL_PASS',
-
+  'BREVO_API_KEY',
   'QR_TOKEN_SECRET',
-
   'FILE_STORAGE_PROVIDER'
-
 ];
-
 
 // ======================================================
 // VERIFICAR QUE EXISTA UN VALOR
@@ -81,7 +61,6 @@ function hasValue(
 function validateInteger(
 
   name,
-
   options = {}
 
 ) {
@@ -96,10 +75,8 @@ function validateInteger(
 
   }
 
-
   const number =
     Number(value);
-
 
   const minimum =
     options.minimum ?? 1;
@@ -131,7 +108,6 @@ function validateInteger(
 function validateUrl(
 
   name,
-
   value
 
 ) {
@@ -141,15 +117,12 @@ function validateUrl(
     const url =
       new URL(value);
 
-
     if (
 
       ![
-
         'http:',
 
         'https:'
-
       ].includes(
         url.protocol
       )
@@ -186,7 +159,6 @@ function validateEnvironment() {
     'development'
 
   )
-
     .trim()
 
     .toLowerCase();
@@ -368,9 +340,7 @@ function validateEnvironment() {
     process.env.FILE_STORAGE_PROVIDER
 
       .trim()
-
       .toUpperCase();
-
 
   if (
     storageProvider !== 'VERCEL_BLOB'

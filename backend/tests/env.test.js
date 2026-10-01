@@ -119,8 +119,8 @@ function configureProductionEnvironment(
       EMAIL_USER:
         'soporte@worktrack.test',
 
-      EMAIL_PASS:
-        'email-password-de-prueba',
+      BREVO_API_KEY:
+        'brevo-api-key-de-prueba',
 
       QR_TOKEN_SECRET:
         'qr-secret-de-prueba',
@@ -268,6 +268,40 @@ test(
       },
 
       /JWT_SECRET/
+
+    );
+
+  }
+
+);
+
+
+// ======================================================
+// CLAVE DE BREVO
+// ======================================================
+
+test(
+
+  'Producción exige la clave de Brevo',
+
+  () => {
+
+    configureProductionEnvironment();
+
+
+    delete process.env
+      .BREVO_API_KEY;
+
+
+    assert.throws(
+
+      () => {
+
+        validateEnvironment();
+
+      },
+
+      /BREVO_API_KEY/
 
     );
 
