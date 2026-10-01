@@ -4,7 +4,7 @@ const horarioModel = require('../models/horario.model');
 const notificacionService = require('./notificacion.service');
 const { validarArchivoJustificativo } = require('./archivo-justificativo.service');
 const archivoStorageService = require('./archivo-storage.service');
-const { obtenerFechaHoraActual, obtenerDiaSemanaDeFecha, horaASegundos
+const { obtenerFechaHoraActual, obtenerDiaSemanaDeFecha, horaASegundos, normalizarFechaBaseDatos,
 } = require('../utils/fecha.util');
 
 // ======================================================
@@ -78,38 +78,6 @@ function normalizarRol(role) {
     .toLowerCase();
 }
 
-function normalizarFechaBaseDatos(
-  valor
-) {
-  if (!valor) {
-    return '';
-  }
-
-  if (typeof valor === 'string') {
-    return valor.substring(0, 10);
-  }
-
-  if (
-    valor instanceof Date &&
-    !Number.isNaN(valor.getTime())
-  ) {
-    const zonaHoraria =
-      process.env.APP_TIMEZONE ||
-      'America/Argentina/Buenos_Aires';
-
-    return new Intl.DateTimeFormat(
-      'en-CA',
-      {
-        timeZone: zonaHoraria,
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-      }
-    ).format(valor);
-  }
-
-  return String(valor).substring(0, 10);
-}
 
 // ======================================================
 // USUARIO AUTENTICADO
