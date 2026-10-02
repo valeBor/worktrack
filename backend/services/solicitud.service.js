@@ -1,6 +1,7 @@
 const db = require('../config/db');
 const solicitudModel = require('../models/solicitud.model');
 const horarioModel = require('../models/horario.model');
+const asistenciaModel = require('../models/asistencia.model');
 const notificacionService = require('./notificacion.service');
 const { validarArchivoJustificativo } = require('./archivo-justificativo.service');
 const archivoStorageService = require('./archivo-storage.service');
@@ -859,6 +860,48 @@ exports.createJustificativo = async (
   try {
     await connection.beginTransaction();
     transaccionIniciada = true;
+
+    const fechaInasistencia =
+      datosValidados
+        .fecha_inasistencia;
+
+    const diaSemana =
+      obtenerDiaSemanaDeFecha(
+        fechaInasistencia
+      );
+
+    const horarioAplicable =
+      await horarioModel
+        .getByUsuarioAndDiaEnFecha(
+          actor.id,
+          diaSemana,
+          fechaInasistencia
+        );
+
+    if (!horarioAplicable) {
+      throw crearError(
+        'No puede justificar esa fecha porque no tenía un horario asignado.',
+        409
+      );
+    }
+
+    const asistenciaRegistrada =
+      await asistenciaModel
+        .buscarAsistenciaPorFecha(
+          connection,
+          actor.id,
+          fechaInasistencia
+        );
+
+    if (
+      asistenciaRegistrada
+        ?.hora_entrada
+    ) {
+      throw crearError(
+        'No puede justificar una inasistencia porque ya existe una asistencia registrada para esa fecha.',
+        409
+      );
+    }
 
     const tipoJustificativo =
       await solicitudModel
