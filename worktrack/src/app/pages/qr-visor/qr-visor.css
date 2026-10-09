@@ -1,43 +1,105 @@
-/* qr-visor administracion.css */
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  background-color: var(--color-bg);
-  font-family: Arial, Helvetica, sans-serif;
+:host {
+  display: block;
+  min-height: 100vh;
 }
 
 .dashboard-container {
   min-height: 100vh;
+  background: #f5f8f7;
 }
 
-/* CONTENIDO */
+.kiosk-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 24px;
+  background: #111827;
+  border-bottom: 1px solid #e2e8e6;
+}
+
+.kiosk-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #173b32;
+}
+
+.logo-circle {
+  width: 50px;
+  height: 50px;
+  overflow: hidden;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.kiosk-brand h1 {
+  margin: 0;
+  font-size: 22px;
+  color: #22c55e;
+}
+
+.kiosk-brand p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #52635d;
+}
+
+.exit-button {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid #111827;
+  border-radius: 50%;
+  background:#111827;
+  color: #41564e;
+  cursor: pointer;
+}
+
+.exit-button:hover {
+  background: #edf4f0;
+  color: #146c43;
+}
+
+.exit-button:focus-visible {
+  outline: 3px solid #198754;
+  outline-offset: 3px;
+}
 
 .dashboard-content {
-  width: 100%;
-  min-height: calc(100vh - 95px);
-
   display: flex;
   justify-content: center;
-  align-items: center;
-
-  padding: 20px;
+  padding: 36px 20px;
 }
 
-/* CARD GENERAL */
-
 .card {
-  background-color: white;
-  border-radius: 24px;
-  padding: 30px;
+  width: min(100%, 760px);
+  padding: 24px;
+  border: 1px solid #e2e8e6;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgb(0 0 0 / 8%);
+}
 
-  box-shadow: 0 5px 18px rgba(0,0,0,0.08);
+@media (max-width: 600px) {
+  .kiosk-header {
+    padding: 12px 16px;
+  }
 
-  width: 100%;
-  max-width: 450px;
-  border: 1px solid var(--color-border);
+  .dashboard-content {
+    padding: 20px 12px;
+  }
+
+  .card {
+    padding: 16px;
+  }
 }

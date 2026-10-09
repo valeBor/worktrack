@@ -84,6 +84,14 @@ exports.generateToken = (user) => {
 
 };
 
+// El token del tótem no es una sesión de usuario. Solo habilita
+// la lectura del QR y vence al terminar la jornada.
+exports.generateKioskToken = (adminId) => jwt.sign(
+  { id: adminId, role: 'kiosk', purpose: 'kiosk_qr' },
+  obtenerJwtSecret(),
+  { expiresIn: '12h' }
+);
+
 
 // ======================================================
 // GENERAR TOKEN PARA RECUPERAR CONTRASEÑA

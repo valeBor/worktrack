@@ -4,6 +4,7 @@ import {Observable} from 'rxjs';
 
 import {QrResponse} from '../models/qr.model';
 import {environment} from '../../environments/environment';
+import {AuthService} from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,12 +14,13 @@ export class QrService {
     environment.qrUrl;
 
   constructor(
-    private http: HttpClient
+    private http: HttpClient,
+    private auth: AuthService
   ) {}
 
   getQr(): Observable<QrResponse> {
     return this.http.get<QrResponse>(
-      `${this.apiUrl}/generar`
+      `${this.apiUrl}/${this.auth.getRole() === 'kiosk' ? 'generar-kiosco' : 'generar'}`
     );
   }
 }

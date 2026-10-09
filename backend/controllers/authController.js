@@ -4,6 +4,19 @@ const turnstileService = require('../services/turnstileService');
 const emailService = require('../services/emailService');
 const userModel = require('../models/userModel');
 
+exports.activarKiosco = (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({
+      message: 'Solo un administrador puede activar el tótem.'
+    });
+  }
+  res.setHeader('Cache-Control', 'no-store');
+  return res.status(200).json({
+    token: authService.generateKioskToken(req.user.id),
+    role: 'kiosk'
+  });
+};
+
 const mensajeRecuperacion =
   'Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.';
 

@@ -109,7 +109,7 @@ export const routes: Routes = [
     component: QrVisor,
     canActivate: [roleGuard],
     data: {
-      roles: ['admin']
+      roles: ['admin', 'kiosk']
     }
   },
   {
