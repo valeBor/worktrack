@@ -332,6 +332,23 @@ async function obtenerActor(actorToken) {
   return actor;
 }
 
+// El permiso gestionado se comprueba en la ruta. Esta validación
+// conserva el límite por rol aunque se modifique el cliente.
+async function obtenerActorSupervisor(actorToken) {
+  const actorId = Number(actorToken?.id);
+  if (!Number.isInteger(actorId) || actorId <= 0) {
+    throw crearError('Usuario no autenticado.', 401);
+  }
+  const actor = await reporteModel.getActorById(actorId);
+  if (!actor || !Boolean(actor.estado) || Boolean(actor.cuenta_bloqueada)) {
+    throw crearError('El usuario no existe, está inactivo o tiene la cuenta bloqueada.', 401);
+  }
+  if (normalizarRol(actor.role) !== 'supervisor') {
+    throw crearError('No tiene autorización para consultar este parte.', 403);
+  }
+  return actor;
+}
+
 // ======================================================
 // CREAR CLAVE DE USUARIO Y FECHA
 // ======================================================
@@ -1175,11 +1192,16 @@ exports.obtenerReporteDiario = async (
 // OBTENER HISTORIAL GLOBAL
 // ======================================================
 
-exports.obtenerHistorial = async (
+async function generarHistorialGlobal(
   actorToken,
-  filtrosRecibidos = {}
-) => {
-  await obtenerActor(actorToken);
+  filtrosRecibidos = {},
+  alcanceSupervisor = false
+) {
+  if (alcanceSupervisor) {
+    await obtenerActorSupervisor(actorToken);
+  } else {
+    await obtenerActor(actorToken);
+  }
 
   const {
     fechaDesde,
@@ -1228,14 +1250,18 @@ exports.obtenerHistorial = async (
       )
   ]);
 
+  const usuariosVisibles = alcanceSupervisor
+    ? usuarios.filter(usuario => normalizarRol(usuario.role) === 'empleado')
+    : usuarios;
+
   validarUsuarioReportable(
-    usuarios,
+    usuariosVisibles,
     filtros.usuarioId
   );
 
   const registrosCompletos =
     crearRegistros({
-      usuarios,
+      usuarios: usuariosVisibles,
       fechas:
         obtenerFechasEntre(
           fechaDesde,
@@ -1245,7 +1271,7 @@ exports.obtenerHistorial = async (
       horarios,
       cambios,
       justificaciones,
-      incluirSinHorario: false
+      incluirSinHorario: alcanceSupervisor && fechaDesde === fechaHasta
     });
 
   const registros =
@@ -1279,7 +1305,14 @@ exports.obtenerHistorial = async (
 
     registros
   };
-};
+}
+
+exports.obtenerHistorial = (actorToken, filtros) =>
+  generarHistorialGlobal(actorToken, filtros);
+
+exports.obtenerHistorialSupervisor = (actorToken, filtros) =>
+  generarHistorialGlobal(actorToken, filtros, true);
+
 // ======================================================
 // AGRUPAR REGISTROS PARA ESTADÍSTICAS
 // ======================================================

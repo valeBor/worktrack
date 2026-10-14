@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams} from '@angular/common/http';
 import { Observable } from 'rxjs';
+import {GlobalAttendanceHistory} from '../models/attendance-report.model';
 import {HistorialAsistencia, PeriodoHistorial, UsuarioHistorialGestionable} from '../models/historial-asistencia.model';
 import {environment} from '../../environments/environment';
 
@@ -64,4 +65,14 @@ export class  AttendanceHistoryService {
       {params}
     );
   }
+  getTeamHistory(fechaDesde: string, fechaHasta: string):
+    Observable<GlobalAttendanceHistory> {
+    const params = new HttpParams()
+      .set('fechaDesde', fechaDesde)
+      .set('fechaHasta', fechaHasta);
+    return this.http.get<GlobalAttendanceHistory>(
+      `${this.apiUrl}/historial/equipo`, {params}
+    );
+  }
+
 }

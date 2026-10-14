@@ -50,6 +50,9 @@
           <option [ngValue]="null">
             Mi historial
           </option>
+          <option *ngIf="isSupervisor" [ngValue]="-1">
+            Todos los empleados
+          </option>
 
           <option
             *ngFor="let user of manageableUsers"
@@ -61,8 +64,16 @@
         </select>
       </div>
 
+      <div class="filter-group period-filter" *ngIf="isSupervisor && selectedUserId === -1">
+        <label for="teamPeriod">Período del equipo</label>
+        <select id="teamPeriod" [(ngModel)]="teamPeriod" (ngModelChange)="loadTeamHistory()">
+          <option value="hoy">Hoy</option>
+          <option value="mes_actual">Mes actual</option>
+        </select>
+      </div>
+
       <!-- PERÍODO -->
-      <div class="filter-group period-filter">
+      <div class="filter-group period-filter" *ngIf="selectedUserId !== -1">
         <label for="historyPeriod">
           <i class="bi bi-calendar3"></i>
           Período
@@ -89,7 +100,7 @@
       </div>
 
       <!-- EXPORTAR -->
-      <button
+      <button *ngIf="selectedUserId !== -1"
         type="button"
         class="export-button"
         (click)="exportHistory()"
@@ -116,6 +127,101 @@
 
       <p>Cargando historial de asistencia...</p>
     </section>
+
+    <ng-container *ngIf="!loadingHistory && teamHistory as team">
+      <section class="summary-card team-summary" aria-label="Resumen del equipo">
+        <div class="summary-item">
+          <span>Presentes</span>
+          <strong>{{ team.resumen.registros_presentes }}</strong>
+        </div>
+        <div class="summary-item">
+          <span>Llegadas tarde</span>
+          <strong>{{ team.resumen.tardanzas }}</strong>
+        </div>
+        <div class="summary-item">
+          <span>Ausentes</span>
+          <strong>{{ team.resumen.ausencias }}</strong>
+        </div>
+        <div class="summary-item">
+          <span>Pendientes</span>
+          <strong>{{ team.resumen.pendientes }}</strong>
+        </div>
+        <div class="summary-item">
+          <span>Faltas justificadas</span>
+          <strong>{{ team.resumen.faltas_justificadas }}</strong>
+        </div>
+      </section>
+
+      <section class="records-card">
+        <div class="records-header">
+          <h2>Registros de asistencia del equipo</h2>
+          <p>
+            {{ team.registros.length }} {{ team.registros.length === 1 ? 'registro' : 'registros' }}
+            · {{ formatDate(team.periodo.fecha_desde) }}
+            <ng-container *ngIf="team.periodo.fecha_desde !== team.periodo.fecha_hasta">
+              – {{ formatDate(team.periodo.fecha_hasta) }}
+            </ng-container>
+          </p>
+        </div>
+
+        <div class="empty-state" *ngIf="team.registros.length === 0">
+          <i class="bi bi-calendar-x" aria-hidden="true"></i>
+          <h3>No hay registros disponibles</h3>
+          <p>No existen asistencias ni jornadas programadas para el período seleccionado.</p>
+        </div>
+
+        <div class="records-list" *ngIf="team.registros.length > 0">
+          <article class="record-item" *ngFor="let record of team.registros"
+            [ngClass]="teamStatusClass(record)">
+            <div class="record-status-icon" aria-hidden="true">
+              <i class="bi bi-check-circle" *ngIf="record.estado === 'PRESENTE'"></i>
+              <i class="bi bi-clock" *ngIf="record.estado === 'TARDE'"></i>
+              <i class="bi bi-x-circle" *ngIf="record.estado === 'AUSENTE'"></i>
+              <i class="bi bi-file-earmark-check" *ngIf="record.estado === 'FALTA_JUSTIFICADA'"></i>
+              <i class="bi bi-hourglass-split" *ngIf="record.estado === 'PENDIENTE'"></i>
+              <i class="bi bi-calendar-x" *ngIf="record.estado === 'SIN_HORARIO'"></i>
+            </div>
+            <div class="record-main">
+              <div class="record-title">
+                <div>
+                  <h3>{{ record.usuario.apellido }}, {{ record.usuario.nombre }}</h3>
+                  <p>{{ formatDate(record.fecha) }} · {{ record.dia_semana | titlecase }}</p>
+                </div>
+                <span class="status-badge" [ngClass]="teamStatusClass(record)">
+                  {{ teamStatus(record) }}
+                </span>
+              </div>
+              <div class="record-details">
+                <div class="detail-item">
+                  <span>Entrada</span>
+                  <strong>{{ formatTime(record.hora_entrada) }}</strong>
+                </div>
+                <div class="detail-item">
+                  <span>Salida</span>
+                  <strong>{{ formatTime(record.hora_salida) }}</strong>
+                </div>
+                <div class="detail-item">
+                  <span>Horas trabajadas</span>
+                  <strong>{{ formatWorkedHours(record.horas_trabajadas) }}</strong>
+                </div>
+                <div class="detail-item">
+                  <span>Modalidad</span>
+                  <strong>{{ record.modalidad || '—' }}</strong>
+                </div>
+              </div>
+              <div class="expected-schedule" *ngIf="record.horario_esperado">
+                <i class="bi bi-calendar-check" aria-hidden="true"></i>
+                <span>
+                  Horario esperado:
+                  {{ formatTime(record.horario_esperado.hora_entrada) }} a
+                  {{ formatTime(record.horario_esperado.hora_salida) }}
+                </span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </ng-container>
 
     <ng-container *ngIf="!loadingHistory && history">
 

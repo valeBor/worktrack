@@ -6,6 +6,7 @@ import {finalize} from 'rxjs';
 import {jsPDF} from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import {Header} from '../../components/header/header';
+import {GlobalAttendanceHistory, AttendanceReportRecord} from '../../models/attendance-report.model';
 import {AuthService} from '../../services/auth.service';
 import {AttendanceHistoryService} from '../../services/attendance-history.service';
 import {HistorialAsistencia,PeriodoHistorial,RegistroHistorial, UsuarioHistorialGestionable
@@ -26,6 +27,9 @@ export class AttendanceHistory implements OnInit {
 
   selectedPeriod: PeriodoHistorial = 'mes_actual';
   selectedUserId: number | null = null;
+  teamHistory: GlobalAttendanceHistory | null = null;
+  teamPeriod: 'hoy' | 'mes_actual' = 'hoy';
+  isSupervisor = false;
 
   canManageHistory = false;
   loadingHistory = false;
@@ -54,6 +58,8 @@ export class AttendanceHistory implements OnInit {
       return;
     }
 
+    this.isSupervisor = String(user.role || '').toLowerCase() === 'supervisor';
+
     this.canManageHistory = [
       'supervisor',
       'rrhh',
@@ -77,6 +83,12 @@ export class AttendanceHistory implements OnInit {
     this.loadingHistory = true;
     this.error = '';
 
+    if (this.isSupervisor && this.selectedUserId === -1) {
+      this.loadTeamHistory();
+      return;
+    }
+
+    this.teamHistory = null;
     const request$ =
       this.selectedUserId === null
         ? this.historyService.getMyHistory(
@@ -145,6 +157,50 @@ export class AttendanceHistory implements OnInit {
 
   onUserChange(): void {
     this.loadHistory();
+  }
+
+  loadTeamHistory(): void {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Argentina/Buenos_Aires',
+      year: 'numeric', month: '2-digit', day: '2-digit'
+    }).formatToParts(new Date());
+    const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+    const today = `${values['year']}-${values['month']}-${values['day']}`;
+    const from = this.teamPeriod === 'hoy' ? today : `${today.slice(0, 7)}-01`;
+    this.loadingHistory = true;
+    this.error = '';
+    this.history = null;
+    this.historyService.getTeamHistory(from, today)
+      .pipe(finalize(() => {
+        this.loadingHistory = false;
+        this.cdr.detectChanges();
+      }))
+      .subscribe({
+        next: history => this.teamHistory = history,
+        error: err => {
+          this.teamHistory = null;
+          this.error = err.error?.mensaje || 'No fue posible consultar el parte del equipo.';
+        }
+      });
+  }
+
+  teamStatusClass(record: AttendanceReportRecord): string {
+    const classes: Record<string, string> = {
+      PRESENTE: 'status-present',
+      TARDE: 'status-late',
+      AUSENTE: 'status-absent',
+      FALTA_JUSTIFICADA: 'status-justified',
+      PENDIENTE: 'status-pending'
+    };
+    return classes[record.estado] || 'status-default';
+  }
+
+  teamStatus(record: AttendanceReportRecord): string {
+    return ({
+      PRESENTE: 'Presente', TARDE: 'Llegada tarde',
+      AUSENTE: 'Ausente', FALTA_JUSTIFICADA: 'Falta justificada',
+      PENDIENTE: 'Pendiente', SIN_HORARIO: 'Sin horario'
+    })[record.estado];
   }
 
   // ====================================================
