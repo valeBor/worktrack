@@ -1251,7 +1251,9 @@ async function generarHistorialGlobal(
   ]);
 
   const usuariosVisibles = alcanceSupervisor
-    ? usuarios.filter(usuario => normalizarRol(usuario.role) === 'empleado')
+    ? usuarios.filter(usuario =>
+        normalizarRol(usuario.role) === 'empleado' && Boolean(usuario.estado)
+      )
     : usuarios;
 
   validarUsuarioReportable(

@@ -36,8 +36,8 @@ exports.getUsuarioById = async usuarioId => {
 // supervisor:
 // Puede consultar usuarios con rol empleado.
 //
-// Los usuarios inactivos también se incluyen porque
-// sus registros históricos deben permanecer disponibles.
+// RR. HH. y admin conservan acceso a registros históricos.
+// El supervisor solo ve empleados activos.
 // ======================================================
 
 exports.getUsuariosGestionables = async actorId => {
@@ -68,6 +68,7 @@ exports.getUsuariosGestionables = async actorId => {
         OR (
           LOWER(actor_rol.nombre) = 'supervisor'
           AND LOWER(r.nombre) = 'empleado'
+          AND u.estado = 1
         )
       )
     ORDER BY
@@ -127,6 +128,7 @@ exports.getUsuarioGestionable = async (
         OR (
           LOWER(actor_rol.nombre) = 'supervisor'
           AND LOWER(objetivo_rol.nombre) = 'empleado'
+          AND objetivo.estado = 1
         )
       )
     LIMIT 1
