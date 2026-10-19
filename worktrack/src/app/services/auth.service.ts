@@ -65,6 +65,20 @@ export class AuthService {
     );
   }
 
+  activateKiosk(): Observable<{ token: string; role: 'kiosk' }> {
+    return this.http.post<{ token: string; role: 'kiosk' }>(
+      `${this.api}/activar-kiosco`, {}
+    );
+  }
+
+  saveKioskToken(token: string): void {
+    if (typeof window === 'undefined') return;
+    // El JWT de admin deja de existir en este navegador antes de mostrar el QR.
+    this.logout();
+    localStorage.setItem('token', token);
+    localStorage.setItem('role', 'kiosk');
+  }
+
 
   // ====================================================
   // SOLICITAR RECUPERACIÓN DE CONTRASEÑA

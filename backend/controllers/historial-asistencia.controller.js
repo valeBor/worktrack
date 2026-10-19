@@ -116,3 +116,19 @@ exports.obtenerHistorialUsuario = async (
     );
   }
 };
+// Parte conjunto del supervisor, limitado a empleados.
+exports.obtenerHistorialEquipo = async (req, res) => {
+  try {
+    const { fechaDesde, fechaHasta } = req.query;
+    const historial = await require('../services/reporte-asistencia.service')
+      .obtenerHistorialSupervisor(req.user, { fechaDesde, fechaHasta });
+    return res.status(200).json(historial);
+  } catch (error) {
+    const statusCode = error.statusCode || 500;
+    return res.status(statusCode).json({
+      mensaje: statusCode === 500
+        ? 'Error interno al consultar el parte del equipo.'
+        : error.message
+    });
+  }
+};

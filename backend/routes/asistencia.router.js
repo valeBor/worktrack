@@ -58,6 +58,14 @@ router.get(
     .obtenerUsuariosGestionables
 );
 
+// Parte conjunto: el servicio limita el alcance a empleados.
+router.get(
+  '/historial/equipo',
+  verifyToken,
+  verifyPermission('VER_HISTORIAL_GESTIONADO'),
+  historialAsistenciaController.obtenerHistorialEquipo
+);
+
 // ======================================================
 // HISTORIAL DE UN USUARIO
 //

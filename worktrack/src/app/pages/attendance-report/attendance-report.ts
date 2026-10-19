@@ -318,6 +318,12 @@ export class AttendanceReport implements OnInit, OnDestroy {
       });
   }
 
+  showTodayHistory(): void {
+    this.historyDateFrom = this.today;
+    this.historyDateTo = this.today;
+    this.loadGlobalHistory();
+  }
+
   applyHistoryFilters(): void {
     this.loadGlobalHistory();
   }

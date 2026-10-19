@@ -50,6 +50,42 @@ function obtenerFechaHoraActual() {
   };
 }
 
+
+// ======================================================
+// NORMALIZAR FECHA PROVENIENTE DE LA BASE DE DATOS
+// ======================================================
+//
+// Las columnas DATE representan un día calendario.
+//
+// No se aplica una zona horaria porque convertir una
+// fecha ubicada a medianoche UTC a la hora argentina
+// puede hacer que retroceda al día anterior.
+// ======================================================
+
+function normalizarFechaBaseDatos(
+  valor
+) {
+  if (!valor) {
+    return '';
+  }
+
+  if (typeof valor === 'string') {
+    return valor.substring(0, 10);
+  }
+
+  if (
+    valor instanceof Date &&
+    !Number.isNaN(valor.getTime())
+  ) {
+    return valor
+      .toISOString()
+      .substring(0, 10);
+  }
+
+  return String(valor)
+    .substring(0, 10);
+}
+
 // ======================================================
 // OBTENER DÍA SEMANAL DE UNA FECHA
 // ======================================================
@@ -232,6 +268,7 @@ function horaASegundos(hora) {
 
 module.exports = {
   obtenerFechaHoraActual,
+  normalizarFechaBaseDatos,
   obtenerDiaSemanaDeFecha,
   sumarDiasAFecha,
   obtenerRangoMes,

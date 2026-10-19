@@ -22,6 +22,11 @@ export const roleGuard: CanActivateFn = (route, state) => {
 
   const rolActual = auth.getRole();
 
+  if (rolActual === 'kiosk' && !rolesPermitidos?.includes('kiosk')) {
+    auth.logout();
+    return router.parseUrl('/login');
+  }
+
   if (rolActual && rolesPermitidos.includes(rolActual)) {
     return true;
   }

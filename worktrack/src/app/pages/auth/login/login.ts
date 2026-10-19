@@ -183,8 +183,6 @@ export class Login implements AfterViewInit, OnDestroy {
           } else {
             this.router.navigate(['/home']);
           }
-
-          console.log(res);
         },
 
         error: (err) => {

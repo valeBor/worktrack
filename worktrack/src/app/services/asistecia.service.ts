@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import {environment} from '../../environments/environment';
 
 import {RegistrarAsistenciaRequest, RegistrarAsistenciaResponse, AsistenciaHoy
 } from '../models/asistencia.model';
@@ -11,7 +12,7 @@ import {RegistrarAsistenciaRequest, RegistrarAsistenciaResponse, AsistenciaHoy
 export class AsistenciaService {
 
   private apiUrl =
-    'http://localhost:3000/api/asistencias';
+    `${environment.apiUrl}/asistencias`;
 
   constructor(
     private http: HttpClient

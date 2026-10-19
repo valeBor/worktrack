@@ -7,33 +7,34 @@ export const authInterceptor: HttpInterceptorFn = (
 
 ) => {
 
-  // evitar SSR
+  // Evitar el acceso a localStorage durante SSR.
   if (typeof window === 'undefined') {
 
     return next(req);
 
   }
 
-  const token = localStorage.getItem('token');
+  const token =
+    localStorage.getItem('token');
 
-  console.log('TOKEN INTERCEPTOR:', token);
-
-  // si no hay token
+  // Si no hay token, continuar sin Authorization.
   if (!token) {
 
     return next(req);
 
   }
 
-  const clonedRequest = req.clone({
+  const clonedRequest =
+    req.clone({
 
-    setHeaders: {
+      setHeaders: {
 
-      Authorization: `Bearer ${token}`
+        Authorization:
+          `Bearer ${token}`
 
-    }
+      }
 
-  });
+    });
 
   return next(clonedRequest);
 

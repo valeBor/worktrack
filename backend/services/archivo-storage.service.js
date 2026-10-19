@@ -37,6 +37,25 @@ function getProvider() {
   return provider;
 }
 
+// ======================================================
+// OBTENER TOKEN DE VERCEL BLOB
+// ======================================================
+
+function getVercelBlobToken() {
+  const token =
+    process.env
+      .BLOB_READ_WRITE_TOKEN
+      ?.trim();
+
+  if (!token) {
+    throw createError(
+      'Falta configurar el token de Vercel Blob.'
+    );
+  }
+
+  return token;
+}
+
 function createStorageKey(extension) {
   if (!VALID_EXTENSIONS.has(extension)) {
     throw createError(
@@ -102,7 +121,10 @@ async function saveLocally(storageKey, file) {
 }
 
 async function saveInVercelBlob(storageKey, file) {
-  const {put} = await import('@vercel/blob');
+  const { put } = await import('@vercel/blob');
+
+  const token =
+    getVercelBlobToken();
 
   const blob = await put(
     storageKey,
@@ -110,7 +132,8 @@ async function saveInVercelBlob(storageKey, file) {
     {
       access: 'private',
       contentType: file.mimeType,
-      addRandomSuffix: false
+      addRandomSuffix: false,
+      token
     }
   );
 
@@ -149,14 +172,22 @@ async function readLocalFile(storageKey) {
 }
 
 async function readVercelBlob(storageKey) {
-  const {get} = await import('@vercel/blob');
+  const { get } = await import('@vercel/blob');
+
+  const token =
+    getVercelBlobToken();
 
   const result = await get(storageKey, {
     access: 'private',
-    useCache: false
+    useCache: false,
+    token
   });
 
-  if (!result || result.statusCode !== 200 || !result.stream) {
+  if (
+    !result ||
+    result.statusCode !== 200 ||
+    !result.stream
+  ) {
     throw createError(
       'El archivo solicitado no existe.',
       404
@@ -197,7 +228,13 @@ async function deleteLocalFile(storageKey) {
 
 async function deleteVercelBlob(storageKey) {
   const {del} = await import('@vercel/blob');
-  await del(storageKey);
+
+  const token =
+    getVercelBlobToken();
+
+  await del(storageKey, {
+    token
+  });
 }
 
 async function deleteFile(provider, storageKey) {

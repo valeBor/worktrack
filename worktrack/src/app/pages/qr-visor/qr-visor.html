@@ -1,18 +1,39 @@
-<!-- qr-visor.html -->
-
 <div class="dashboard-container">
+  <header class="kiosk-header">
+    <div class="kiosk-brand" aria-label="WorkTrack, tótem de asistencia">
+      <div class="logo-circle">
+        <img src="logoWorkTrack.png" alt="" class="logo">
+      </div>
+      <div>
+        <h1>WorkTrack</h1>
+        <p>Tótem de asistencia</p>
+      </div>
+    </div>
 
-  <!-- HEADER -->
-  <app-header
-     [mostrarVolver]="true">
-  </app-header>
+    <button class="exit-button" type="button" (click)="exit()" aria-label="Salir del tótem y volver al inicio de sesión"
+      title="Salir del tótem">
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="10" cy="7" r="3"></circle>
+        <path d="M4 19v-1a6 6 0 0 1 6-6c1.5 0 2.8.5 3.8 1.4"></path>
+        <path d="M16 16h6"></path>
+        <path d="m19 13 3 3-3 3"></path>
+      </svg>
+    </button>
+  </header>
 
   <main class="dashboard-content">
-
     <section class="card">
+      @if (active) {
       <app-qr-admin></app-qr-admin>
+      } @else if (error) {
+      <p role="alert">{{ error }}</p>
+      <button type="button" (click)="exit()">
+        Ir al inicio de sesión
+      </button>
+      } @else {
+      <p>Activando tótem…</p>
+      }
     </section>
-
   </main>
-
 </div>

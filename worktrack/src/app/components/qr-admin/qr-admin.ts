@@ -3,6 +3,8 @@ import {CommonModule,isPlatformBrowser} from '@angular/common';
 import {Subject,takeUntil} from 'rxjs';
 import {QrService} from '../../services/qr.service';
 import {QrResponse} from '../../models/qr.model';
+import {AuthService} from '../../services/auth.service';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-qr-admin',
@@ -31,6 +33,8 @@ export class QrAdmin
   constructor(
     private qrService: QrService,
     private cdr: ChangeDetectorRef,
+    private auth: AuthService,
+    private router: Router,
     @Inject(PLATFORM_ID)
     private platformId: Object
   ) {}
@@ -73,6 +77,12 @@ export class QrAdmin
           this.cdr.detectChanges();
         },
         error: err => {
+          if (this.auth.getRole() === 'kiosk' &&
+              (err.status === 401 || err.status === 403)) {
+            this.auth.logout();
+            this.router.navigateByUrl('/login', {replaceUrl: true});
+            return;
+          }
           this.loading = false;
           this.qrImage = '';
           this.secondsRemaining = 0;

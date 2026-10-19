@@ -115,7 +115,7 @@ ALTER TABLE solicitudes
             tipo_justificativo_id
         )
         REFERENCES tipos_justificativo(id)
-        ON UPDATE CASCADE
+        ON UPDATE RESTRICT
         ON DELETE RESTRICT;
 
 -- =====================================================

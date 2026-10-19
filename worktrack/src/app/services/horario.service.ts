@@ -4,13 +4,14 @@ import {Observable} from 'rxjs';
 import {Horario, HorarioNuevo, GuardarHorarioResponse,EliminarHorarioResponse
 } from '../models/horario.model';
 import {User} from '../models/user.models';
+import {environment} from '../../environments/environment';
 
 @Injectable({providedIn: 'root'})
 export class HorarioService {
   private http = inject(HttpClient);
 
   private apiUrl =
-    'http://localhost:3000/api/horarios';
+    `${environment.apiUrl}/horarios`;
 
   // ====================================================
   // USUARIOS GESTIONABLES SEGÚN EL ROL

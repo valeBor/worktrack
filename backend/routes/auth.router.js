@@ -7,6 +7,16 @@ const authController =
 
   require('../controllers/authController');
 
+const { verifyToken } = require('../middlewares/authMiddleware');
+const { verifyPermission } = require('../middlewares/permissionMiddleware');
+
+router.post(
+  '/activar-kiosco',
+  verifyToken,
+  verifyPermission('GENERAR_QR'),
+  authController.activarKiosco
+);
+
 
 const {
 

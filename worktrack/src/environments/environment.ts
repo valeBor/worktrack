@@ -1,15 +1,12 @@
 export const environment = {
-
   production: true,
 
-  // Se reemplazará cuando despleguemos
-  // el backend de WorkTrack.
   apiUrl:
-    'https://REEMPLAZAR-POR-BACKEND/api',
+    'https://worktrack-production-a210.up.railway.app/api',
 
-  // Se reemplazará por la siteKey real
-  // del widget de producción.
+  qrUrl:
+    'https://worktrack-production-a210.up.railway.app/qr',
+
   turnstileSiteKey:
-    'REEMPLAZAR_POR_SITE_KEY_REAL'
-
+    '0x4AAAAAAFIJnj76ZDG9vKl1'
 };

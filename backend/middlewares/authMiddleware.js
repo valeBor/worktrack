@@ -99,6 +99,13 @@ exports.verifyToken = (
 
     );
 
+    // Los tokens de propósito limitado jamás autorizan rutas de usuario.
+    if (decoded.purpose || !Number.isInteger(Number(decoded.id))) {
+      return res.status(403).json({
+        message: 'Este token no autoriza esa operación'
+      });
+    }
+
 
     req.user =
       decoded;
