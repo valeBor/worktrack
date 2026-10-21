@@ -2,10 +2,10 @@ export const environment = {
   production: true,
 
   apiUrl:
-    'https://worktrack-production-a210.up.railway.app/api',
+    'https://violet-hedgehog-243126.hostingersite.com/api',
 
   qrUrl:
-    'https://worktrack-production-a210.up.railway.app/qr',
+    'https://violet-hedgehog-243126.hostingersite.com/qr',
 
   turnstileSiteKey:
     '0x4AAAAAAFIJnj76ZDG9vKl1'
