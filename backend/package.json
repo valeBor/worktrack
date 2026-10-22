@@ -26,7 +26,7 @@
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.4.0",
     "mysql2": "^3.22.3",
-    "nodemailer": "^9.0.5",
+    "nodemailer": "10.0.16",
     "qrcode": "^1.5.4",
     "uuid": "^14.0.0"
   },
