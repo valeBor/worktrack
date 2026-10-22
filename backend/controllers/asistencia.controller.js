@@ -37,6 +37,15 @@ exports.registrar = async (req, res) => {
 
   } catch (error) {
 
+    if (error.message === "Debe estar conectado a una red local autorizada.") {
+      console.error("DIAGNOSTICO_RED_LOCAL", JSON.stringify({
+        ip: req.ip,
+        ips: req.ips,
+        xForwardedFor: req.get("x-forwarded-for") || null,
+        socketIp: req.socket?.remoteAddress || null
+      }));
+    }
+
     console.error(
       "Error al registrar asistencia:",
       error
